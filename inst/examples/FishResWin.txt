@@ -1,0 +1,20 @@
+window title="Fishery Reserve Model"
+grid 1 4
+  label text=View: font=bold
+  button text=Docs func=openFile action=FishResDoc.pdf
+  button text="R Code" func=openFile action=FishRes.r
+  button text=Window func=openFile action=FishResWin.txt
+vector length=13 vertical=T \
+  names="r K1 K2 a       \ # growth rate, capacities, exchange rate
+         Fmin Fmax Fcy   \ # minimun F, maximum F, F cycle time
+         tmax tstp       \ # final time, time step
+         y1f y2f         \ # initial points (fractions of K)
+         atol rtol"      \ # ode solver tolerances
+  labels="'rate r' 'K1' 'K2' 'exch a' 'F min' 'F max' 'F cycle'  \
+          't max' 't step' 'init y1' 'init y2' 'abs tol' 'rel tol' "   \
+  values=" 0.2      3.0  1.0  1.0      0.2     0.9     10        \
+           80      0.2      0.8       0.6       1E-6   1E-4 "
+grid 3 1
+radio name=ptype text="Time Series" value="t" mode=character sticky=W padx=20
+radio name=ptype text="Pairs" value="p" mode=character sticky=W padx=20
+button text="Calculate and Plot" func=runModel padx=20

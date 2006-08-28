@@ -1,0 +1,199 @@
+This file provides a list and brief description of all functions
+that are defined by PBS Modelling. This list includes both exported
+function, which are doccumented in the appropriate Rd files which
+are made available through the internal R documentation system.
+
+The following functions and data are exported to users of PBS Modelling.
+
+
+CCA.qbr.hl              Sampled Counts of Quillback Rockfish (Sebastes
+                        maliger) (dataset)
+addArrows               Add Arrows to a Plot Using Relative (0:1)
+                        Coordinates
+addLabel                Add Label to a Plot Using Relative (0:1)
+                        Coordinates
+addLegend               Add Legend to a Plot Using Relative (0:1)
+                        Coordinates
+calcFib                 Several Methods to Calculate Fibonacci Numbers
+calcGM                  Calculate the Geometric Mean
+clearAll                Remove All R Objects
+clearWinVal             Remove All Widget Variables
+closeWin                Close GUI windows
+compareLists            Compares two non-recursive lists
+compileDescription      Converts and Saves a Window Description Into a
+                        List
+createVector            Create a GUI with a Vector Widget
+createWin               Create a GUI Window
+drawBars                Draw a Linear Barplot on the Current Plot
+expandGraph             Expand Plot Area by Adjusting Margins
+exportPBShistory        Export Saved History
+findPat                 Search a Vector With Multiple Patterns
+genMatrix               Generate Test Matrices for plotBubbles
+getWinVal               Retreive Widget Values
+importPBShistory        Import a history list from a file
+initPBShistory          Customized History Widget Functions
+openFile                Open Files With Associated Program
+pad0                    Pads Numbers with leading zeroes
+parseWinFile            Convert Window Description File into a List
+pause                   Pause
+pickCol                 Display Interactive Colour Selection Palette
+plotBubbles             Construct a Bubble Plot from a Matrix
+plotCsum                Plots Cumulative Frequency of Data
+promptOpenFile          Display Open File Dialog
+promptSaveFile          Display Save File Dialog
+readList                Read a List From a File
+resetGraph              Reset plot par Values
+runExamples             Display PBS Modelling Examples
+setWinVal               Update Widget Values
+show0                   Convert Numbers Into Text With Specified
+                        Decimal Places
+showArgs                Display Expected Widget Arguments
+testCol                 Display Colour Palette
+testLty                 Display Line Types
+testLwd                 Display Line Widths
+testPch                 Display Plotting Symbols
+testWidgets             Displays Sample GUIs and Source Code
+unpackList              Unpack List Elements Into Variables
+view                    Display First n Rows of an Object
+writeList               Write a List to a File
+
+
+The following is a list of all the underlying functions which are called as a 
+result of a user calling an exported function.
+
+.autoConvertMode
+  converts strings into numerical reposentation
+
+.buildgrid
+  used for building a grid with nested widgets as described by window 
+  description list
+
+.catError
+  used for displaying parsing errors (with line numbers..)
+
+.convertMatrixListToDataFrame
+  converts a "matrix list" into a dataframe - matrix list is a list of lists
+
+.convertMatrixListToMatrix
+  converts a "matrix list" into a real matrix
+
+.convertPararmStrToList
+  extracts arguments (seperated by space) from a single string into a list, 
+  preserving keys and values. whitespace in quotes is preserved
+
+.convertPararmStrToVector
+  extracts elements (seperated by space) into a vector, preserving spaces in 
+  quotes. Keys are not valid, and are intrupted as values
+
+.createTkFont
+  creates a TKFont variable based of a PBS styled font string
+
+.createWidget
+  looks for .createWidget.xxx where xxx is the widget type
+  Different types:
+  .createWidget.button .createWidget.check  .createWidget.data 
+  .createWidget.entry  .createWidget.grid   .createWidget.history 
+  .createWidget.label  .createWidget.matrix .createWidget.null 
+  .createWidget.radio  .createWidget.slide  .createWidget.slideplus 
+  .createWidget.text   .createWidget.vector
+
+.extractData
+  called by TK on button, bind, onchange,... events - which then calls a user 
+  function, once pbs.win is updated
+
+.extractFuns
+  Old function used for extracting user function names
+
+.extractVar
+  converts values from TK into R values (converts mode, merges multiple 
+  variables into vector, matrix, dataframe if named accordingly - foo[1], 
+  foo[1,2] or foo[1,2]d (d for data))
+
+.flipMatrix
+  flips around the data in a matrix to make it as if it was read byrow instead 
+  of bycol
+
+.getArguments
+  used for documenting widget arguments (ordering and default value)
+
+.getMatrixListSize
+  determines size of matrix needed for the matrixList
+
+.getParamFromStr
+  parses a string representing a widget into an equivalent list
+
+.getParamOrder
+  returns a list defining all widget arguments and default values
+
+.getPBS.win
+  returns an up-to-date PBS.win list
+
+.hash
+  generates a hash table that is passed by reference
+
+.inCollection
+  searches a vector - No longer in use - replaced by .isReallyNull
+
+.initPBSoptions
+  called by zzz.r - prepares the openFile config list.
+
+.isReallyNull
+  returns if a key really exists in a list
+
+.matrixHelp
+  stores elements of a matrix in a "matrix list" (which is dynamic)
+
+.parsegrid
+  grids in list representation have a data argument which is a list of lists of 
+  widget lists. First list represents each row, 2nd list represents each column, 
+  each element of the 2nd list is a widget. This function organizes widgets into 
+  this 2d list
+
+.parsemenu
+  used to setup menu lists - similar to parsegrid
+
+.PBSdimnameHelper
+  used to name matrix and dataframe objects (with given rowNames and colNames)
+
+.searchCollection
+  returns the position of a needle in a haystack (or if needle is a shortened 
+  (but still unique) needle)
+
+.setMatrixElement
+  used by .setMatrixElement to assign elements from "matrix list" to real matrix
+
+.setWinValHelper
+  used by setWinVal to set individual widgets
+
+.stopWidget
+  displays an error (similar to .catError) but stops and closes window (this is 
+  for run-time errors, rather than parse errors)
+
+.stripComments
+  removes any trailing comments (indicated by #) unless # is within a quoted 
+  string
+
+.stripSlashes
+  parses a string as if it was a quoted character string (returns a single 
+  string)
+
+.stripSlashesVec
+  parses a string as if it contains substrings (returns a vector of strings)
+
+.trimWhiteSpace
+  removes leading and trailing whitespace
+
+.validateWindowDescList
+  validates a desc list, and fills in any default values.
+
+.validateWindowDescWidgets
+  validates a single widget of the DescList
+
+.writeListOut
+  used by compileDescription - it should use dput instead
+
+.writeListOut.matrix
+  helper which should be replaced with dput
+
+.writeListOut.vec
+  helper which should be replaced with dput

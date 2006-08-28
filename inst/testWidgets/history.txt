@@ -1,0 +1,5 @@
+window title="Widget = history"
+entry name=junk1 value=2
+entry name=junk2 value=5
+entry name=junk3 value=15
+history padx=20 pady=5
