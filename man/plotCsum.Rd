@@ -1,9 +1,10 @@
 \name{plotCsum}
 \alias{plotCsum}
-\title{Plots Cumulative Frequency of Data}
+\title{Plot Cumulative Sum of Data}
 
 \description{
-  Plots cumulative frequency of data
+	Plot the cumulative frequency of a data vector or matrix, 
+	showing the median and mean of the distribution.
 }
 
 \usage{
@@ -12,12 +13,12 @@ ylab = "Cumulative Proportion", ...)
 }
 
 \arguments{
-  \item{x}{vector of values}
-  \item{add}{if TRUE, add cumulative frequency curve to current plot}
-  \item{ylim}{limits for y-axis}
-  \item{xlab}{label for x-axis}
-  \item{ylab}{label for y-axis}
-  \item{...}{additional arguments for plot.}
+	\item{x}{vector or matrix of numeric values.}
+	\item{add}{logical; if \code{TRUE}, add the cumulative frequency curve to a current plot.}
+	\item{ylim}{limits for the y-axis.}
+	\item{xlab}{label for the x-axis.}
+	\item{ylab}{label for the y-axis.}
+	\item{...}{additional arguments for the \code{plot} function.}
 }
 
 \examples{

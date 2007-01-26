@@ -1,23 +1,26 @@
 \name{runExamples}
 \alias{runExamples}
-\title{Display PBS Modelling Examples}
+\title{Run GUI Examples Included with PBS Modelling}
 
 \description{
-  Displays an interactive demo GUI to display PBS Modelling examples.
+	Display an interactive GUI to demonstrate PBS Modelling examples.
 
-  The example source files can be found in the PBSmodelling/examples directory
-  located in the R library.
+	The example source files can be found in the directory \code{PBSmodelling/examples}, 
+	located in R's directory \code{library}.
 }
 \usage{runExamples()}
 
 \details{
-  Some examples make use of external packages which must be installed in order to work correctly.
+	Some examples use external packages which must be installed to work correctly:
 
-  LinReg, MarkRec, and CCA Require the Brugs package.
+	\code{BRugs} - \code{LinReg}, \code{MarkRec}, and \code{CCA};
 
-  FishRes requires the odesolve package.
+	\code{odesolve} - \code{FishRes};
 
-  FishTows requires the PBSmapping package.
+	\code{PBSmapping} - \code{FishTows}.
 }
-
+\note{
+	The examples are copied from \code{PBSmodelling/examples} to R's current 
+	temporary working directory and run from there.
+}
 \keyword{utilities}

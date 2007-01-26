@@ -1,24 +1,36 @@
 \name{openFile}
 \alias{openFile}
-\title{Open Files With Associated Program}
+\title{Open a File with the Associated Program}
 
 \description{
-  openFile attempts to open a file, based off the command set in the \code{PBS.options\$openfile} list.
-  If \code{PBS.options\$openfile[[extension]]} is set openFile will replace all occurrences of \code{"\%f"} with
-  the absolute path of the filename, and then execute the command. Otherwise, if no command is set, 
-  \code{shell.exec()} will be used.
+	Open a file using the program associated with its extension defined by 
+	the Windows shell. Non-windows users, or users wishing to overide the 
+	default application, can specify a program association using \code{\link{setPBSext}}.
 }
 
 \usage{openFile(fname)}
 
+\note{
+	If a command is registered with \code{setPBSext}, then \code{openFile} 
+	will replace all occurrences of \code{"\%f"} with the absolute path of 
+	the filename, before executing the command.
+}
+
 \arguments{
-  \item{fname}{filename to be opened.}
+	\item{fname}{file name of file to open.}
+}
+
+\seealso{
+  \code{\link{getPBSext}}, \code{\link{setPBSext}},
+#ifdef windows
+  \code{\link{shell.exec}}
+#endif  
 }
 
 \examples{
 \dontrun{
-#setup firefox to open .html files
-PBS.options$openfile$html='"c:/Program Files/Mozilla Firefox/firefox.exe" \%f'
+# Set up firefox to open .html files
+setPBSext("html", '"c:/Program Files/Mozilla Firefox/firefox.exe" file://\%f')
 openFile("foo.html")
 }
 }

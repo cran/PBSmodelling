@@ -1,39 +1,42 @@
 \name{promptOpenFile}
 \alias{promptOpenFile}
-\title{Display Open File Dialog}
+\title{Display an "Open File" Dialogue}
 
 \description{
-  Displays the default open file prompt provided by the Operating System.
+	Display the default \bold{Open} prompt provided by the Operating System.
 }
 
 \usage{
-promptOpenFile(initialfile="", filetype=list(c("*", "All Files")), open=TRUE)
+promptOpenFile(initialfile="", filetype=list(c("*","All Files")), 
+               open=TRUE)
 }
 
 \arguments{
-  \item{initialfile}{file name of text file containing the list.}
-  \item{filetype}{a list of character vectors indicating what filetypes to look for. Each vector is of length one or two, and
-    specifies the file extension, or \code{"*"} (for all filetypes). The second element is an optional name for the file type describing
-    the file type.}
-  \item{open}{If True display Open file prompt, if False display Save File prompt.}
+	\item{initialfile}{file name of the text file containing the list.}
+	\item{filetype}{a list of character vectors indicating file types made available 
+		to users of the GUI. Each vector is of length one or two. The first element 
+		specifies either the file extension or \code{"*"} for all file types. The second 
+		element gives an optional descriptor name for the file type. The supplied 
+		\code{filetype} list appears as a set of choices in the pull-down box labelled 
+		\dQuote{Files of type:"}.}
+	\item{open}{logical; if \code{TRUE} display \bold{Open} prompt, 
+		if \code{FALSE} display \bold{Save As} prompt.}
 }
 
 \value{
-  The filename and path of file selected by user.
+	The file name and path of the file selected by the user.
 }
 
 \seealso{
-  \code{\link{promptSaveFile}}
+	\code{\link{promptSaveFile}}
 }
 
 \examples{
 \dontrun{
-
-#open a filename, and return it line by line in a vector
+# Open a filename, and return it line by line in a vector
 scan(promptOpenFile(),what=character(),sep="\n")
 
-
-#illustrates how to set filetype.
+# Illustrates how to set filetype.
 promptOpenFile("intial_file.txt", filetype=list(c(".txt", "text files"), 
                c(".r", "R files"), c("*", "All Files")))
 }

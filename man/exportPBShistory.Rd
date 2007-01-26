@@ -1,9 +1,9 @@
 \name{exportPBShistory}
 \alias{exportPBShistory}
-\title{Export Saved History}
+\title{Export a Saved History}
 
 \description{
-  Exports the current history List.
+  Export the current history list.
 }
 
 \usage{
@@ -11,16 +11,14 @@ exportPBShistory(hisname="", fname="")
 }
 
 \arguments{
-  \item{hisname}{Name of the history list to export. If it is set to \code{""}, the value from \code{PBS.win\$action[1]} will be used instead.}
-  \item{fname}{Where to save the history to. If it is set to \code{""}, a save file window will be displayed.}
+	\item{hisname}{name of the history list to export. If set to \code{""}, 
+		the value from \code{getWinAct()[1]} will be used instead.}
+	\item{fname}{file name where history will be saved. If it is set to \code{""}, 
+		a \bold{Save As} window will be displayed.}
 }
 
 \seealso{
-  \code{\link{importPBShistory}}
-  
-  \code{\link{initPBShistory}}
-  
-  \code{\link{promptSaveFile}}
+	\code{\link{importPBShistory}}, \code{\link{initPBShistory}}, \code{\link{promptSaveFile}}
 }
 
 \keyword{misc}

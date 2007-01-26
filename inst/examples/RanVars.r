@@ -93,7 +93,7 @@ panel.hist <- function(x, ...) {
    breaks <- h$breaks; nB <- length(breaks)
    y <- h$counts; y <- y/sum(y)
    par(usr = c(usr[1:2], 0, max(y)*1.5) )
-   rect(breaks[-nB], 0, breaks[-1], y, col="red", ...)
+   rect(breaks[-nB], 0, breaks[-1], y, col="red")
    box() }
 
 plPair <- function() {

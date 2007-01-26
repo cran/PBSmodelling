@@ -2,7 +2,7 @@ window title="Proportion Stimulator"
 
 grid 1 4 sticky=W
   label text=View: font=bold
-  button text=Data func=openFile action=RanPropDat.txt
+  button text=Docs func=openFile action=RanPropDoc.pdf
   button text="R Code" func=openFile action=RanProp.r
   button text=Window func=openFile action=RanPropWin.txt
 

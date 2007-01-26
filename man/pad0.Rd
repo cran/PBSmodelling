@@ -1,23 +1,28 @@
 \name{pad0}
 \alias{pad0}
-\title{Pads Numbers with leading zeroes}
+\title{Pad Numbers with Leading Zeroes}
 
 \description{
-  Takes numbers, converts them to integers then text, and pads them with leading zeroes. 
+	Convert numbers to integers then text, and pad them with leading zeroes.
 }
 
 \usage{
-pad0(x, n, f = 0) 
+pad0(x, n, f = 0)
 }
 
 \arguments{
-  \item{x}{Vector of numbers}
-  \item{n}{Length of padded integer}
-  \item{f}{Factor of 10 to expand x by}
+	\item{x}{vector of numbers}
+	\item{n}{number of text characters representing a padded integer}
+	\item{f}{factor of 10 transformation on x before padding}
 }
 
 \value{
-  A character vector representing x with leading zeros.
+	A character vector representing \code{x} with leading zeroes.
+}
+
+\examples{
+resetGraph(); x <- pad0(x=123,n=10,f=0:7);
+addLabel(.5,.5,paste(x,collapse="\n"),cex=1.5);
 }
 
 \keyword{print}

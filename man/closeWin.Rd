@@ -1,19 +1,21 @@
 \name{closeWin}
 \alias{closeWin}
-\title{Close GUI windows}
+\title{Close GUI Window(s)}
 
 \description{
-  The closeWin function closes (destroys) one or more windows made with createWin.
+	Close (destroy) one or more windows made with \code{createWin}.
 }
 
-\usage{closeWin(name=names(.PBS.tclHash))}
+\usage{closeWin(name)}
 
 \arguments{
-  \item{name}{a vector of window names to close, as defined in the window description file's WINDOW widget.}
+	\item{name}{a vector of window names that indicate which windows to close. These 
+		names appear in the Window Description File(s) on the line(s) defining WINDOW widgets.
+		If \code{name} is ommitted, all active windows will be closed.}
 }
 
 \seealso{
-  \code{\link{createWin}}
+	\code{\link{createWin}}
 }
 
 \keyword{utilities}

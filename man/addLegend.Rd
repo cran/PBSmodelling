@@ -1,9 +1,9 @@
 \name{addLegend}
 \alias{addLegend}
-\title{Add Legend to a Plot Using Relative (0:1) Coordinates}
+\title{Add a Legend to a Plot Using Relative (0:1) Coordinates}
 
 \description{
-  Places a legend in a plot using relative (0:1) coordinates.
+  Place a legend in a plot using relative (0:1) coordinates.
 }
 
 \usage{
@@ -11,15 +11,19 @@ addLegend(x, y, ...)
 }
 
 \arguments{
-  \item{x}{x-axis coordinate in the range (0,1); can step outside}
-  \item{y}{y-axis coordinate in the range (0,1); can step outside}
-  \item{...}{arguments used by legend, such as \dQuote{lines}, \dQuote{text}, or \dQuote{rectangle}}
+	\item{x}{ x-axis coordinate in the range (0:1); can step outside.}
+	\item{y}{ y-axis coordinate in the range (0:1); can step outside.}
+	\item{...}{ arguments used by the function \code{legend}, 
+		such as \code{lines}, \code{text}, or \code{rectangle}.}
 }
 
 \seealso{
-  \code{\link{addArrows}}
-  
-  \code{\link{addLabel}}
+  \code{\link{addArrows}}, \code{\link{addLabel}}
+}
+
+\examples{
+resetGraph(); n <- sample(1:length(colors()),15); clrs <- colors()[n]
+addLegend(.2,1,fill=clrs,leg=clrs,cex=1.5)
 }
 
 \keyword{iplot}

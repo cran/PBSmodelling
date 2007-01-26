@@ -1,10 +1,10 @@
 \name{calcGM}
 \alias{calcGM}
-\title{Calculate the Geometric Mean}
+\title{Calculate the Geometric Mean, Allowing for Zeroes}
 
 \description{
   Calculate the geometric mean of a numeric 
-  vector, possibly excluding zeros and/or adding an offset 
+  vector, possibly excluding zeroes and/or adding an offset 
   to compensate for zero values.
 }
 
@@ -13,7 +13,7 @@
 \arguments{
   \item{x}{vector of numbers}
   \item{offset}{value to add to all components, including zeroes}
-  \item{exzero}{if T, exclude zeroes (but still add the offset)}
+  \item{exzero}{if \code{TRUE}, exclude zeroes (but still add the offset)}
 }
 
 \value{geometric mean of the modified vector \code{x + offset}}

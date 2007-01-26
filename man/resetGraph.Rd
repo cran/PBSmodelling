@@ -1,15 +1,17 @@
 \name{resetGraph}
 \alias{resetGraph}
-\title{Reset plot par Values}
+\title{Reset par Values for a Plot}
 
 \description{
-  Reset the plot par() to default values to ensure the plot takes up the whole canvas.
+	Reset \code{par()} to default values to ensure that a new plot 
+	utilizes a full figure region. This function helps manage the device 
+	surface, especially after previous plotting has altered it.
 }
 
 \usage{resetGraph()}
 
 \seealso{
-  \code{\link{resetGraph}}
+	\code{\link{resetGraph}}
 }
 
 \keyword{device}

@@ -1,21 +1,28 @@
 \name{show0}
 \alias{show0}
-\title{Convert Numbers Into Text With Specified Decimal Places}
+\title{Convert Numbers into Text with Specified Decimal Places}
 
 \description{
-  Return character representation of number with specified decimal places.
+	Return a character representation of a number with added zeroes 
+	out to a specified number of decimal places.
 }
 
 \usage{
-show0(x, n, add2int = FALSE) 
+show0(x, n, add2int = FALSE)
 }
 
 \arguments{
-  \item{x}{Number as scalar or vector}
-  \item{n}{Number of decimal places to show, include zeroes}
-  \item{add2int}{If TRUE, add zeroes on the end of integers}
+	\item{x}{numeric data (scalar, vector, or matrix).}
+	\item{n}{number of decimal places to show, including zeroes.}
+	\item{add2int}{If \code{TRUE}, add zeroes on the end of integers.}
 }
-
+\value{
+	A scalar/vector of strings representing numbers. Useful for labelling purposes.
+}
+\note{
+	This function does not round or truncate numbers. It simply adds zeroes if 
+	\code{n} is greater than the available digits in the decimal part of a number.
+}
 \examples{
 frame()
 

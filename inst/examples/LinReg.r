@@ -30,7 +30,7 @@ plotLR <- function(addBRugs=F,...) {
    # ----------------------------------------------------------------
    getWinVal(scope="L")
    resetGraph(); par(ask=F);
-   addBRugs <- as.logical(PBS.win$actions[1])
+   addBRugs <- as.logical(getWinAct()[1])
 
    file <- get(dset)
    flds <- names(file); nfld <- ncol(file)
@@ -108,7 +108,7 @@ modCompile <- function() {
    modelCompile(nc);              # compile with nc chains
    modelGenInits();               # generate randoms inits
    samplesSet(c("a","b","sig")[pset]);  # parameters to monitor
-   setWinVal(list(clen=1000,cthin=1,ctot=0,s1=1,s2=1000,sthin=1))
+   setWinVal(list(clen=1000,cthin=1,ctot=0,s1=1,s2=1000,sthin=1,chn2=nc))
 }
 
 modUpdate <- function() {
@@ -117,7 +117,9 @@ modUpdate <- function() {
    # -------------------------------------------------------------
    getWinVal(scope="L");
    modelUpdate(clen,cthin);
-   LRhist <<- as.data.frame( samplesHistory("*",beg=0,plot=F) );
+   LRhist <- as.data.frame( samplesHistory("*",beg=0,plot=F) );
+   if (nc==1) names(LRhist) <- paste(names(LRhist),1,sep=".");
+   LRhist <<- LRhist;
    ctot <- dim(LRhist)[1];    # total length so far
    setWinVal(list(ctot=ctot,s1=ctot-clen+1,s2=ctot)); par(ask=F);
 }
@@ -132,7 +134,7 @@ panel.hist <- function(x, ...) {
    breaks <- h$breaks; nB <- length(breaks)
    y <- h$counts; y <- y/sum(y)
    par(usr = c(usr[1:2], 0, max(y)*1.5) )
-   rect(breaks[-nB], 0, breaks[-1], y, col="salmon", ...)
+   rect(breaks[-nB], 0, breaks[-1], y, col="salmon")
    box()
 }
 
@@ -161,7 +163,7 @@ modPairs <- function() {
       pars <- rep(c(asim,bsim,ssim),each=nc)
       file <- rbind(file,pars)
    }
-   nams <- names(file); dot <- regexpr("\\.",nams); 
+   nams <- names(file); dot <- regexpr("\\.",nams);
    z <- is.element(substring(nams,dot+1),chn1:chn2)
    file <- file[,z]
    par(ask=F);
@@ -209,7 +211,7 @@ modFreq <- function() {
    file <- LRsub
 
    iclr <- c("aquamarine","gold","plum")
-   par(mfrow=c(nP,1),mai=c(.25,0.6,.05,.05),omi=c(0,0,0,0))
+   par(mfrow=c(nP,1),mai=c(.25,0.6,.05,.05),omi=c(0,0,0,0),ask=F)
 
    for (i in Pfld) {
       ii   <- match(i,c("a","b","sig"))

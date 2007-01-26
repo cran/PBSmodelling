@@ -1,26 +1,26 @@
 \name{pickCol}
 \alias{pickCol}
-\title{Display Interactive Colour Selection Palette}
+\title{Pick a Colour From a Palette and get the Hexadecimal Code}
 
 \description{
-  Display an interactive colour chooser. If returnValue is true, then the
-  equivalent hex colour value is returned, otherwise if returnValue is faluse, 
-  an intermediate GUI is used to display the hex value and no value is returned to R.
+	Display an interactive colour palette from which the user can choose a colour. 
 }
 
 \usage{pickCol(returnValue=TRUE)}
 
 \arguments{
-  \item{returnValue}{If true only display the colour chooser and return the hex value.
-    Otherwise use an intermediate GUI to display the hex value}
+	\item{returnValue}{If \code{TRUE}, display the full colour palette, choose a colour, 
+		and return the hex value to the R session. If \code{FALSE}, use an intermediate 
+		GUI to interact with the palette and display the hex value of the chosen colour.}
 }
 
-\value{
-  A hexidecimal colour value.
-}
+\value{ A hexidecimal colour value. }
 
-\seealso{
-  \code{\link{testCol}}
-}
+\seealso{ \code{\link{testCol}} }
 
+\examples{
+\dontrun{
+junk<-pickCol(); resetGraph(); addLabel(.5,.5,junk,cex=4,col=junk);
+}
+}
 \keyword{color}

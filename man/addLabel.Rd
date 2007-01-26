@@ -1,9 +1,9 @@
 \name{addLabel}
 \alias{addLabel}
-\title{Add Label to a Plot Using Relative (0:1) Coordinates}
+\title{Add a Label to a Plot Using Relative (0:1) Coordinates}
 
 \description{
-  Places a label in a plot using relative (0:1) coordinates
+	Place a label in a plot using relative (0:1) coordinates
 }
 
 \usage{
@@ -11,16 +11,14 @@ addLabel(x, y, txt, ...)
 }
 
 \arguments{
-  \item{x}{x-axis coordinate in the range (0,1); can step outside}
-  \item{y}{y-axis coordinate in the range (0,1); can step outside}
-  \item{txt}{desired label at (x,y)}
-  \item{...}{additional arguments passed to text function}
+  \item{x}{ x-axis coordinate in the range (0:1); can step outside.}
+  \item{y}{ y-axis coordinate in the range (0:1); can step outside.}
+  \item{txt}{ desired label at (\code{x,y}).}
+  \item{...}{additional arguments passed to the function \code{text}.}
 }
 
 \seealso{
-  \code{\link{addArrows}}
-  
-  \code{\link{addLegend}}
+  \code{\link{addArrows}}, \code{\link{addLegend}}
 }
 
 \examples{

@@ -6,15 +6,16 @@
 \alias{backPBShistory}
 \alias{jumpPBShistory}
 \alias{clearPBShistory}
-\title{Customized History Widget Functions}
+\title{Create Structures of a New History Widget}
 
 \description{
-  The functions: initPBShistory, rmPBShistory, addPBShistory, forwPBShistory, backPBShistory, jumpPBShistory are made available to
-  those who would like to use history, without using the history widget. In other words, these functions allow users to create a custom history widget.
+	PBS history functions (below) are available to those who would like to 
+	use the package's history functionality, without using the pre-defined history widget. 
+	These functions allow users to create customized history widgets.
 }
 
 \usage{
-initPBShistory(hisname, indexname=NULL, sizename=NULL, overwrite=TRUE)
+initPBShistory(hisname,indexname=NULL,sizename=NULL,overwrite=TRUE)
 rmPBShistory(hisname="", index="")
 addPBShistory(hisname="")
 forwPBShistory(hisname="")
@@ -24,94 +25,97 @@ clearPBShistory(hisname="")
 }
 
 \arguments{
-  \item{hisname}{The name of the history "list" to manipulate. If it is omitted, the function
-    will use the value of \code{PBS.win\$actions[1]} as the history name.
-    This allows functions to be called directly from the window description file. With the exception of \code{initPBShistory}
-    which must be called before \code{createWin()}.}
-  \item{indexname}{The name of the index entry widget in the window description file. If it is \code{NULL}, then the current index feature will be disabled.}
-  \item{sizename}{The name of the current size entry widget. If it is \code{NULL}, then the current size feature will be disabled.}
-  \item{index}{Index to the history item. if it is left as \code{""}, then value will be extracted from the widget identified by \code{indexname}}
-  \item{overwrite}{If set to true, history (matching \code{hisname}) will be cleared. Otherwise, the two will be merged.}
+	\item{hisname}{name of the history "list" to manipulate. If it is omitted, 
+		the function uses the value of \code{getWinAct()[1]} as the history name. 
+		This allows the calling of functions directly from the Window Description File 
+		(except \code{initPBShistory}, which must be called before \code{createWin()}).}
+	\item{indexname}{name of the index entry widget in the Window Description File. 
+		If \code{NULL}, then the current index feature will be disabled.}
+	\item{sizename}{name of the current size entry widget. If \code{NULL}, then the 
+		current size feature will be disabled.}
+	\item{index}{index to the history item. The default (\code{""}) causes the value to be 
+		extracted from the widget identified by \code{indexname}.}
+	\item{overwrite}{if \code{TRUE}, history (matching \code{hisname}) will be cleared. 
+		Otherwise, the imported history will be merged with the current one.}
 }
 
 \details{
-  PBS Modelling includes a pre-built history widget designed to collect interesting choices of
-  GUI variables so that they can be redisplayed later, rather like a slide show. 
+	PBS Modelling includes a pre-built history widget designed to collect interesting choices of
+	GUI variables so that they can be redisplayed later, rather like a slide show. 
 
-  Normally, a user would invoke a history widget simply by including a reference to it
-  in the description file. However, PBS Modelling includes some support functions for customized
-  applications.
+	Normally, a user would invoke a history widget simply by including a reference to it 
+	in the Window Description File. However, PBS Modelling includes support functions (above) 
+	for customized applications.
 
-  To create a customized history, each button must be described separately in the window description file rather
-  than making reference to the history widget.
+	To create a customized history, each button must be described separately in the 
+	Window Description File rather than making reference to the history widget.
 
-  The history "List" must be initialized before any other functions may be called.
-  The use of a unique history name (\code{hisname}) is used to associate a unique history session with the supporting functions.
+	The history "List" must be initialized before any other functions may be called. 
+	The use of a unique history name (\code{hisname}) is used to associate a unique 
+	history session with the supporting functions.
 	
-  The \code{indexname} and \code{sizename} arguments correspond to the given names of entry widgets in the 
-  window description file which will be used to display the current index, and total size of the list. 
-  the \code{indexname} entry widget can also be used by \code{jumpPBShistory} to retrieve an index to jump to.
+	The \code{indexname} and \code{sizename} arguments correspond to the given names 
+	of entry widgets in the Window Description File, which will be used to display the 
+	current index and total size of the list. The \code{indexname} entry widget can also 
+	be used by \code{jumpPBShistory} to retrieve a target index.
 }
 
 \seealso{
-  \code{\link{importPBShistory}}
-
-  \code{\link{exportPBShistory}}
+	\code{\link{importPBShistory}}, \code{\link{exportPBShistory}}
 }
 
 \examples{
-#Example of creating a custom history widget that saves values
-#whenever the "plot" button is pressed, and updates the plot when
-#back or next is pushed. A custom history is needed to achieve this 
-#functionality since the normal history widget does not update plots
-require(PBSmodelling)
+\dontrun{
+# Example of creating a custom history widget that saves values 
+# whenever the "Plot" button is pressed. The user can tweak the 
+# inputs "a", "b", and "points" before each "Plot" and see the 
+# "Index" increase. After sufficient archiving, the user can review 
+# scenarios using the "Back" and "Next" buttons. 
+# A custom history is needed to achieve this functionality since 
+# the packages pre-defined history widget does not update plots.
 
-#create a window Description to be used with createWin using astext=TRUE
-#PS: watch out for escaping special characters which 
-#    must be done twice (first for R, then PBSmodelling)
+# To start, create a Window Description to be used with createWin 
+# using astext=TRUE. P.S. Watch out for special characters which 
+# must be "escaped" twice (first for R, then PBSmodelling).
 
 winDesc <- '
-window title="Custom History"
-vector names="a b k" labels="a b points" font="bold" values="1 1 1000" function=myPlot
-grid 1 3
-  button function=myHistoryBack text="<- Back"
-  button function=myPlot text="Plot"
-  button function=myHistoryForw text="Next ->"
-
-grid 2 2
-  label "Index"
-  entry name="myHistoryIndex" width=5
-  label "Size"
-  entry name="myHistorySize" width=5
+	window title="Custom History"
+	vector names="a b k" labels="a b points" font="bold" \\\
+	values="1 1 1000" function=myPlot
+	grid 1 3
+		button function=myHistoryBack text="<- Back"
+		button function=myPlot text="Plot"
+		button function=myHistoryForw text="Next ->"
+	grid 2 2
+		label "Index"
+		entry name="myHistoryIndex" width=5
+		label "Size"
+		entry name="myHistorySize" width=5
 '
-#convert text into vector with each line represented as a new element
+# Convert text to vector with each line represented as a new element
 winDesc <- strsplit(winDesc, "\n")[[1]]
 
-#custome functions required to update plots after restoring history values
+# Custom functions to update plots after restoring history values
 myHistoryBack <- function() {
-  backPBShistory("myHistory")
-  myPlot(saveVal=FALSE) #show the plot with saved values
+	backPBShistory("myHistory");
+	myPlot(saveVal=FALSE); # show the plot with saved values
 }
 myHistoryForw <- function() {
-  forwPBShistory("myHistory")
-  myPlot(saveVal=FALSE) #show the plot with saved values
+	forwPBShistory("myHistory");
+	myPlot(saveVal=FALSE); # show the plot with saved values 
 }
-
 myPlot <- function(saveVal=TRUE) {
-	
-  #save all data whenever plot is called (directly)
-  if (saveVal)
-    addPBShistory("myHistory")
-	
-  getWinVal(scope="L")
-  tt <- 2*pi*(0:k)/k;
-  x <- (1+sin(a*tt));  y <- cos(tt)*(1+sin(b*tt));
-  plot(x, y)
+	# save all data whenever plot is called (directly)
+	if (saveVal) addPBShistory("myHistory");
+	getWinVal(scope="L");
+	tt <- 2*pi*(0:k)/k;
+	x <- (1+sin(a*tt));  y <- cos(tt)*(1+sin(b*tt));
+	plot(x, y);
 }
-
 
 initPBShistory("myHistory", "myHistoryIndex", "myHistorySize")
 createWin(winDesc, astext=TRUE)
+}
 }
 
 \keyword{utilities}

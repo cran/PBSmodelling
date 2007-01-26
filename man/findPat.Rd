@@ -1,23 +1,23 @@
 \name{findPat}
 \alias{findPat}
-\title{Search a Vector With Multiple Patterns}
+\title{Search a Character Vector to Find Multiple Patterns}
 
 \description{
-  Searches all patterns in pat from vec, and returns the
-  matched elements in vec.
+	Use all available patterns in \code{pat} to search in \code{vec}, 
+	and return the matched elements in \code{vec}.
 }
 
 \usage{
-findPat(pat, vec) 
+findPat(pat, vec)
 }
 
 \arguments{
-  \item{pat}{character vector of patterns to match in vec}
-  \item{vec}{character vector where matches are sought}
+	\item{pat}{character vector of patterns to match in \code{vec}}
+	\item{vec}{character vector where matches are sought}
 }
 
 \value{
-  A character vector of all matched strings.
+	A character vector of all matched strings.
 }
 
 \examples{

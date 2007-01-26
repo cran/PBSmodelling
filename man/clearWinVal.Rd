@@ -1,16 +1,16 @@
 \name{clearWinVal}
 \alias{clearWinVal}
-\title{Remove All Widget Variables}
+\title{Remove all Current Widget Variables}
 
 \description{
-  Removes all global variables that share a name in common with any widget variable name as defined in 
-  PBS.win\$vars. Use this with caution.
+	Remove all global variables that share a name in common with any widget variable name 
+	defined in \code{names(getWinVal())}. Use this function with caution.
 }
 
 \usage{clearWinVal()}
 
 \seealso{
-  \code{\link{getWinVal}}
+	\code{\link{getWinVal}}
 }
 
 \keyword{methods}

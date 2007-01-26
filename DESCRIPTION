@@ -1,12 +1,12 @@
 Package: PBSmodelling
-Version: 0.60
-Date: 2006-08-28
+Version: 1.07
+Date: 2007-01-26
 Title: PBS Modelling
 Author: Jon T. Schnute <SchnuteJ@pac.dfo-mpo.gc.ca>,
   Alex Couture-Beil <alex@mofo.ca>, and
   Rowan Haigh <HaighR@pac.dfo-mpo.gc.ca>
 Maintainer: Jon Schnute <SchnuteJ@pac.dfo-mpo.gc.ca>
-Depends: R (>= 2.2.0)
+Depends: R (>= 2.3.0)
 Suggests: PBSmapping, odesolve, BRugs
 Description: PBS Modelling provides software to facilitate the design,
   testing, and operation of computer models. It focuses particularly on
@@ -21,4 +21,4 @@ Description: PBS Modelling provides software to facilitate the design,
   PBSmodelling-UG.pdf. To use this package effectively, please consult
   the guide.
 License: GPL version 2 or newer
-Packaged: Tue Aug 29 13:07:29 2006; schnutej
+Packaged: Thu Feb  1 09:39:50 2007; hornik

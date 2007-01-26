@@ -3,7 +3,7 @@
 \title{Draw a Linear Barplot on the Current Plot}
 
 \description{
-  Draws a linear barplot on the current graph.
+	Draw a linear barplot on the current plot.
 }
 \usage{drawBars(x, y, width, base = 0, ...)}
 
@@ -12,7 +12,7 @@
   \item{y}{y-coordinates}
   \item{width}{bar width, computed if missing}
   \item{base}{y-value of the base of each bar}
-  \item{...}{further graphical parameters (see 'par') may also be supplied as arguments}
+  \item{...}{further graphical parameters (see \code{par}) may also be supplied as arguments}
 }
 \examples{
 plot(0:10,0:10,type="n")

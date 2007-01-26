@@ -1,7 +1,15 @@
-These batch files are designed to facilitate R package development 
-under Windows. For more information on building packages, see 
-apendix A of the User Guide (PBSmodelling-UG.pdf).
+The batch files in this directory can facilitate R package development 
+under Windows. For more information on building packages, see apendix B 
+of the User Guide*.
 
-The small package saved in PBStry_x.xx.tar.gz provides a convenient
-prototype for starting a new package. It includes functions that use
-C code called by the R function .C().
+You can use the small package archived in PBStry_x.xx.tar.gz as a 
+convenient prototype for starting your own new package. It includes 
+functions with C code called by the R function .C().
+
+-------------------------------------------------------------------------
+
+*Note: Please remember to consult the User's Guide contained in the file
+
+  ...\library\PBSmodelling\PBSmodelling-UG.pdf,
+
+where "..." denotes the path to your R installation.

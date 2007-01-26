@@ -1,5 +1,5 @@
 # For a list of all functions, exported and hidden, see the files 
-# PBSMfunctions.txt and INDEX in the R libary directory for 
+# PBSMobjects.txt and INDEX in the R libary directory for 
 # PBSmodelling
 
 # Export all functions that do NOT begin with a dot (period)

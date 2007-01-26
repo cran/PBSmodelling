@@ -1,9 +1,10 @@
 \name{importPBShistory}
 \alias{importPBShistory}
-\title{Import a history list from a file}
+\title{Import a History List from a File}
 
 \description{
-  Imports a history list from a file, and places it as the history list identified by hisname.
+	Import a history list from file \code{fname}, and place it 
+	into the history list \code{hisname}.
 }
 
 \usage{
@@ -11,16 +12,14 @@ importPBShistory(hisname="", fname="")
 }
 
 \arguments{
-  \item{hisname}{The imported list is placed into the history list identified by hisname. If it is set to \code{""}, the value from \code{PBS.win\$action[1]} will be used instead.}
-  \item{fname}{Which file to import. If it is set to \code{""}, an open file window will be displayed.}
+	\item{hisname}{name of the history list to be populated. 
+		The default (\code{""}) uses the value from \code{getWinAct()[1]}.}
+	\item{fname}{file name of history file to import. 
+		The default (\code{""}) causes an open-file window to be displayed.}
 }
 
 \seealso{
-  \code{\link{exportPBShistory}}
-
-  \code{\link{initPBShistory}}
-
-  \code{\link{promptOpenFile}}
+\code{\link{exportPBShistory}}, \code{\link{initPBShistory}}, \code{\link{promptOpenFile}}
 }
 
 \keyword{misc}

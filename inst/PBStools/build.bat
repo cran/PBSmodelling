@@ -13,6 +13,6 @@ SET PBS_NO_PAUSE=1
 call checkPaths.bat
 
 if not defined PBSERROR (
-  Rcmd BUILD --binary %1 )
+  Rcmd build --binary %1 )
 
 :end

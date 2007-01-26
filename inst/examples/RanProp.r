@@ -15,7 +15,7 @@ panel.hist <- function(x, ...) {
    breaks <- h$breaks; nB <- length(breaks)
    y <- h$counts; y <- y/sum(y)
    par(usr = c(usr[1:2], 0, max(y)*1.5) )
-   rect(breaks[-nB], 0, breaks[-1], y, col=switch(getWinVal()$MDL,"lightblue1","mistyrose","darkseagreen1"), ...)
+   rect(breaks[-nB], 0, breaks[-1], y, col=switch(getWinVal()$MDL,"lightblue1","mistyrose","darkseagreen1"))
    box() }
 
 # ************************** Multinomial *****************************
@@ -31,10 +31,8 @@ panel.hist <- function(x, ...) {
 
 rmul <- function(ns,N,pvec,prop=T) {
   pvec <- abs(pvec)/sum(abs(pvec)); # forces sum to 1
-  np <- length(pvec);
-  qvec <- cumsum(c(0,pvec));
-  xmat <- matrix(runif(ns*N),ns,N);
-  ymat <- apply( xmat, 1, function(x){hist(x,plot=F,breaks=qvec)$counts} )
+  np   <- length(pvec);
+  ymat <- rmultinom(ns,N,pvec);
   yout <- t(ymat);
   if(prop) yout <- sweep( yout, 1, N, "/");
   yout; };
@@ -44,14 +42,14 @@ rmul <- function(ns,N,pvec,prop=T) {
 testrmul <- function(prop=T,ndec=4) {
   getWinVal(scope="L");
   pvec <- comp(pvec); np <- length(pvec);
-  y <- rmul(ns,N,pvec,prop); 
+  y <- rmul(ns,N,pvec,prop);
   dimnames(y)[[2]] <- paste("p",1:np,sep="");
   ym <- apply(y,2,mean);
   yv <- apply(y,2,var);
   yvv <- pvec*(1-pvec)/N;
   ys <- apply(y,2,sd);
   PVEC <- show0(round(c(pvec,rep(0,6-np)),ndec),ndec);
-  YM   <- show0(round(c(ym,rep(0,6-np)),ndec),ndec); 
+  YM   <- show0(round(c(ym,rep(0,6-np)),ndec),ndec);
   YS <- show0(round(c(ys,rep(0,6-np)),ndec),ndec);
   setWinVal(list(pvec=PVEC,ym=YM,ys=YS));
   pairs(y,pch=16,cex=0.5,col="blue",gap=0,diag.panel=panel.hist);

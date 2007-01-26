@@ -21,3 +21,9 @@ button text="Plot Lines" func=plotTow font=bold action="L"
 button text="Plot Tows" func=plotTow font=bold action="T"
 button text="Plot Union" func=plotTow font=bold action="U"
 button text="Compare" func=plotTow font=bold action="C"
+grid 1 4
+   label text="Compare\nMode" font="bold 10"
+   radio name=cmode value="P" mode=character text=Portrait
+   radio name=cmode value="L" mode=character text=Landscape
+   #label text="WMF" font="bold 10"
+   check name=wmf checked=F text="wmf"
