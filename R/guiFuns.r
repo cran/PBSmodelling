@@ -664,6 +664,14 @@ createWin <- function(fname, astext=FALSE)
 		#set window title
 		tkwm.title(tt,guiDesc[[i]]$title)
 
+		#remove any old history data
+		if (exists("PBS.history")) {
+			j<-grep(paste("^", winName, "\\.", sep=""), names(PBS.history))
+			for(n in names(PBS.history)[j]) {
+				PBS.history[[n]] <<- NULL
+			}
+		}
+
 		#create menus
 		if (length(guiDesc[[i]]$.menus) > 0) {
 			#create the top space where drop down menus are attached
@@ -749,6 +757,15 @@ createWin <- function(fname, astext=FALSE)
 			#calls to .createWidget which will create all the children of the grid
 			wid <- .createWidget(tt, gridWidget, guiDesc[[i]]$windowname)
 			tkgrid(wid)
+			
+			#finish setup to any history widgets which have default imports
+			if (exists("PBS.history")) {
+				j<-grep(paste("^", winName, "\\.", sep=""), names(PBS.history))
+				for(n in names(PBS.history)[j]) {
+					if (length(PBS.history[[n]]) > 1)
+						jumpHistory(n, 1)
+				}
+			}
 		}
 	}
 	return(invisible(NULL))
@@ -837,7 +854,13 @@ closeWin <- function(name)
 		type <- x[[i]]$type
 		if (is.null(paramOrder[[type]]))
 			stop(paste("unknown widget type found:", type))
-
+		#check children widgets of grid
+		if (type=="grid") {
+			if (!is.list(x[[i]]$.widgets))
+				stop("grid needs a .widgets list")
+			for(j in 1:length(x[[i]]$.widgets))
+				x[[i]]$.widgets[[j]] <- .validateWindowDescWidgets(x[[i]]$.widgets[[j]])
+		}
 		#look for all options, if any are missing assign the default value
 		#unless they are absolutely required
 		args <- paramOrder[[type]]
@@ -1860,6 +1883,11 @@ parseWinFile <- function(fname, astext=FALSE)
 		argList$background=widget$bg
 	if (!is.null(widget$font) && widget$font!="")
 		argList$font <- .createTkFont(widget$font)
+	if (!is.null(widget$justify) && widget$justify!="")
+		argList$justify <- widget$justify
+	if (!is.null(widget$wraplength) && widget$wraplength > 0)
+		argList$wraplength <- widget$wraplength 
+
 	tkWidget<-do.call("tklabel", argList)
 	return(tkWidget)
 }
@@ -2601,6 +2629,8 @@ parseWinFile <- function(fname, astext=FALSE)
 	if (!is.null(widget$font) && widget$font!="")
 		argList$font <- .createTkFont(widget$font)
 	argList$variable<-.map.add(winName, widget$name, tclvar=tclVar(widget$value))$tclvar
+	if (!is.null(widget$selected) && widget$selected==TRUE)
+		tclvalue(argList$variable) <- widget$value
 	argList$command=function(...) { .extractData(widget[["function"]], widget$action, winName)}
 
 	tkWidget<-do.call("tkradiobutton", argList)
@@ -2818,118 +2848,176 @@ parseWinFile <- function(fname, astext=FALSE)
 {
 	indexname=paste("PBS.history.", widget$name, ".index", sep="") #widget name that stores/displays the index number
 	sizename=paste("PBS.history.", widget$name, ".size", sep="") #widget name that displays the size of history
+	modename=paste("PBS.history.", widget$name, ".mode", sep="") #widget name that displays the size of history
 
-	initPBShistory(widget$name, indexname=indexname, sizename=sizename) #initialize a list to be used once the window is created
+	widget$name <- paste(winName, widget$name, sep=".")
 
-	historyGrid <- list(
-	type="grid", nrow=6, ncol=2, font="", byrow=TRUE, borderwidth=1, relief="sunken", padx=widget$padx, pady=widget$pady, .widgets=
-    	list(
+	#initialize a list to be used once the window is created
+	initHistory(widget$name, indexname=indexname, sizename=sizename, modename=modename, func=widget[["function"]])
+
+	historyGrid <- 
+	list(type="grid", nrow=2, ncol=1, font="", byrow=TRUE, borderwidth=1, relief="sunken", padx=widget$padx, pady=widget$pady, .widgets=
+		list(
 			list(
-				list(type="button", text="<- Back", font="", width=9, "function"="backPBShistory", action=widget$name, sticky="", padx=0, pady=0),
-				list(type="button", text="Forward ->", font="", width=9, "function"="forwPBShistory", action=widget$name, sticky="", padx=0, pady=0)
+				list(type="grid", nrow=3, ncol=4, font="", byrow=TRUE, borderwidth=1, relief="flat", padx=0, pady=0, sticky="we", .widgets=
+			    	list(
+						list(
+							list(type="button", text="<<", font="", width=5, "function"="firstHistory", action=widget$name, sticky="", padx=0, pady=0),
+							list(type="button", text="<", font="", width=5, "function"="backHistory", action=widget$name, sticky="", padx=0, pady=0),
+							list(type="button", text=">", font="", width=5, "function"="forwHistory", action=widget$name, sticky="", padx=0, pady=0),
+							list(type="button", text=">>", font="", width=5, "function"="lastHistory", action=widget$name, sticky="", padx=0, pady=0)
+						),
+						list(
+							#list(type="label", text="Index", font="", sticky="", padx=0, pady=0),
+							list(type="button", text="Sort", font="", width=5, "function"=".sortActHistory", action=widget$name, sticky="", padx=0, pady=0),
+							list(type="entry", name=indexname, value="0", width=5, label="", font="", "function"="jumpHistory", action=widget$name, enter=TRUE, mode="numeric", padx=0, pady=0, entrybg="white"),
+							list(type="entry", name=sizename, value="0", width=5, label="", font="", action="", enter=TRUE, mode="numeric", padx=0, pady=0),
+							list(type="button", text="Empty", font="", width=5, "function"="clearHistory", action=widget$name, sticky="", padx=0, pady=0)
+						),
+						list(
+							list(type="button", text="Insert", font="", width=5, "function"="addHistory", action=widget$name, sticky="", padx=0, pady=0),
+							list(type="button", text="Delete", font="", width=5, "function"="rmHistory", action=widget$name, sticky="", padx=0, pady=0),
+							list(type="button", text="Import", font="", width=5, "function"="importHistory", action=widget$name, sticky="", padx=0, pady=0),
+							list(type="button", text="Export", font="", width=5, "function"="exportHistory", action=widget$name, sticky="", padx=0, pady=0)
+						)
+					)
+				)
 			),
 			list(
-				list(type="label", text="Index", font="", sticky="", padx=0, pady=0),
-				list(type="label", text="Size", font="", sticky="", padx=0, pady=0)
-			),
-			list(
-				list(type="entry", name=indexname, value="0", width=9, label="", font="", "function"="jumpPBShistory", action=widget$name, enter=TRUE, mode="numeric", padx=0, pady=0),
-				list(type="entry", name=sizename, value="0", width=9, label="", font="", action="", enter=TRUE, mode="numeric", padx=0, pady=0)
-			),
-			list(
-				list(type="button", text="Save", font="", width=9, "function"="addPBShistory", action=widget$name, sticky="", padx=0, pady=0),
-				list(type="button", text="Remove", font="", width=9, "function"="rmPBShistory", action=widget$name, sticky="", padx=0, pady=0)
-			),
-			list(
-				list(type="button", text="Import", font="", width=9, "function"="importPBShistory", action=widget$name, sticky="", padx=0, pady=0),
-				list(type="button", text="Export", font="", width=9, "function"="exportPBShistory", action=widget$name, sticky="", padx=0, pady=0)
-			),
-			list(
-				list(type="button", text="Clear All", font="", width=9, "function"="clearPBShistory", action=widget$name, sticky="", padx=0, pady=0),
-				list(type="label", text="", sticky="", padx=0, pady=0)
+				#list(type="grid", nrow=2, ncol=2, font="", byrow=TRUE, borderwidth=1, relief="raised", padx=0, pady=0, sticky="we", .widgets=
+				#	list(
+				#		list(
+				#			list(type="radio", name=modename, value="b", text="Insert Before", font="7", "function"="", action=widget$name, mode="character", sticky="w", padx=0, pady=0),
+				#			list(type="radio", name=modename, value="o", text="Overwrite", font="7", "function"="", action=widget$name, mode="character", sticky="w", padx=0, pady=0)
+				#		),
+				#		list(
+				#			list(type="radio", name=modename, value="a", selected=TRUE, text="Insert After", font="7", "function"="", action=widget$name, mode="character", sticky="w", padx=0, pady=0),
+				#			list(type="null", sticky="", padx=0, pady=0)
+				#		)
+				#	)
+				#)
+				list(type="grid", nrow=2, ncol=2, font="", byrow=TRUE, borderwidth=1, relief="raised", padx=0, pady=0, sticky="we", .widgets=
+					list(
+						list(
+							list(type="radio", name=modename, value="b", text="before", font="7", "function"="", action=widget$name, mode="character", sticky="w", padx=0, pady=0),
+							list(type="radio", name=modename, value="a", selected=TRUE, text="after", font="7", "function"="", action=widget$name, mode="character", sticky="w", padx=0, pady=0),
+							list(type="radio", name=modename, value="o", text="ovr", font="7", "function"="", action=widget$name, mode="character", sticky="w", padx=0, pady=0)
+						)
+					)
+				)
 			)
 		)
 	)
-
-	if (!widget$archive) {
-		historyGrid$nrow=5
-		historyGrid$.widgets[[5]] <- historyGrid$.widgets[[6]]
-		historyGrid$.widgets[[6]] <- NULL
-	}
-
-	return(.createWidget.grid(tk, historyGrid, winName))
+		
+		
+	tmp <- .createWidget.grid(tk, historyGrid, winName)
+	if (widget$import!="")
+		importHistory(widget$name, widget$import, FALSE)
+	return(tmp)
 }
 
 
 # ***********************************************************
-# backPBShistory:
+# backHistory:
 #   move back in history
 # Arguments:
 #   hisname   - history instance name if multiple are active
 # -----------------------------------------------------------
-backPBShistory <- function(hisname="")
+backHistory <- function(hisname="")
 {
-	if (hisname=="") hisname <- getWinAct()[1]
+	if (hisname=="") 
+		hisname <- getWinAct()[1]
+	win <- strsplit(hisname, "\\.")[[1]][1]
 
 	if (!is.list(PBS.history)) 
-		stop("History not intialized - see initPBShistory function help")
+		stop("History not intialized - see initHistory function help")
 	if (!is.list(PBS.history[[hisname]])) 
-		stop(paste("History \"", hisname,"\" not intialized - see initPBShistory", sep=""))
+		stop(paste("History \"", hisname,"\" not intialized - see initHistory", sep=""))
 
 	i <- PBS.history[[hisname]][[1]]$index
 	if (i < 2) {
-		cat("history widget: warning, current position is already at front of history list.\n")
+		#cat("history widget: warning, current position is already at front of history list.\n")
 		return()
 	}
 	PBS.history[[hisname]][[1]]$index <<- i <- i-1
-	setWinVal(PBS.history[[hisname]][[i+1]]) #i is always one lower
-	.updatePBShistory(hisname)
+	setWinVal(PBS.history[[hisname]][[i+1]], winName=win) #i is always one lower
+	.updateHistory(hisname)
+	if (!is.null(PBS.history[[hisname]][[1]]$func))
+		do.call(PBS.history[[hisname]][[1]]$func, list())
 }
 
 
 # ***********************************************************
-# forwPBShistory:
+# forwHistory:
 #   move forward in history
 # Arguments:
 #   hisname   - history instance name if multiple are active
 # -----------------------------------------------------------
-forwPBShistory <- function(hisname="")
+forwHistory <- function(hisname="")
 {
 	if (hisname=="") 
 		hisname <- getWinAct()[1]
-
+	win <- strsplit(hisname, "\\.")[[1]][1]
+	
 	if (!is.list(PBS.history)) 
-		stop("History not intialized - see initPBShistory")
+		stop("History not intialized - see initHistory")
 	if (!is.list(PBS.history[[hisname]])) 
-		stop(paste("History \"", hisname,"\" not intialized - see initPBShistory", sep=""))
+		stop(paste("History \"", hisname,"\" not intialized - see initHistory", sep=""))
 
 	i <- PBS.history[[hisname]][[1]]$index
 	if (i >= (length(PBS.history[[hisname]])-1)) {
-		cat("history widget: warning, current position is already at end of history list.\n")
+		#cat("history widget: warning, current position is already at end of history list.\n")
 		return()
 	}
 	PBS.history[[hisname]][[1]]$index <<- i <- i+1
-	setWinVal(PBS.history[[hisname]][[i+1]]) #i is always one lower
-	.updatePBShistory(hisname)
+	setWinVal(PBS.history[[hisname]][[i+1]], winName=win) #i is always one lower
+	.updateHistory(hisname)
+	if (!is.null(PBS.history[[hisname]][[1]]$func))
+		do.call(PBS.history[[hisname]][[1]]$func, list())
 }
 
 
 # ***********************************************************
-# addPBShistory:
+# lastHistory:
+#   move to last history slide
+# Arguments:
+#   hisname   - history instance name if multiple are active
+# -----------------------------------------------------------
+lastHistory <- function(hisname="")
+{
+	jumpHistory(hisname, length(PBS.history[[hisname]])-1)
+}
+
+
+# ***********************************************************
+# lastHistory:
+#   move to last history slide
+# Arguments:
+#   hisname   - history instance name if multiple are active
+# -----------------------------------------------------------
+firstHistory <- function(hisname="")
+{
+	jumpHistory(hisname, 1)
+}
+
+
+# ***********************************************************
+# jumpHistory:
 #   need history name
 #   and what index to jump to - or what entry to pull it out of
 # Arguments:
 #   hisname   - history instance name if multiple are active
 # -----------------------------------------------------------
-jumpPBShistory <- function(hisname="", index="")
+jumpHistory <- function(hisname="", index="")
 {
 	if (hisname=="") 
 		hisname <- getWinAct()[1]
+	win <- strsplit(hisname, "\\.")[[1]][1]
 
 	if (!is.list(PBS.history)) 
-		stop("History not intialized - see initPBShistory")
+		stop("History not intialized - see initHistory")
 	if (!is.list(PBS.history[[hisname]])) 
-		stop(paste("History \"", hisname,"\" not intialized - see initPBShistory", sep=""))
+		stop(paste("History \"", hisname,"\" not intialized - see initHistory", sep=""))
 
 	if (is.numeric(index))
 		i <- index
@@ -2938,69 +3026,91 @@ jumpPBShistory <- function(hisname="", index="")
 	else
 		i <- as.numeric(getWinVal(index))
 
-
 	if (i > length(PBS.history[[hisname]])-1 || i <= 0) {
 		cat("Error: history index is out of bounds.\n")
 		return()
 	}
 
 	PBS.history[[hisname]][[1]]$index <<- i #update index
-	setWinVal(PBS.history[[hisname]][[i+1]]) #i is always one lower
-	.updatePBShistory(hisname)
+	setWinVal(PBS.history[[hisname]][[i+1]], winName=win) #i is always one lower
+	.updateHistory(hisname)
+	if (!is.null(PBS.history[[hisname]][[1]]$func))
+		do.call(PBS.history[[hisname]][[1]]$func, list())
 }
 
 
 # ***********************************************************
-# addPBShistory:
+# addHistory:
 #   save history
 # Arguments:
 #   hisname   - history instance name if multiple are active
 # -----------------------------------------------------------
-addPBShistory <- function(hisname="")
+addHistory <- function(hisname="")
 {
 	if (hisname=="") 
 		hisname <- getWinAct()[1]
 
 	if (!is.list(PBS.history)) 
-		stop("History not intialized - see initPBShistory")
+		stop("History not intialized - see initHistory")
 	if (!is.list(PBS.history[[hisname]])) 
-		stop(paste("History \"", hisname,"\" not intialized - see initPBShistory", sep=""))
-
+		stop(paste("History \"", hisname,"\" not intialized - see initHistory", sep=""))
 
 	x <- PBS.history[[hisname]] #old history
+	itemLen <- length(x)-1 #don't count header
+	index <- PBS.history[[hisname]][[1]]$index  #make it a real index
+	insertMode <- getWinVal(PBS.history[[hisname]][[1]]$modename)[[PBS.history[[hisname]][[1]]$modename]]
+	
+	if (is.null(insertMode) || index==0) {
+		insertMode <- "a"
+	}
 
-	insert <- PBS.history[[hisname]][[1]]$index + 1 #make it a real index
-
-	#insert to the right of current index
-	PBS.history[[hisname]][[insert+1]] <<- getWinVal()
-	if (insert<length(x)) {
-		for(i in (insert+1):length(x)) {
+	if (insertMode=="a") {
+		#insert to the right of current index
+		PBS.history[[hisname]][[index+2]] <<- getWinVal()
+		if (index<itemLen) {
+			for(i in (index+2):(itemLen+1)) {
+				PBS.history[[hisname]][[i+1]] <<- x[[i]]
+			}
+		}
+		#point index to inserted pos
+		PBS.history[[hisname]][[1]]$index <<- index+1
+	}
+	else if (insertMode=="b") {
+		#insert to the left of current index
+		PBS.history[[hisname]][[index+1]] <<- getWinVal()
+		for(i in (index+1):(itemLen+1)) {
 			PBS.history[[hisname]][[i+1]] <<- x[[i]]
 		}
 	}
-
-	PBS.history[[hisname]][[1]]$index <<- insert
-	.updatePBShistory(hisname)
+	else if (insertMode=="o") {
+		#overwrite the current index
+		PBS.history[[hisname]][[index+1]] <<- getWinVal()
+	}
+	else {
+		stop(paste("unknown insert mode:", insertMode))
+	}
+	.updateHistory(hisname)
 }
 
 
 # ***********************************************************
-# rmPBShistory:
+# rmHistory:
 #   if index is numeric - delete history in that spot
 #   else delete the history where the current index points to 
 #   (and not the value of the current index box - as a user might not have pushed enter)
 # Arguments:
 #   hisname   - history instance name if multiple are active
 # -----------------------------------------------------------
-rmPBShistory <- function(hisname="", index="")
+rmHistory <- function(hisname="", index="")
 {
 	if (hisname=="") 
 		hisname <- getWinAct()[1]
+	win <- strsplit(hisname, "\\.")[[1]][1]
 
 	if (!is.list(PBS.history)) 
-		stop("History not intialized - see initPBShistory")
+		stop("History not intialized - see initHistory")
 	if (!is.list(PBS.history[[hisname]])) 
-		stop(paste("History \"", hisname,"\" not intialized - see initPBShistory", sep=""))
+		stop(paste("History \"", hisname,"\" not intialized - see initHistory", sep=""))
 
 	if (is.numeric(index))
 		i <- index
@@ -3019,48 +3129,56 @@ rmPBShistory <- function(hisname="", index="")
 
 	#change values to current index
 	i <- PBS.history[[hisname]][[1]]$index
-	if (i > 0)
-	setWinVal(PBS.history[[hisname]][[i+1]]) #i is always one lower
+	if (i > 0) {
+		setWinVal(PBS.history[[hisname]][[i+1]], winName=win) #i is always one lower
+		if (!is.null(PBS.history[[hisname]][[1]]$func))
+			do.call(PBS.history[[hisname]][[1]]$func, list())
+	}
 
-	.updatePBShistory(hisname)
+	.updateHistory(hisname)
 }
 
 
 # ***********************************************************
-# clearPBShistory:
+# clearHistory:
 #   remove all history elements from
 # Arguments:
 #   hisname   - history instance name if multiple are active
 # -----------------------------------------------------------
-clearPBShistory <- function(hisname="")
+clearHistory <- function(hisname="")
 {
 	if (hisname=="") 
 		hisname <- getWinAct()[1]
 
 	if (!is.list(PBS.history)) 
-		stop("History not intialized - see initPBShistory")
+		stop("History not intialized - see initHistory")
 	if (!is.list(PBS.history[[hisname]])) 
-		stop(paste("History \"", hisname,"\" not intialized - see initPBShistory", sep=""))
+		stop(paste("History \"", hisname,"\" not intialized - see initHistory", sep=""))
 
-	len <- length(PBS.history[[hisname]])
-	if (len > 1) {
-		for(i in 2:len) {
+	tmp <- PBS.history[[hisname]][[1]]
+	tmp$index = 0
+	PBS.history[[hisname]] <<- list(0)
+	PBS.history[[hisname]][[1]] <<- tmp
+
+#	len <- length(PBS.history[[hisname]])
+#	if (len > 1) {
+#		for(i in 2:len) {
 			#PBS.history[[hisname]][[i]] <<- NULL #something weird is happening here
-			rmPBShistory(hisname)
-		}
-	}
+#			rmHistory(hisname)
+#		}
+#	}
 
-	.updatePBShistory(hisname)
+	.updateHistory(hisname)
 }
 
 
 # ***********************************************************
-# .updatePBShistory:
+# .updateHistory:
 #   update widget values
 # Arguments:
 #   hisname   - history instance name if multiple are active
 # -----------------------------------------------------------
-.updatePBShistory <- function(hisname)
+.updateHistory <- function(hisname)
 {
 	indexname <- PBS.history[[hisname]][[1]]$indexname
 	sizename  <- PBS.history[[hisname]][[1]]$sizename
@@ -3072,19 +3190,21 @@ clearPBShistory <- function(hisname="")
 	if (!is.null(sizename))
 		x[[sizename]]<-length(PBS.history[[hisname]])-1
 
-	setWinVal(x)
+	win <- strsplit(hisname, "\\.")[[1]][1]
+
+	setWinVal(x, winName=win)
 }
 
 # ***********************************************************
-# initPBShistory:
-#   setup the PBShistory "list"
+# initHistory:
+#   setup the History "list"
 # Arguments:
 #   hisname   - history instance name if multiple are active
 #   indexname - customized index widget name
 #   sizename  - customized size widget name
 #   overwrite - retain old history?
 # -----------------------------------------------------------
-initPBShistory <- function(hisname, indexname=NULL, sizename=NULL, overwrite=TRUE)
+initHistory <- function(hisname, indexname=NULL, sizename=NULL, modename=NULL, func=NULL, overwrite=TRUE)
 {
 
 	if (!exists("PBS.history", env = .GlobalEnv))
@@ -3092,9 +3212,17 @@ initPBShistory <- function(hisname, indexname=NULL, sizename=NULL, overwrite=TRU
 	else
 		PBS.history <- get("PBS.history", env = .GlobalEnv)
 
+	if (func=="")
+		func <- NULL
+	if (!is.null(func)) {
+		if (!exists(func,mode="function")) {
+			cat(paste("Warning: cannot find function '", func, "'.\n", sep=""))
+			func <- NULL
+		}
+	}
+
 	if (!is.list(PBS.history))
 		assign("PBS.history", list(), env = .GlobalEnv)
-
 
 	if (!is.list(PBS.history[[hisname]]) || overwrite) {
 		PBS.history[[hisname]] <- list(0)
@@ -3103,19 +3231,20 @@ initPBShistory <- function(hisname, indexname=NULL, sizename=NULL, overwrite=TRU
 	#save names of entry boxes
 	PBS.history[[hisname]][[1]]$indexname <- indexname
 	PBS.history[[hisname]][[1]]$sizename <- sizename
+	PBS.history[[hisname]][[1]]$modename <- modename
+	PBS.history[[hisname]][[1]]$func <- func
 	assign("PBS.history", PBS.history, env = .GlobalEnv)
-
 }
 
 
 # ***********************************************************
-# exportPBShistory:
+# exportHistory:
 #   save PBS history to a file
 # Arguments:
 #   hisname - history instance name if multiple are active
 #   fname   - initial filename to save under
 # -----------------------------------------------------------
-exportPBShistory <- function(hisname="", fname="")
+exportHistory <- function(hisname="", fname="")
 {
 	if (hisname=="") hisname <- getWinAct()[1]
 
@@ -3123,27 +3252,30 @@ exportPBShistory <- function(hisname="", fname="")
 		stop("unable to export history. Incorect history name given.")
 
 	if (fname=="")
-		fname <- promptSaveFile(initialfile=paste(hisname,".PBShistory.r", sep=""))
+		fname <- promptSaveFile(initialfile=paste(hisname,".History.r", sep=""))
 	if (fname=="")
 		stop("no filename given.")
 
-	writeList(PBS.history[[hisname]], fname)
+	x=PBS.history[[hisname]]
+	x[[1]] <- NULL #remove history widget info
+	writeList(x, fname)
 }
 
 
 # ***********************************************************
-# importPBShistory:
+# importHistory:
 #   import PBS history from a file
 # Arguments:
 #   hisname - history instance name if multiple are active
 #   fname   - initial filename to open from
 # -----------------------------------------------------------
-importPBShistory <- function(hisname="", fname="")
+importHistory <- function(hisname="", fname="", updateHis=TRUE)
 {
 	if (hisname=="") hisname <- getWinAct()[1]
-
+	win <- strsplit(hisname, "\\.")[[1]][1]
+	
 	if (!is.list(PBS.history[[hisname]]))
-		stop("unable to import history. Incorect history name given. It must still be intialized.")
+		stop("unable to import history. Incorect history name given.")
 
 	if (fname=="")
 		fname <- promptOpenFile()
@@ -3151,7 +3283,9 @@ importPBShistory <- function(hisname="", fname="")
 		stop("no filename given.")
 
 	newHist <- readList(fname)
-	len <- length(newHist)-1
+	validNames <- names(getWinVal(winName=win))
+	
+	len <- length(newHist)
 	i <- PBS.history[[hisname]][[1]]$index + 1
 
 	for(j in length(PBS.history[[hisname]]):(i+1)) {
@@ -3159,15 +3293,148 @@ importPBShistory <- function(hisname="", fname="")
 	}
 
 	for (j in 1:len) {
-		PBS.history[[hisname]][[i+j]] <<- newHist[[j+1]]
+		PBS.history[[hisname]][[i+j]] <<- newHist[[j]]
 	}
 
-
 	#update with new history settings
-	#setWinVal(PBS.history[[hisname]][[i+1]])
-	.updatePBShistory(hisname)
+	if (updateHis)
+		jumpHistory(hisname, i)
 	return(invisible(PBS.history[[hisname]]))
 }
+
+
+# ***********************************************************
+# func: sortHistory (and helpers)
+# -----------------------------------------------------------
+.updateFile <- function()
+{
+	act <- getWinAct()[1]
+	if (act=="open") {
+		f <- promptOpenFile()
+		s <- getWinVal("savefile")$savefile
+		if (s=="")
+			setWinVal(list(savefile=f))
+		setWinVal(list(openfile=f))
+	} else if (act=="save") {
+		f <- promptSaveFile()
+		setWinVal(list(savefile=f))
+	}
+}
+.sortHelperActive <- function(hisname)
+{
+	len <- length(PBS.history[[hisname]]) - 1
+	if (len < 1) stop("unable to sort empty history")
+	x <- data.frame(new = 1:len)
+	x <- fix(x); xnew <- order(x$new, na.last=NA);
+	tmp <- PBS.history[[hisname]]
+	j <- 2
+	PBS.history[[hisname]] <<- list(PBS.history[[hisname]][[1]])
+		for (i in xnew) {
+		if (!is.na(i)) {
+			PBS.history[[hisname]][[j]] <<- tmp[[i + 1]]
+			j <- j + 1
+		}
+	}
+	PBS.history[[hisname]][[1]]$index <<- min(PBS.history[[hisname]][[1]]$index, length(PBS.history[[hisname]])-1)
+	.updateHistory(hisname)
+}
+.sortHelperFile <- function(openfile, savefile)
+{
+	inHis <- readList(openfile)
+	len <- length(inHis) - 1
+	if (len < 1) stop("unable to sort empty history")
+	x <- data.frame(new = 1:len)
+	x <- fix(x); xnew <- order(x$new, na.last=NA);
+	
+	outHis <- list(inHis[[1]])
+	j <- 2
+	for (i in xnew) {
+		if (!is.na(i)) {
+			outHis[[j]] <- inHis[[i + 1]]
+			j <- j + 1
+		}
+	}
+	writeList(outHis, savefile)
+}
+.sortHelper <- function()
+{
+	act <- getWinAct()[1]
+	if (act=="active") {
+		hisname <- getWinVal("hisname")$hisname
+		.sortHelperActive(hisname)
+	} else if (act=="file") {
+		openfile <- getWinVal("openfile")$openfile
+		savefile <- getWinVal("savefile")$savefile
+		.sortHelperFile(openfile, savefile)
+	}
+	sortHistory()
+}
+#use window action as history name
+.sortActHistory <- function()
+{
+	sortHistory(hisname=getWinAct()[1])
+}
+sortHistory <- function(file="",outfile=file,hisname="")
+{
+	if (file!="") {
+		return(.sortHelperFile(file, outfile))
+	}
+	if (hisname!="") {
+		return(.sortHelperActive(hisname))
+	}
+	currHist <- NULL
+	if (exists("PBS.history"))
+		currHist <- names(PBS.history)
+	if (!is.null(currHist)) {
+		radios <- list(list(type="label", text="Select an active window history to sort", sticky="w", padx=12))
+		i <- 2
+		for(h in currHist) {
+			len <- length(PBS.history[[h]])-1
+			if (len==1)
+				items <- "(1 item)"
+			else
+				items <- paste("(", len, " items)", sep="")
+			radios[[i]] <- list(type="radio",
+			                    name="hisname",
+			                    value=h,
+			                    text=paste(h, items),
+			                    mode="character",
+			                    sticky="w",
+			                    padx=12)
+			i <- i+1
+		}
+		radios[[i]] <- list(type="button", "function"=".sortHelper", action="active", text="Sort Active History", sticky="w", padx=12)
+	} 
+	else {
+		radios <- list(list(type="label", text="No active history widgets could be found.\nTry creating a window with a history widget.", sticky="w", padx=12))
+	}
+	win <- list(title = "Sort History",
+	            windowname = "sort.History",
+	            .widgets = c(
+	                list(
+	                  list(type="label", text="Active History                                            ", font="bold underline", fg="red3", sticky="w")
+	                ),
+	                radios,
+	                list(
+	                  list(type="null"),
+	                  list(type="label", text="Saved History                                            ", font="bold underline", fg="red3", sticky="w"),
+	                  list(type="label", text="Open a saved history file to sort and select a file \nto save to. (which can be the same file)", sticky="w", padx=12),
+                         list(type = "grid", .widgets = list(
+                           list(
+                             list(type="entry", name="openfile", sticky="e", padx=12, width=30, mode="character"),
+                             list(type="button", "function"=".updateFile", action="open", text="Open From", sticky="w", width=10)
+                           ),
+                           list(
+                             list(type="entry", name="savefile", sticky="e", padx=12, width=30, mode="character"),
+                             list(type="button", "function"=".updateFile", action="save", text="Save To", sticky="w", width=10)
+                           ))),
+                         list(type="button", "function"=".sortHelper", action="file", text="Sort Saved History", sticky="w", padx=12)
+                       )
+	            ))
+	createWin(list(win))
+}
+
+
 
 
 # ***********************************************************

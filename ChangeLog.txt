@@ -1,0 +1,271 @@
+PBSmodelling - Changes
+----------------------
+
+v.1.18 - Mar 13, 2007 Rowan
+	- revised "runDemos" & ".viewPkgDemo" to retain working directory focus 
+		and clean up files spawned by the demos.
+	- added the function ".dClose" to provide the cleanup upon closing "pbs.demo" window.
+	- modified "runDemos.Rd"
+
+v.1.17 - Mar 13, 2007 Rowan
+	- revised "runDemos" to retain focus of project location.
+	- revised "runExamples" to close only "window" and "runE" windows on exit.
+
+v1.16 - mar 5,2007 Jon
+  - sortHistory "new" order taken as ascending for real numbers
+
+v1.15 - mar 3,2007 Alex
+  -label widget wrap argument
+  -added runDemos
+  -added a call to runExamples under demo
+
+v1.14 - mar 3,2007 Alex
+  -addHistory bug fix
+
+v1.13 - mar 2,2007 Alex
+  -history widget fix
+  -writeList - dput control="useSource"
+  -radio widget: added selected=FALSE argument
+
+v1.12 - feb 22.2007 Alex
+  -fixed bug in .validateWindowDescWidgets that didn't check grid children widgets
+  -fixed bug due to history widget changes from v1.11
+  -renamed *PBShistory functions to *History. ex) initPBShistory => initHistory
+  
+v1.11 - feb 19,2007 Alex
+  -changed behaviour and look of history widget
+  -added rewritePBShistor function
+
+v1.10 - feb 14,2007 Alex
+  -bug fix in gt0
+
+v1.09 - feb 2,2007 Alex Couture-Beil
+  -reintroduced changeLog
+  -created developers directory with developer's guide
+
+v1.08 - feb 1,2007 Alex Couture-Beil
+  removed link to shell.exec from openFile.Rd
+  reinstated changelog which was dropped in v0.58
+
+---------------------------------------------------------------------
+v1.07 - posted to cran Jan 26, 2007
+---------------------------------------------------------------------
+  -removed global PBS.win variable and replaced access with
+   getWinVal, setWinVal, getWinAct, setWinAct, getWinFun functions
+  -introduced "object" widget
+  -added more examples to runExamples
+  -added function minimization
+
+---------------------------------------------------------------------
+v0.60 - posted to cran aug 28, 2006
+---------------------------------------------------------------------
+
+v0.57 - aug 16 Alex Couture-Beil
+  fixed expandGraph
+  fixed example of addLabel
+  more .rd changes
+  included instructions for building PDFs from .RDs
+
+v0.55 - august 16,2006 Alex Couture-Beil
+  new build batch files
+  changed ranVars example to include a legend
+  added required package check to examples
+  added CCA.qbr.hl data and rd file
+
+v0.54 - august 10,2006 Alex Couture-Beil
+  included new testWidget function and examples
+
+v0.53 - aug 10,2006 Alex Couture-Beil
+  removed images from examples directory
+  modified build batch files to include SETLOCAL
+
+v0.52 - aug 9,2006 Alex Couture-Beil
+  removed md5 code,
+  added fibonacci C code using .C and .Call and R code
+  changed testCol to accept palette index and hex colours
+  re-worked .bat files for building
+
+v0.51 - aug 8,2006 Alex Couture-Beil
+  added arguemtn returnValue=TRUE to pickCol
+  added frame() call in resetGraph
+
+v0.50 - aug 3,2006 Alex Couture-Beil
+  added expandGraph function and documentation
+  added getMD5() function (R and C code) and documentation
+
+v0.48 - july 31,2006 Alex Couture-Beil
+  revised testPch, testLwd, genMatrix functions (with new source from 
+  rowan)
+
+v0.47 - july 26,2006 Alex Couture-Beil
+  revised plotCsum code from Rowan
+  resetGraph and plotCsum Rd examples
+
+v0.46 - july 21,2006 Alex Couture-Beil
+  changed testCol() function to Rowan's function
+  added pickCol()
+
+v0.45 - july 17,2006 Alex Couture-Beil
+  changed is.null to .isReallNull in hash$add function to fix issue 
+  where if fooXYZ exists, then foo points to fooXYZ instead of a new 
+  var
+
+v0.44 - july 16, 2006 Alex Couture-Beil
+  worked on documentation for funtions from utils15.r
+  made minor changes and bug fixes to those functions
+
+v0.43 - july 14,2006 Alex Couture-Beil
+  added resetGraph
+
+v0.41 - july 9,2006 Alex Couture-Beil
+  fixed setWinVal bug dealing with matrix, vectors
+  updated docs
+
+v0.40 - july 4,2006 Alex Couture-Beil
+  -changed behaviour of matrix row and col labels when nrow or ncol=1 
+   to stop the number 1 from appearing next to the row or column 
+  -fixed vector font issue where toptitle of vectors and matrix didnt 
+  have the font applied to, but numbering did
+
+v0.39 - july 2,2006 Alex Couture-Beil
+  added files from utils15.r, and created basic Rd files, which might 
+  have to be expanded.
+
+v0.37 - june 25, 2006 Alex Couture-Beil
+  changed Rd files, cleaned up old unused functions (.addlist, 
+  .writeListOut)
+
+v0.36 - june 23, 2006 Alex Couture-Beil
+  added namespace to only export non-dot functions, and to import 
+  tcltk functions, rather than use require() in createWin worked on P 
+  format for writeList
+
+v0.35 - june 19, 2006
+  padx, pady support for text widget
+  worked on P format for readList
+
+v0.34 - june 9, 2006
+  work on writeList R format to include comments, and strip off 
+  structure so the first word is list(...)
+
+v0.33 - june 5,2006 Alex Couture-Beil
+  fixed byrow option in writeList
+
+v0.32
+  work on writeList for byrow option for use with Brugs package
+
+v0.31
+  createWin can accept a vector of strings representing the contents 
+  of a win description file
+
+v0.30 - may 23,2006 Alex Couture-Beil
+  -fixed .getArguments() to reflect new characterVector types
+   added better error messages for createWidget.
+  -functions fixed slidePlus/getWinVal() bug
+
+v0.29 - may 19,2006 Alex Couture-Beil
+  changed syntax for quoting (and sub-strings)
+
+v0.28 - may 18, 2006 Alex Couture-Beil
+  added "$" format support to readList and writeList
+  data and matrix widgets now have a rowname and colname, which 
+  affects the dimnames of the R objects
+
+v0.27 - may 12, 2006 Alex Couture-Beil
+  fixed text widget - can set/get values from it
+  added "Clear All" button to history widget
+
+v0.26 - may 10, 2006 Alex Couture-Beil
+  -added data widget which represents a data.frame (like a matrix but 
+   takes a vector called modes) 
+  -bug fix: toptitle (single title) wasnt showing up for matrix and 
+   data widgets renamed title.offset to toptitle.offset
+
+v0.25 - may 7, 2006 Alex Couture-Beil
+  windows now are named - for working with multiple windows
+  added closeWin function
+  added clearPBSHistory function
+  worked on openFile and PBS.options
+
+v0.24 - april 14, 2006 Alex Couture-Beil
+  writeList scientific argument - which can disable floating point 
+  numbers (ie 1e-10)
+
+v0.23 - april 13, 2006 Alex Couture-Beil
+  changed PBShistory functions and Rd files
+  added importPBShistory, and exportPBShistory
+  created a text widget - still very buggy
+  created promptOpenFile and promptSaveFile
+  check widget. Use logical only
+  writeList can appened custom comments to the top of files
+
+v0.21 - april 10, 2006 Alex Couture-Beil
+  -created history widget, and supporting functions: initPBShistory, 
+   updatePBShistory, rmPBShistory, addPBShistory, forwPBShistory, 
+   backPBShistory, jumpPBShistory
+  -created null widget (think label text="")
+  -created openFile function
+
+v0.19 - april 8, 2006 Alex Couture-Beil
+  removed all bold options, and introduced new font="bold italic 25 
+  courier"
+
+v0.18 - april 6, 2006 Alex Couture-Beil
+  changed vector/matrix to display checks when mode=logical
+  added mode to check widgets to support logical, integer,...
+
+v0.17 - april 1, 2006 Alex Couture-Beil
+  added menu and menuitem widgets. Documentation is still lacking
+  There is an example file for creating menus
+
+v0.16 - march 30, 2006 Alex Couture-Beil
+  added createVector function & documentation
+
+v0.14 - march 15, 2006 Alex Couture-Beil
+  made changed to error checking to print out widget description 
+  source when an error is found.
+
+v0.13 - march 14, 2006 (pi day)
+  -Bug fix: Warning message "the condition has length > 1 and only 
+   the first element will be used in: if (labels == "") labels <-
+   names"
+  -Revised function 
+   getWinVal(v=PBS.win$vals, frame="" (or "L", "G") vector=F)
+   takes a vectors of strings and returns a list with named 
+   components or a vector with named components (vector=T). When 
+   frame="L" ("G"), local (global) variables are created with the 
+   relevant names. Rowan: 
+   assign(i,PBS.win$var[[i]],pos=parent.frame(1))
+  -Revised function setWinVal that takes a vectors or list with 
+   named components. 
+  -Check into padx, pady, sticky, etc. Do we need grids? Include a 
+   "top" grid.
+  -Give window the argument vertical=T.
+  -Similarly, use vertical in vector. (And other widgets?)
+  -Allow upper/lower case in window descriptions.
+
+v0.11 - 2006-march-03 Alex Couture-Beil
+  -renamed coltitle to sidetitle (grid widget)
+  -renamed boldtitle to bold (matrix, vector)
+  -changed paramater ordering to conform to specs (except for the 3 
+   additions above: by, func, and func)
+  -added "func" and "action" support to matrix and vector
+
+2006-Jan-15 Alex Couture-Beil
+  added beta.r and beta.txt to pbsmodelling\inst\examples
+  
+2006-jan-14  Alex Couture-Beil
+  Removed commented out combo widget code
+  removed action parameter from matrix and widget (since there is no 
+  function support)
+
+2006-Jan-13  Alex Couture-Beil  
+  * PBSmodelling.r (create.slideplus):
+    Added fractional values support to slideplus
+    enter=TRUE|FALSE parameter added, for updating min/max values
+  * PBSmodelling.r (parseWinFile, createWin):
+    multiple windows per file support added
+  * PBSmodelling.r (create.entry):
+    added enter=TRUE|FALSE, for entry widgets
+  * window_markup.doc
+  updated changes

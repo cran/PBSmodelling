@@ -128,7 +128,7 @@ savePuz <- function()
 	cat("Due to the limitations of R and tcl/tk in terms of threading\n")
 	cat("you must execute the function solveSudoku() from the console.\n")
 	cat("If the window invoked the function, the window would not\n")
-	cat("be updated until the function finished.\n\n")
+	cat("be updated until the function has finished.\n\n")
 	cat("Type \"solveSudoku()\" in the R console prompt below.\n")
 	cat("------------------------------------------------------------\n")
 }

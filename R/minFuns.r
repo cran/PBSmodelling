@@ -67,12 +67,11 @@ restorePar <- function(S,pvec) { # Convert surrogates to true parameters
 	return(P); };
 
 
-GT0 <- function(x,eps=1e-4) {
-	eps2 <- eps/2;
-	ifix <- ((x>0) & (x < eps));
-	i0 <- (x<0);
-	y = x; 
-	y[i0] <- eps2;
-	y[ifix] <- eps2 * ( 1 + (x[ifix]/eps)^2 );
-	return(y);
-};
+GT0 <- function (x, eps = 1e-04) {
+    eps2 <- eps/2
+    ifix <- ((x > 0) & (x < eps))
+    i0 <- (x <= 0)
+    y = x
+    y[i0] <- eps2
+    y[ifix] <- eps2 * (1 + (x[ifix]/eps)^2)
+    return(y) }

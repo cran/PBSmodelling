@@ -23,4 +23,7 @@
 	The examples are copied from \code{PBSmodelling/examples} to R's current 
 	temporary working directory and run from there.
 }
+\seealso{
+	\code{\link{runDemos}}
+}
 \keyword{utilities}

@@ -122,7 +122,7 @@ writeList <- function(x, fname="", format="D", comments="")
 	comments <- sub("^", "#", comments)
 
 	if (format=="D") {
-		dput(x, fname)
+		dput(x, fname, control=NULL)
 		if (file.exists(fname) && !NoComments) {
 			output <- scan(fname, what=character(0), sep="\n")
 			output <- paste(output, collapse="\n")
@@ -1794,7 +1794,6 @@ findPat <- function (pat, vec)
 # -----------------------------------
 # Plotting functions to support BRugs
 # -----------------------------------
-
 plotTrace <- function(file,clrs=c("blue","red","green","magenta","navy"),...) {
 	if (is.vector(file)) file <- data.frame(x=1:length(file),y=file);
 	nc <- ncol(file)
@@ -1832,7 +1831,6 @@ plotACF <- function(file,lags=20,clrs=c("blue","red","green","magenta","navy"),.
 		x <- (0:lags)+(i-1)*(.7/nch); y <- acfacf[,i,i];
 		lines(x,y,type="h",col=clrs[i],...); };
    abline(h=0,col="grey40",lty=3); box(); };
-
 
 # ***********************************************************
 # testWidgets:
@@ -1905,7 +1903,7 @@ runExamples <- function () {
 		setWinVal(list(wtxt = wtxt), winName = "runE")
 	}
 	.runExHelperQuit <<- function() {
-		closeWin()
+		closeWin(c("window","runE"))
 		setwd(.cwd)
 		remove(list = setdiff(ls(pos = 1), .cls), pos = 1)
 		return()
@@ -1923,4 +1921,144 @@ runExamples <- function () {
 	createWin("runExamplesWin.txt")
 	msg <- paste("Examples are running in ", rtmp, sep = "")
 	setWinVal(list(wtxt = msg), winName = "runE")
+}
+
+# ***********************************************************
+# runDemos:
+#  Display a GUI to display something equivalent to R's demo()
+# -----------------------------------------------------------
+.viewPkgDemo <- function()
+{
+	act <- getWinAct()[1]
+	if (act=="pkg")
+		return(runDemos(getWinVal("pkg")$pkg))
+	if (act=="demo") {
+		demo <- getWinVal("demo")$demo
+		source(demo, echo=TRUE, max.deparse.length=100)
+		return(invisible(NULL))
+	}
+	if (act=="source") {
+		demo <- getWinVal("demo")$demo
+		openFile(demo)
+		return(invisible(NULL))
+	}
+}
+
+# *******************************************
+# runDemos:
+#  Function to execute on closing runDemos().
+# -------------------------------------------
+.dClose <- function() {
+	act <- getWinAct()[1];
+	closeWin();
+	setwd(.dwd)
+	if (is.null(act) || act=="demo") {
+		remove(list = setdiff(ls(pos=1, all=TRUE), .dls), pos = 1);
+		remove(list = c(".dwd", ".dls"), pos = 1); }; # final good-bye
+	return(); };
+
+# ***********************************************************
+# runDemos:
+#  Display a GUI to display something equivalent to R's demo()
+# -----------------------------------------------------------
+runDemos <- function (package) 
+{
+	if (!exists(".dwd",where=1)) .dwd <<- getwd()
+	if (!exists(".dls",where=1)) .dls <<- c(".dls",ls(pos = 1, all = TRUE));
+	closeWin();
+
+	x <- demo(package = .packages(all.available = TRUE))
+	if (missing(package)) {
+		#display a list of packages to choose from
+		pkgDemo <- unique(x$results[,"Package"])
+		radios <- list(list(list(type="label", text="Select a package to view available demos.", sticky="w", padx=12)))
+		i <- 2
+		for(pkg in pkgDemo) {
+			len <- length(x$results[,"Package"][x$results[,"Package"]==pkg])
+			if (len==1)
+				items <- "(1 demo)"
+			else
+				items <- paste("(",len," demos)", sep="")
+			radios[[i]] <- list(list(type="radio",
+			                    name="pkg",
+			                    value=pkg,
+			                    text=paste(pkg, items),
+			                    mode="character",
+			                    sticky="w",
+			                    padx=12))
+			i <- i+1
+		}
+		xxy <<- win <- list(title = "R Demos", windowname = "pbs.demo", onclose=".dClose", 
+			.widgets = list(list(type="grid", .widgets=c( #mixing the c() and lists() become really akward - watch out!
+			#the c() requires an extra level of list() which are later stripped out
+			#the reason is because of the way the radios list is merged into this list
+			list(list(
+			list(type="label", text=paste("R Demos", paste(rep(" ", times=100), collapse="")), font="bold underline", fg="red3", padx=10, sticky="w")
+			)),
+			radios,
+			list(list(
+			list(type="button", "function"=".viewPkgDemo", action="pkg", text="View Demos", sticky="w", padx=12)
+			))
+			))))
+		createWin(list(win))
+		return(invisible(NULL))
+	}
+
+	#display demos from a certain package
+	x <- x$results[x$results[,"Package"]==package,]
+	radios <- list(list(list(type="label", text="Select a Demo to view.", sticky="w", padx=12)))
+	i <- 2
+	
+	if (is.null(dim(x))) {
+		tmp<-names(x)
+		dim(x)<-c(1,4)
+		colnames(x)<-tmp
+	}
+	for(j in 1:length(x[,1])) {
+		demoDir <- file.path(x[j,"LibPath"], package, "demo")
+		path <- tools::list_files_with_type(demoDir, "demo")
+		path <- path[x[j,"Item"]==tools::file_path_sans_ext(basename(path))]
+		if (length(path)==0)
+			stop("error - could not find the path for demo - this is most likely a bug!")
+		
+		
+		radios[[i]] <- list(list(type="radio",
+		                    name="demo",
+		                    value=path,
+		                    text=x[j,"Item"],
+		                    mode="character",
+		                    font="underline",
+		                    sticky="w",
+		                    padx=12))
+		i <- i+1
+		radios[[i]] <- list(list(type="label",
+		                    text=x[j,"Title"],
+		                    sticky="w",
+		                    wraplength=500,
+		                    padx=20
+		                    ))
+		i <- i+1
+	}
+	xx <<- win <- list(title = paste("R Demos:", package), windowname = "pbs.demo", onclose=".dClose",
+		.widgets = list(list(type="grid", .widgets=c(
+			list(list(
+				list(type="label", text=paste(package, paste(rep(" ", times=100), collapse="")), font="bold underline", fg="red3", sticky="w")
+			)),
+			radios,
+			list(list(list(type="null", pady=4))),
+				list(list(
+					list(type="grid", sticky="w", pady=3, .widgets=
+						list(
+							list(
+								list(type="button", "function"=".viewPkgDemo", action="demo", text="Run Demo", sticky="w", padx=12),
+								list(type="button", "function"=".viewPkgDemo", action="source", text="View Source", sticky="w", padx=12),
+								list(type="button", "function"="runDemos", action="", text="All Packages", sticky="w", padx=12)
+							)
+						)
+					)
+				))
+			)
+		)))
+	createWin(list(win))
+	return(invisible(NULL))
 }

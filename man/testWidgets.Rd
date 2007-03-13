@@ -37,9 +37,10 @@ enter=TRUE action="entry" mode="numeric" sticky="" padx=0 pady=0
 grid nrow=1 ncol=1 toptitle="" sidetitle="" topfont="" sidefont=""
 byrow=TRUE borderwidth=1 relief="flat" sticky="" padx=0 pady=0
 
-history name="default" archive=TRUE sticky="" padx=0 pady=0
+history name="default" function="" import="" sticky="" padx=0 pady=0
 
-label text="" font="" fg="black" bg="" sticky="" padx=0 pady=0
+label text="" font="" fg="black" bg="" sticky="" justify="left" 
+wraplength=0 padx=0 pady=0
 
 matrix nrow ncol names rowlabels="" collabels="" rownames="" 
 colnames="" font="" fg="black" bg="" entryfont="" entryfg="black" 
@@ -57,7 +58,7 @@ entryfg="black" entrybg="white" vertical=FALSE function=""
 enter=TRUE action="data" width=6 sticky="" padx=0 pady=0
 
 radio name value text="" font="" fg="black" bg="" function=""
-action="radio" mode="numeric" sticky="" padx=0 pady=0
+action="radio" mode="numeric" selected=FALSE sticky="" padx=0 pady=0
 
 slide name from=0 to=100 value=NA showvalue=FALSE 
 orientation="horizontal" font="" fg="black" bg="" function="" 

@@ -21,10 +21,7 @@
 }
 
 \seealso{
-  \code{\link{getPBSext}}, \code{\link{setPBSext}},
-#ifdef windows
-  \code{\link{shell.exec}}
-#endif  
+  \code{\link{getPBSext}}, \code{\link{setPBSext}}
 }
 
 \examples{

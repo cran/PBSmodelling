@@ -1,11 +1,14 @@
-\name{initPBShistory}
-\alias{initPBShistory}
-\alias{rmPBShistory}
-\alias{addPBShistory}
-\alias{forwPBShistory}
-\alias{backPBShistory}
-\alias{jumpPBShistory}
-\alias{clearPBShistory}
+\name{initHistory}
+\alias{initHistory}
+\alias{rmHistory}
+\alias{addHistory}
+\alias{forwHistory}
+\alias{backHistory}
+\alias{jumpHistory}
+\alias{clearHistory}
+\alias{clearHistory}
+\alias{lastHistory}
+\alias{firstHistory}
 \title{Create Structures of a New History Widget}
 
 \description{
@@ -15,26 +18,31 @@
 }
 
 \usage{
-initPBShistory(hisname,indexname=NULL,sizename=NULL,overwrite=TRUE)
-rmPBShistory(hisname="", index="")
-addPBShistory(hisname="")
-forwPBShistory(hisname="")
-backPBShistory(hisname="")
-jumpPBShistory(hisname="", index="")
-clearPBShistory(hisname="")
+initHistory(hisname,indexname=NULL,sizename=NULL,modename=NULL,func=NULL,overwrite=TRUE)
+rmHistory(hisname="", index="")
+addHistory(hisname="")
+forwHistory(hisname="")
+backHistory(hisname="")
+lastHistory(hisname="")
+firstHistory(hisname="")
+jumpHistory(hisname="", index="")
+clearHistory(hisname="")
 }
 
 \arguments{
 	\item{hisname}{name of the history "list" to manipulate. If it is omitted, 
 		the function uses the value of \code{getWinAct()[1]} as the history name. 
 		This allows the calling of functions directly from the Window Description File 
-		(except \code{initPBShistory}, which must be called before \code{createWin()}).}
+		(except \code{initHistory}, which must be called before \code{createWin()}).}
 	\item{indexname}{name of the index entry widget in the Window Description File. 
 		If \code{NULL}, then the current index feature will be disabled.}
 	\item{sizename}{name of the current size entry widget. If \code{NULL}, then the 
 		current size feature will be disabled.}
+	\item{modename}{name of the radio widgets used to change addHistory\'s mode. If \code{NULL}, then the 
+		default mode will be to insert after the current index.}
 	\item{index}{index to the history item. The default (\code{""}) causes the value to be 
 		extracted from the widget identified by \code{indexname}.}
+	\item{func}{name of user supplied function to call when viewing history items.}
 	\item{overwrite}{if \code{TRUE}, history (matching \code{hisname}) will be cleared. 
 		Otherwise, the imported history will be merged with the current one.}
 }
@@ -57,11 +65,11 @@ clearPBShistory(hisname="")
 	The \code{indexname} and \code{sizename} arguments correspond to the given names 
 	of entry widgets in the Window Description File, which will be used to display the 
 	current index and total size of the list. The \code{indexname} entry widget can also 
-	be used by \code{jumpPBShistory} to retrieve a target index.
+	be used by \code{jumpHistory} to retrieve a target index.
 }
 
 \seealso{
-	\code{\link{importPBShistory}}, \code{\link{exportPBShistory}}
+	\code{\link{importHistory}}, \code{\link{exportHistory}}
 }
 
 \examples{
@@ -97,23 +105,23 @@ winDesc <- strsplit(winDesc, "\n")[[1]]
 
 # Custom functions to update plots after restoring history values
 myHistoryBack <- function() {
-	backPBShistory("myHistory");
+	backHistory("myHistory");
 	myPlot(saveVal=FALSE); # show the plot with saved values
 }
 myHistoryForw <- function() {
-	forwPBShistory("myHistory");
+	forwHistory("myHistory");
 	myPlot(saveVal=FALSE); # show the plot with saved values 
 }
 myPlot <- function(saveVal=TRUE) {
 	# save all data whenever plot is called (directly)
-	if (saveVal) addPBShistory("myHistory");
+	if (saveVal) addHistory("myHistory");
 	getWinVal(scope="L");
 	tt <- 2*pi*(0:k)/k;
 	x <- (1+sin(a*tt));  y <- cos(tt)*(1+sin(b*tt));
 	plot(x, y);
 }
 
-initPBShistory("myHistory", "myHistoryIndex", "myHistorySize")
+initHistory("myHistory", "myHistoryIndex", "myHistorySize")
 createWin(winDesc, astext=TRUE)
 }
 }

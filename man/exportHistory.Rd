@@ -1,5 +1,5 @@
-\name{exportPBShistory}
-\alias{exportPBShistory}
+\name{exportHistory}
+\alias{exportHistory}
 \title{Export a Saved History}
 
 \description{
@@ -7,7 +7,7 @@
 }
 
 \usage{
-exportPBShistory(hisname="", fname="")
+exportHistory(hisname="", fname="")
 }
 
 \arguments{
@@ -18,7 +18,7 @@ exportPBShistory(hisname="", fname="")
 }
 
 \seealso{
-	\code{\link{importPBShistory}}, \code{\link{initPBShistory}}, \code{\link{promptSaveFile}}
+	\code{\link{importHistory}}, \code{\link{initHistory}}, \code{\link{promptSaveFile}}
 }
 
 \keyword{misc}

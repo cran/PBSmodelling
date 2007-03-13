@@ -1,5 +1,5 @@
-\name{importPBShistory}
-\alias{importPBShistory}
+\name{importHistory}
+\alias{importHistory}
 \title{Import a History List from a File}
 
 \description{
@@ -8,7 +8,7 @@
 }
 
 \usage{
-importPBShistory(hisname="", fname="")
+importHistory(hisname="", fname="", updateHis=TRUE)
 }
 
 \arguments{
@@ -16,10 +16,12 @@ importPBShistory(hisname="", fname="")
 		The default (\code{""}) uses the value from \code{getWinAct()[1]}.}
 	\item{fname}{file name of history file to import. 
 		The default (\code{""}) causes an open-file window to be displayed.}
+	\item{updateHis}{if true, update the history widget to reflect the change
+		in size and index.}
 }
 
 \seealso{
-\code{\link{exportPBShistory}}, \code{\link{initPBShistory}}, \code{\link{promptOpenFile}}
+\code{\link{exportHistory}}, \code{\link{initHistory}}, \code{\link{promptOpenFile}}
 }
 
 \keyword{misc}

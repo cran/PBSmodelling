@@ -45,7 +45,7 @@
 
 	\code{\link{closeWin}}, \code{\link{compileDescription}}, \code{\link{createVector}}
 
-	\code{\link{initPBShistory}} for an example of using \code{astext=TRUE}
+	\code{\link{initHistory}} for an example of using \code{astext=TRUE}
 }
 
 \examples{

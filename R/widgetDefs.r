@@ -29,7 +29,7 @@
 	list(param='byrow', required=FALSE, class="logical", default=TRUE),
 	list(param='borderwidth', required=FALSE, class="integer", default=1),
 	list(param='relief', required=FALSE, class="character", default="flat", grep="^(raised|sunken|flat|ridge|groove|solid)$"),
-	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S)?(e|w|E|W)?$"),	#choices: N,NE,E,SE,S,SW,W,NW
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
 	list(param='padx', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='pady', required=FALSE, class="integer", default=0, grep="^[0-9]+$")
 	)
@@ -55,7 +55,9 @@
 	list(param='font', required=FALSE, class="character", default=""),
 	list(param='fg', required=FALSE, class="character", default="black"),
 	list(param='bg', required=FALSE, class="character", default=""),
-	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S)?(e|w|E|W)?$"),	#choices: N,NE,E,SE,S,SW,W,NW
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
+	list(param='justify', required=FALSE, class="character", default="left", grep="^(l|r|c|left|right|center)?$"),
+	list(param='wraplength', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='padx', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='pady', required=FALSE, class="integer", default=0, grep="^[0-9]+$")
 	)
@@ -82,7 +84,7 @@
 	list(param='enter', required=FALSE, class="logical", default=TRUE), #require an enter to call function
 	list(param='action', required=FALSE, class="character", default="entry"),
 	list(param='mode', required=FALSE, class="character", default="numeric", grep="^(numeric|integer|complex|logical|character)$"),
-	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S)?(e|w|E|W)?$"),	#choices: N,NE,E,SE,S,SW,W,NW
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
 	list(param='padx', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='pady', required=FALSE, class="integer", default=0, grep="^[0-9]+$")
 	)
@@ -96,7 +98,7 @@
 	list(param='width', required=FALSE, class="integer", default=0),
 	list(param='function', required=FALSE, class="character", default=""),
 	list(param='action', required=FALSE, class="character", default="button"),
-	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S)?(e|w|E|W)?$"),	#choices: N,NE,E,SE,S,SW,W,NW
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
 	list(param='padx', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='pady', required=FALSE, class="integer", default=0, grep="^[0-9]+$")
 	)
@@ -112,7 +114,7 @@
 	list(param='bg', required=FALSE, class="character", default=""),
 	list(param='function', required=FALSE, class="character", default=""),
 	list(param='action', required=FALSE, class="character", default="check"),
-	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S)?(e|w|E|W)?$"),	#choices: N,NE,E,SE,S,SW,W,NW
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
 	list(param='padx', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='pady', required=FALSE, class="integer", default=0, grep="^[0-9]+$")
 	)
@@ -128,7 +130,8 @@
 	list(param='function', required=FALSE, class="character", default=""),
 	list(param='action', required=FALSE, class="character", default="radio"),
 	list(param='mode', required=FALSE, class="character", default="numeric", grep="^(numeric|integer|complex|logical|character)$"),
-	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S)?(e|w|E|W)?$"),	#choices: N,NE,E,SE,S,SW,W,NW
+	list(param='selected', required=FALSE, class="logical", default=FALSE),
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
 	list(param='padx', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='pady', required=FALSE, class="integer", default=0, grep="^[0-9]+$")
 	)
@@ -146,7 +149,7 @@
 	list(param='bg', required=FALSE, class="character", default=""),
 	list(param='function', required=FALSE, class="character", default=""),
 	list(param='action', required=FALSE, class="character", default="slide"),
-	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S)?(e|w|E|W)?$"),	#choices: N,NE,E,SE,S,SW,W,NW
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
 	list(param='padx', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='pady', required=FALSE, class="integer", default=0, grep="^[0-9]+$")
 	)
@@ -161,7 +164,7 @@
 	list(param='function', required=FALSE, class="character", default=""),
 	list(param='enter', required=FALSE, class="logical", default=FALSE), #require an enter to change min/max values
 	list(param='action', required=FALSE, class="character", default="slideplus"),
-	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S)?(e|w|E|W)?$"),	#choices: N,NE,E,SE,S,SW,W,NW
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
 	list(param='padx', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='pady', required=FALSE, class="integer", default=0, grep="^[0-9]+$")
 	)
@@ -185,7 +188,7 @@
 	list(param='action', required=FALSE, class="character", default="vector"),
 	list(param='mode', required=FALSE, class="character", default="numeric", grep="^(numeric|integer|complex|logical|character)$"),
 	list(param='width', required=FALSE, class="integer", default=6, grep="^[0-9]+$"),
-	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S)?(e|w|E|W)?$"),	#choices: N,NE,E,SE,S,SW,W,NW
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
 	list(param='padx', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='pady', required=FALSE, class="integer", default=0, grep="^[0-9]+$")
 	)
@@ -212,7 +215,7 @@
 	list(param='action', required=FALSE, class="character", default="matrix"),
 	list(param='mode', required=FALSE, class="character", default="numeric", grep="^(numeric|integer|complex|logical|character)$"),
 	list(param='width', required=FALSE, class="integer", default=6, grep="^[0-9]+$"),
-	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S)?(e|w|E|W)?$"),	#choices: N,NE,E,SE,S,SW,W,NW
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
 	list(param='padx', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='pady', required=FALSE, class="integer", default=0, grep="^[0-9]+$")
 	)
@@ -239,7 +242,7 @@
 	list(param='enter', required=FALSE, class="logical", default=TRUE),
 	list(param='action', required=FALSE, class="character", default="data"),
 	list(param='width', required=FALSE, class="integer", default=6, grep="^[0-9]+$"),
-	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S)?(e|w|E|W)?$"),	#choices: N,NE,E,SE,S,SW,W,NW
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
 	list(param='padx', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='pady', required=FALSE, class="integer", default=0, grep="^[0-9]+$")
 	)
@@ -258,7 +261,7 @@
 	list(param='enter', required=FALSE, class="logical", default=TRUE),
 	list(param='action', required=FALSE, class="character", default="data"),
 	list(param='width', required=FALSE, class="integer", default=6, grep="^[0-9]+$"),
-	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S)?(e|w|E|W)?$"),	#choices: N,NE,E,SE,S,SW,W,NW
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
 	list(param='padx', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='pady', required=FALSE, class="integer", default=0, grep="^[0-9]+$")
 	)
@@ -266,8 +269,9 @@
 .widgetDefs$history <- list(
 	list(param='type', required=TRUE, class="character"),
 	list(param='name', required=FALSE, class="character", default="default", grep="^([a-zA-Z0-9]+)$"),
-	list(param='archive', required=FALSE, class="logical", default=TRUE),
-	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S)?(e|w|E|W)?$"),	#choices: N,NE,E,SE,S,SW,W,NW
+	list(param='function', required=FALSE, class="character", default=""),
+	list(param='import', required=FALSE, class="character", default=""),
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
 	list(param='padx', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='pady', required=FALSE, class="integer", default=0, grep="^[0-9]+$")
 	)
