@@ -1,15 +1,52 @@
 PBSmodelling - Changes
 ----------------------
+1.50 - Jun 26, 2007 Rowan
+  - Revised .widgetDefs$text in .\R\widgetDefs.r to include a logical argument called "scrollbar".
+  - Altered .createWidget.text() in .\R\guiFuns.r to create a text widget with or without a scrollbar.
+  - Revised .widgetDefs$text in .\R\widgetDefs.r to include the "sticky" argument.
+  - Updated User's Guide (text widget in App.A, App.C.1-2).
+  - Modified makePDF.bat slightly (replaced PBSmodelling with %1 in a few forgotten places).
+
+1.25 - Jun 21, 2007 Rowan
+  - Altered resetGraph() slightly: moved call to frame() after call to par().
+  - Updated User's Guide.
+  - Revised makePDF.bat; added newer version called makePDF2.bat (.\inst\PBStools\).
+  - Revised runExamplesWin.txt; added new PopSim example (.\inst\examples\).
+
+v.1.24 - Jun 13, 2007 Rowan
+  - Changed system() to shell() in openFile() located in .\R\supportFuns.r
+  - Updated PBSmodelling-UG.pdf
+  - Replaced FishRes example with new one from recent MUC collaboration.
+  - Modified runExamples() and testWidgets() to resolve conflicting window names.
+  - Changed makePDF.bat for easy PDF creation of *.Rd files (to append to UG).
+  - Modified various Rd files.
+
+v.1.23 - May 9, 2007 Alex
+  - fixed bug in .createWidget.object's data handling of modes
+
+v.1.22 - May 5, 2007 Alex
+  - rewrote list merging in importHistory
+
+v.1.21 - Apr 30, 2007 Alex
+  - writeList rolledback dput control to default value: showAttributes
+
+v.1.20 - Apr 25, 2007 Alex
+  - made change from 1.19 only apply to radio widgets
+
+v.1.19 - Apr 23, 2007 Alex
+  - fixed logical radio setWinVal bug by changing .getParamFromStr to convert widget 
+    values from character to user supplied mode.
+
 
 v.1.18 - Mar 13, 2007 Rowan
-	- revised "runDemos" & ".viewPkgDemo" to retain working directory focus 
-		and clean up files spawned by the demos.
-	- added the function ".dClose" to provide the cleanup upon closing "pbs.demo" window.
-	- modified "runDemos.Rd"
+  - revised "runDemos" & ".viewPkgDemo" to retain working directory focus 
+    and clean up files spawned by the demos.
+  - added the function ".dClose" to provide the cleanup upon closing "pbs.demo" window.
+  - modified "runDemos.Rd"
 
 v.1.17 - Mar 13, 2007 Rowan
-	- revised "runDemos" to retain focus of project location.
-	- revised "runExamples" to close only "window" and "runE" windows on exit.
+  - revised "runDemos" to retain focus of project location.
+  - revised "runExamples" to close only "window" and "runE" windows on exit.
 
 v1.16 - mar 5,2007 Jon
   - sortHistory "new" order taken as ascending for real numbers

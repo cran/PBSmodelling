@@ -27,8 +27,8 @@ grid 1 4 sticky=W
 		colnames="val min max active" \
 		rowlabels="Z alpha betak tau sigma n rho1 rho2 rho3 rho4 rho5" \
 		collabels="val min max active" \
-		values="0.05 0 1 T 5 2 25 T 0.2 0 1 T 1 0 5 T 1 0 3 T 100 10 5000 T \
-		1 0 10 T 1 0 10 T 1 0 10 F 1 0 10 F 1 0 10 F"
+		values="0.05 0 1 T 5 2 25 T 0.2 0 1 T 1 0 5 T 1 0 3 T 100 10 1000 T \
+		1 0 20 T 1 0 20 T 1 0 20 F 1 0 20 F 1 0 20 F"
 
 grid 1 4 sticky=W
 	label text="Distribution" font="bold 10"

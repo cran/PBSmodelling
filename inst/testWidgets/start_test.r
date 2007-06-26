@@ -5,7 +5,7 @@
 # text file found in the same directory
 #
 #
-# FOR AN INTERACTIVE DEMO USE:   testWidget()
+# FOR AN INTERACTIVE DEMO USE:   testWidgets()
 #
 #
 # To run: source("start_test.r")

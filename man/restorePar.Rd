@@ -19,6 +19,9 @@
 	Restoration algorithm:  \eqn{ P = P_{min} + (P_{max} - P_{min}) (sin(\frac{\pi S}{2}))^2 }{%
 	P = Pmin + (Pmax - Pmin) (sin(pi*S/2))^2 }
 }
+\seealso{
+  \code{\link{scalePar}}, \code{\link{calcMin}}, \code{\link{GT0}}
+}
 \examples{
 pvec <- data.frame(val=c(1,100,10000),min=c(0,0,0),max=c(5,500,50000),
         active=c(TRUE,TRUE,TRUE))

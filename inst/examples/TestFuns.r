@@ -1,10 +1,13 @@
 TestFuns <- function(funs=ls(grep("package:PBSmodelling",search()))){
 is1 <- ifelse(length(funs)==1,TRUE,FALSE);
+resetGraph();
 getWinVal(scope="L");
+print(funs)
 if (!any(funs=="createVector")) closeWin("vector");
 if (!any(funs=="focusWin")) closeWin(c("master","slave","drudge","employee"));
+if (!any(funs=="testWidgets")) closeWin(c("widWin","testW"));
 if (any(funs=="closeWin")){
-	closeWin(c("window","vector"));
+	closeWin(c("window","vector","testW","widWin"));
 	setWinVal(list(eN = 0, wtxt = "No examples chosen"), winName = "runE"); };
 if (any(funs=="addArrows")) {
 	tt=seq(from=-5,to=5,by=0.01);
@@ -13,21 +16,19 @@ if (any(funs=="addArrows")) {
 	addArrows(0.8,0.95,0.95,0.55, col="#FF0066");
 	};
 if (any(funs=="addLabel")) {
-	resetGraph();
 	addLabel(0.75,seq(from=0.9,to=0.1,by=-0.10),c('a','b','c'), col="#0033AA");
 	};
 if (any(funs=="addLegend")) {
-	resetGraph(); n <- sample(1:length(colors()),20); clrs <- colors()[n];
+	n <- sample(1:length(colors()),20); clrs <- colors()[n];
 	addLegend(.2,.9,fill=clrs,leg=clrs,cex=1.5);
 	};
 if (any(funs=="calcFib")) {
-	resetGraph();
 	addLabel(.3,.9,paste(paste(1:20,calcFib(20,20),sep=" : "),collapse="\n"),cex=1.5,adj=c(0,1));
 	};
 if (any(funs=="calcGM")) {
 	ex1 <- "calcGM(c(0,1,100))"; x1 <- eval(parse(text=ex1));
 	ex2 <- "calcGM(c(0,1,100),offset=0.01,exzero=FALSE)"; x2 <- eval(parse(text=ex2));
-	resetGraph(); addLabel(.5,.8,paste(c(ex1,x1,ex2,x2),collapse="\n\n"),cex=1.2);
+	addLabel(.5,.8,paste(c(ex1,x1,ex2,x2),collapse="\n\n"),cex=1.2);
 	};
 if (any(funs=="calcMin")) {
 	Ufun <- function(P) {
@@ -41,7 +42,7 @@ if (any(funs=="calcMin")) {
 		row.names=c("Linf","K","t0"),stringsAsFactors=FALSE)
 	alist <- calcMin(pvec=pvec,func=Ufun,method="nlm",steptol=1e-4,repN=10);
 	print(alist[-1]); P <- alist$Pend;
-	resetGraph(); expandGraph();
+	expandGraph();
 	xnew <- seq(afile$age[1],afile$age[nrow(afile)],len=100);
 	ynew <- P[1] * (1 - exp(-P[2]*(xnew-P[3])) );
 	plot(afile); lines(xnew,ynew,col="red",lwd=2); 
@@ -52,11 +53,11 @@ if (any(funs=="createVector")) {
 		func="drawLiss",windowname="vector");
 	};
 if (any(funs=="drawBars")) {
-	resetGraph(); plot(0:10,0:10,type="n")
+	plot(0:10,0:10,type="n")
 	drawBars(x=1:9,y=9:1,col="deepskyblue4",lwd=3)
 	};
 if (any(funs=="expandGraph")) {
-	resetGraph(); expandGraph(mfrow=c(2,1));
+	expandGraph(mfrow=c(2,1));
 	tt=seq(from=-10, to=10, by=0.05);
 	plot(tt,sin(tt), xlab="this is the x label",  ylab="this is the y label", 
 		main="main title", sub="sometimes there is a \"sub\" title")
@@ -65,7 +66,7 @@ if (any(funs=="expandGraph")) {
 	};
 if (any(funs=="findPat")) {
 	junk<-findPat(c("[aeoiy]", "^[0-9]"), c("hello", "WRLD", "11b"));
-	resetGraph(); addLabel(.5,.7,"Find [aeoiy] or [1-9] in",cex=1.5);
+	addLabel(.5,.7,"Find [aeoiy] or [1-9] in",cex=1.5);
 	addLabel(.5,.5,paste("c(",paste(c("hello", "WRLD", "11b"),collapse=", "),")"),cex=1.5);
 	addLabel(.5,.3,paste(junk,collapse=" "),cex=1.5,col="blue");
 	};
@@ -80,7 +81,7 @@ if (any(funs=="focusWin")) {
 	createWin(c("window name=employee title=Employee", "button text=\"I`m on a break\" font=\"times italic bold\" fg=red padx=25 pady=10 function=grab"), astext=TRUE);
 	};
 if (any(funs=="genMatrix")) {
-	resetGraph(); plotBubbles(genMatrix(20,6));
+	plotBubbles(genMatrix(20,6));
 	};
 if (any(funs=="GT0")) {
 	plotGT0 <- function(eps=1,x1=-2,x2=10,n=1000,col="black") {
@@ -93,43 +94,43 @@ if (any(funs=="GT0")) {
 		for (i in 1:length(eps)) 
 			plotGT0(eps=eps[i],x1=x1,x2=x2,n=n,col=mycol[i]);
 		invisible(); };
-	resetGraph(); testGT0();
+	testGT0();
 	};
 if (any(funs=="openFile")) {
 	setPBSext("html", "notepad.exe %f" );
 	openFile("TestFuns_openFile.html");
 	};
 if (any(funs=="pad0")) {
-	resetGraph(); x <- pad0(x=123,n=10,f=0:7);
+	x <- pad0(x=123,n=10,f=0:7);
 	addLabel(.5,.5,paste(x,collapse="\n"),cex=1.5);
 	};
 if (any(funs=="pickCol")) {
 	junk<-pickCol();
-	resetGraph(); addLabel(.5,.5,junk,cex=4,col=junk);
+	addLabel(.5,.5,junk,cex=4,col=junk);
 	};
 if (any(funs=="plotACF")) {
-	resetGraph(); plotACF(trees,lwd=2,lags=30);
+	plotACF(trees,lwd=2,lags=30);
 	};
 if (any(funs=="plotAsp")) {
 	x <- seq(0,10,0.1); y <- sin(x); 
-	resetGraph(); par(mfrow=2:1);
+	par(mfrow=2:1);
 	plotAsp(x,y,asp=1,xlim=c(0,10),ylim=c(-2,2), main="sin(x)")
 	plotAsp(x,y^2,asp=1,xlim=c(0,10),ylim=c(-2,2), main="sin^2(x)")
 	};
 if (any(funs=="plotBubbles")) {
-	resetGraph(); plotBubbles(genMatrix(20,6));
+	plotBubbles(genMatrix(20,6));
 	};
 if (any(funs=="plotCsum")) {
 	x <- rgamma(n=1000,shape=2);
-	resetGraph(); plotCsum(x);
+	plotCsum(x);
 	};
 if (any(funs=="plotDens")) {
 	z <- data.frame(y1=rnorm(50,sd=2),y2=rnorm(50,sd=1),y3=rnorm(50,sd=.5));
-	resetGraph(); plotDens(z,lwd=3);
+	plotDens(z,lwd=3);
 	};
 if (any(funs=="plotTrace")) {
 	z <- data.frame(x=1:50,y1=rnorm(50,sd=3),y2=rnorm(50,sd=1),y3=rnorm(50,sd=.25))
-	resetGraph(); plotTrace(z,lwd=3);
+	plotTrace(z,lwd=3);
 	};
 if (any(funs=="promptOpenFile")) {
 	scan(promptOpenFile(),what=character(),sep="\n")
@@ -141,7 +142,7 @@ if (any(funs=="readList")) {
 	junk <- readList("TestFuns_Data-readList.txt"); print(junk);
 	};
 if (any(funs=="resetGraph")) {
-	resetGraph(); addLabel(.5,.5,"Extent of new plot space",col="darkgreen",cex=1.5); box();
+	addLabel(.5,.5,"Extent of new plot space",col="darkgreen",cex=1.5); box();
 	};
 if (any(funs=="restorePar")) {
 	pvec <- data.frame(val=c(1,100,10000),min=c(0,0,0),max=c(5,500,50000),active=c(TRUE,TRUE,TRUE));
@@ -196,7 +197,7 @@ if (any(funs=="writeList")) {
 drawLiss <- function() {
 	getWinVal(scope="L");
 	ti <- 2*pi*(0:k)/k;;  x <- sin(2*pi*m*ti);  y <- sin(2*pi*(n*ti+phi));
-	resetGraph(); plot(x,y,type="l");
+	plot(x,y,type="l");
 	invisible(NULL); }
 
 grab <- function() {

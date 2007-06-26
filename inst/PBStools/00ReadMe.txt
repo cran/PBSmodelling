@@ -1,6 +1,6 @@
 The batch files in this directory can facilitate R package development 
 under Windows. For more information on building packages, see apendix B 
-of the User Guide*.
+of the PBS Modelling User Guide*.
 
 You can use the small package archived in PBStry_x.xx.tar.gz as a 
 convenient prototype for starting your own new package. It includes 

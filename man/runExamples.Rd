@@ -15,7 +15,7 @@
 
 	\code{BRugs} - \code{LinReg}, \code{MarkRec}, and \code{CCA};
 
-	\code{odesolve} - \code{FishRes};
+	\code{odesolve/ddesolve} - \code{FishRes};
 
 	\code{PBSmapping} - \code{FishTows}.
 }

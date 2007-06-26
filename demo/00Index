@@ -1,1 +1,2 @@
-runExamples       Display sample modelling applications with GUIs
+runExamples    Display various modelling applications with GUIs. 
+               Note: Some examples require additional packages.

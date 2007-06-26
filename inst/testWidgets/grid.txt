@@ -1,4 +1,4 @@
-window title="Widget = grid"
+window name=widWin title="Widget = grid"
 grid 2 2 relief=groove toptitle=Columns sidetitle=Rows \
    topfont="Helvetica 12 bold" sidefont="Helvetica 12 bold"
 	label text="Cell 1" font="times 8 italic"

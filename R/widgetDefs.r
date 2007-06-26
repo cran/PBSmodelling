@@ -282,6 +282,7 @@
 	list(param='height', required=FALSE, class="integer", grep="^([0-9])+$", default=8),
 	list(param='width', required=FALSE, class="integer", grep="^([0-9])+$", default=30),
 	list(param='edit', required=FALSE, class="logical", default=FALSE), #t=user can change text
+	list(param='scrollbar', required=FALSE, class="logical", default=TRUE), # user can add a scrollbar or not
 	###TODO - tktext can crash if supplied an invalid colour name
 	list(param='fg', required=FALSE, class="character", default="black"),
 	list(param='bg', required=FALSE, class="character", default="white"),
@@ -290,6 +291,7 @@
 	list(param='value', required=FALSE, class="character", default=""),
 	list(param='borderwidth', required=FALSE, class="integer", default=1),
 	list(param='relief', required=FALSE, class="character", default="sunken", grep="^(raised|sunken|flat|ridge|groove|solid)$"),
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
 	list(param='padx', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='pady', required=FALSE, class="integer", default=0, grep="^[0-9]+$")
 	)

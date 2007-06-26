@@ -5,7 +5,7 @@ if not defined PBS_SETLOCAL (
 
 if "%1"=="" (
 	echo ERROR - you must specify a package name
-	echo example: %0 PBSmodelling
+	echo example: %0 PBSmodelling 65
 	goto end )
 
 if "%2"=="" (
@@ -23,13 +23,11 @@ if not defined PBSERROR (
 		if exist "%1.%%a" (
 			rm -f "%1.%%a" ) )
 	if exist %dviP% (rm -rf %dviP%)
-	R CMD Rd2dvi --pdf --no-clean %1 
-	sed 's/a4paper/letter/g' %dviP%\Rd2.tex > %dviP%\temp.txt
-	sed 's/begin{document}/begin{document}\n\\\setcounter{page}{%page%}/g' %dviP%\temp.txt > %1.tex
-	latex %1
-	latex %1
-	makeindex %1
-	pdflatex %1
+	sed 's/\${R_PAPERSIZE-a4}/letter/g' %R_PATH%\Rd2dvi.sh > temp.txt
+	sed 's/begin{document}/begin{document}\n\\\\\\\setcounter{page}{%page%}/g' temp.txt > %R_PATH%\Rd2dvi4pbs.sh
+	R CMD Rd2dvi4pbs.sh --pdf --no-clean %1
+	cp %dviP%\Rd2.tex %1.tex
+	rm -f temp.txt
 )
 
 :end

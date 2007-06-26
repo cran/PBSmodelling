@@ -1,4 +1,4 @@
-window title="window vertical widgets" vertical=F
+window name=widWin title="window vertical widgets" vertical=F
 label "Un" font=20
 label "Deux" font=20
 label "Trois" font=20

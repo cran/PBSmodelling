@@ -1609,6 +1609,11 @@ parseWinFile <- function(fname, astext=FALSE)
 	if (errorFound != 0)
 		return(NULL)
 
+	#convert default values from character class to specified class ($mode in widgetDefs.r)
+	if ( !.isReallyNull(paramData,"value") && !.isReallyNull(paramData,"mode") && paramData$type=="radio" ) {
+		paramData$value <- as(paramData$value, paramData$mode)
+	}
+
 	#store debug information to be used if there are any errors while building the GUI
 	sourceCode <- c()
 	if (line.start<=line.end && !missing(sourcefile)) {
@@ -2514,8 +2519,7 @@ parseWinFile <- function(fname, astext=FALSE)
 			for(v in as.vector(userObject[[i]]))
 				dataValues <- c(dataValues, v)
 		}
-		dataModes <- paste(dataModes, collapse=" ")
-
+		
 		wid <- list(type="data",
 		            nrow=dim(userObject)[1],
 		            ncol=dim(userObject)[2],
@@ -2836,8 +2840,11 @@ parseWinFile <- function(fname, astext=FALSE)
 	if (widget$edit==FALSE)
 		tkconfigure(txtBox, state="disabled")
 
-	tkgrid(txtBox,scrollBar)
-	tkgrid.configure(scrollBar,sticky="ns")
+	if (widget$scrollbar == TRUE) {
+		tkgrid(txtBox,scrollBar)
+		tkgrid.configure(scrollBar,sticky="ns")
+	} else {
+		tkgrid(txtBox) }
 
 	return(tk)
 }
@@ -3283,22 +3290,35 @@ importHistory <- function(hisname="", fname="", updateHis=TRUE)
 		stop("no filename given.")
 
 	newHist <- readList(fname)
-	validNames <- names(getWinVal(winName=win))
+
+	insertMode <- getWinVal(PBS.history[[hisname]][[1]]$modename)[[PBS.history[[hisname]][[1]]$modename]]
+
+	a <- PBS.history[[hisname]]
+	PBS.history[[hisname]] <<- list()
+	index <- max(0, min(a$index, length(a)-1))
+	if (insertMode!="b" || index==0)
+		index <- index + 1
+	i <- 1
+
+	repeat {
+		if( !length(a) && !length(newHist) )
+			break
+		if( i > index && length(newHist) ) {
+			PBS.history[[hisname]][[i]] <<- newHist[[1]]
+			newHist[[1]] <- NULL
+		} else {
+			PBS.history[[hisname]][[i]] <<- a[[1]]
+			a[[1]] <- NULL
+		}
+		i <- i + 1
+	}
 	
-	len <- length(newHist)
-	i <- PBS.history[[hisname]][[1]]$index + 1
-
-	for(j in length(PBS.history[[hisname]]):(i+1)) {
-		PBS.history[[hisname]][[j+len]] <<- PBS.history[[hisname]][[j]]
-	}
-
-	for (j in 1:len) {
-		PBS.history[[hisname]][[i+j]] <<- newHist[[j]]
-	}
+	PBS.history[[hisname]][[1]]$index <<- 1
 
 	#update with new history settings
 	if (updateHis)
-		jumpHistory(hisname, i)
+		jumpHistory(hisname, index)
+
 	return(invisible(PBS.history[[hisname]]))
 }
 
@@ -3756,15 +3776,6 @@ clearWinVal <- function()
 # -----------------------------------------------------------
 .convertMode <- function(x, mode)
 {
-	#print("convert mode started at"); print(date());
-	#if (length(x)>1) {
-	#	print("OMG")
-	#	ret <- c() #new vector to hold new mode
-	#	for(i in 1:length(x)) {
-	#		ret[i]<-.convertMode(x[i], mode)
-	#	}
-	#	return(ret)
-	#}
 
 	#TODO - fix regexs
 	#they dont slow down, but will mess up with NAs

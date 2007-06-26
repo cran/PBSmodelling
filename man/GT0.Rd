@@ -15,13 +15,15 @@
 }
 
 \details{
-	\code{if (x >= eps)..........GT0 = x}
-
-	\code{if (0 < x < eps).......GT0 = (eps/2) * (1 + (x/eps)^2)}
-
-	\code{if (x <= 0)............GT0 = eps/2}
+	\preformatted{
+   if (x >= eps)..........GT0 = x
+   if (0 < x < eps).......GT0 = (eps/2) * (1 + (x/eps)^2)
+   if (x <= 0)............GT0 = eps/2
 }
-
+}
+\seealso{
+  \code{\link{scalePar}}, \code{\link{restorePar}}, \code{\link{calcMin}}
+}
 \examples{
 plotGT0 <- function(eps=1,x1=-2,x2=10,n=1000,col="black") {
 	x <- seq(x1,x2,len=n); y <- GT0(x,eps);

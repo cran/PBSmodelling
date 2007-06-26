@@ -65,7 +65,8 @@ calcMin(pvec, func, method="nlm", trace=0, maxit=1000, reltol=1e-8,
 }
 
 \seealso{
-	\code{nlm}, \code{nlminb}, and \code{optim} in R's \code{stats} package.
+	\code{\link{scalePar}}, \code{\link{restorePar}}, \code{\link{calcMin}}, \code{\link{GT0}} \cr
+	In the \code{stats} package: \code{nlm}, \code{nlminb}, and \code{optim}.
 }
 
 \examples{

@@ -17,9 +17,12 @@
 	Scaling algorithm:  \eqn{ S = \frac{2}{\pi} asin \sqrt{ \frac{P - P_{min}}{P_{max} - P_{min}} } }{%
 	S = (2/pi) asin sqrt((P - Pmin)/(Pmax - Pmin)) }
 }
-
-\value{Parameter vector scaled between 0 and 1.}
-
+\value{
+	Parameter vector scaled between 0 and 1.
+}
+\seealso{
+  \code{\link{restorePar}}, \code{\link{calcMin}}, \code{\link{GT0}}
+}
 \examples{
 pvec <- data.frame(val=c(1,100,10000),min=c(0,0,0),max=c(5,500,50000),
         active=c(TRUE,TRUE,TRUE))

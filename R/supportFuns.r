@@ -122,7 +122,7 @@ writeList <- function(x, fname="", format="D", comments="")
 	comments <- sub("^", "#", comments)
 
 	if (format=="D") {
-		dput(x, fname, control=NULL)
+		dput(x, fname)
 		if (file.exists(fname) && !NoComments) {
 			output <- scan(fname, what=character(0), sep="\n")
 			output <- paste(output, collapse="\n")
@@ -862,8 +862,7 @@ openFile <- function(fname="")
 	}
 	cmd <- getPBSext(ext)
 	cmd <- gsub("%f", fname, cmd)
-
-	system(cmd, wait=FALSE)
+	shell(cmd); # RH system(cmd, wait=FALSE)
 }
 
 
@@ -1010,8 +1009,8 @@ resetGraph <- function()
 	if (R.Version()$os!="mingw32")
 		defaultVals$gamma <- NULL
 
-	frame()
 	par(defaultVals)
+	frame()
 	invisible()
 } 
 
@@ -1850,7 +1849,7 @@ testWidgets <- function () {
 
 		if (wN==0) {
 			wtxt <- "No widgets displayed";
-			closeWin(name="window");
+			closeWin(name="widWin");
 		}
 		else {
 			pckg <- "PBSmodelling"; dnam <- "testWidgets";
@@ -1893,9 +1892,11 @@ runExamples <- function () {
 		}
 		if (eN == 0) {
 			wtxt <- "No examples chosen"
-			closeWin(name = "window")
+			closeWin(name = c("window","widWin","testW"))
 		}
 		else {
+			if (eN != 99)
+				closeWin(name = c("widWin","testW"))
 			source(paste(act, ".r", sep = ""))
 			wnam <- paste(act, "Win.txt", sep = "")
 			wtxt <- paste(readLines(wnam), collapse = "\n")
@@ -1903,7 +1904,7 @@ runExamples <- function () {
 		setWinVal(list(wtxt = wtxt), winName = "runE")
 	}
 	.runExHelperQuit <<- function() {
-		closeWin(c("window","runE"))
+		closeWin(c("window","widWin","testW","runE"))
 		setwd(.cwd)
 		remove(list = setdiff(ls(pos = 1), .cls), pos = 1)
 		return()
