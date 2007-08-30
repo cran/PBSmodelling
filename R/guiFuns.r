@@ -3834,3 +3834,99 @@ clearWinVal <- function()
 	}
 	return(x)
 }
+
+# ***********************************************************
+# getChoice:
+# Prompts user for an input from choices displayed in a GUI.
+# The default getChoice() yields T or F.
+# Answer is stored in .PBSmod$options$getChoice (or whatever winname is supplied).
+# Arguments:
+#    question   - question or prompting statement
+#    choice     - vector of strings to choose from
+#    winname    - window name for getChoice (default="getChoice")
+#    horizontal - if T, display the choices horizontally, else vertically 
+#    radio      - if T, display the choices as radio buttons, else buttons
+#    qcolor     - colour for question
+#    gui        - if T, functional when called from a GUI, else functional from command lines
+#    quiet      - if T, don't print choice on command line.
+# Examples:
+#    getChoice("What do you want?",c("Everything","Nothing","Lunch","Money","Fame"),qcolor="red",gui=F)
+#    getChoice("Who`s your daddy?",c("Stephen Harper","Homer Simpson","Jon Schnute"),horiz=F,radio=T,gui=F)
+# -----------------------------------------------------------
+getChoice <- function(question="Make a choice: ",choice=c("Yes","No"),winname="getChoice",
+                      horizontal=TRUE, radio=FALSE,qcolor="blue",gui=TRUE,quiet=FALSE) {
+
+#Construct the hidden choice function
+	fn1 <- paste(".makeChoice <<- function(){
+		act <- getWinAct(winName=\"",winname,"\")[1];
+		if (act==\"Yes\") answer <- TRUE
+		else if (act==\"No\") answer <- FALSE
+		else answer <- act;
+		setPBSoptions(\"",winname,"\",answer);
+		closeWin(\"",winname,"\") }",sep="",collapse="");
+	eval(parse(text=fn1));
+
+#Construct an onClose function
+	fn2 <- paste(
+		".closeChoice <<- function() {\n",
+		"chosen <- getPBSoptions(\"getChoice\");\n",
+		"active <- getPBSoptions(\"activeWin\");\n",
+		ifelse(quiet,"","print(chosen);\n"),
+		"focusWin(winName=active);}",sep="",collapse="");
+	setChoice <- getPBSoptions("setChoice");
+	if (!is.null(setChoice))
+	fn2 <- sub(";}",setChoice,fn2)
+	eval(parse(text=fn2));
+
+#Construct the Window Description file
+	n <- length(choice); ni <- 0;
+	nrow <- ifelse(horizontal,1,n); ncol <- ifelse(horizontal,n,1);
+	btype <- ifelse(radio,"radio","button");
+	btext <- paste("blist <- c(\"window name=\\\"",winname,"\\\" title=Choice",sep="",collapse="");
+	if (gui) btext <- paste(btext," onClose=.closeChoice\",",sep="",collapse="")
+	if(!gui) btext <- paste(btext,"\", ",sep="",collapse="");
+	qtext <- paste("\"label text=\\\"",question,"\\\" font=\\\"bold 10\\\" fg=\\\"",
+		qcolor,"\\\" sticky=W\",",sep="",collapse="");
+	btext <- paste(btext,qtext,"\"grid ",nrow," ",ncol," sticky=W\",",sep="",collapse="")
+
+	for (i in choice) {
+		if (radio) {
+			ni <- ni + 1;
+			btext <- paste(btext,
+				paste("\"radio text=\\\"",i,"\\\" name=myC sticky=W value=",ni,
+				" function=.makeChoice action=\\\"",i,"\\\"\",",sep=""),sep="",collapse="") }
+		else {
+			btext <- paste(btext,paste("\"button text=\\\"",i,"\\\" action=\\\"",i,
+				"\\\" function=.makeChoice sticky=W\",",sep=""),sep="",collapse="") }
+	}
+	btext <- paste(btext,"\"\")",sep="",collapse="");
+	eval(parse(text=btext));
+	if (exists(".PBSmod")) {
+		setPBSoptions(winname,NULL); setPBSoptions("activeWin",.PBSmod$.activeWin) }
+
+#Create the Window Description file
+	createWin(blist,astext=TRUE)
+	if (radio) setWinVal(list(myC=0),winName=winname)
+	if (!gui) {
+		answer <- NULL;
+		while(is.null(answer)) {answer <- getPBSoptions(winname); };
+		return(answer) }
+	else return(invisible()); 
+};
+
+# ***********************************************************
+# chooseWinVal:
+# Allows uswer to choose a string value from choices and write 
+# the chosen string into the specified variable of the specified
+# window.
+# Arguments:
+#    choice  - vector of strings to choose from
+#    varname - variable name to which choice is assigned in the target GUI.
+#    winname - window name for getChoice
+# -----------------------------------------------------------
+chooseWinVal <- function(choice,varname,winname="window") {
+	setPBSoptions("setChoice",
+		paste(";\nsetWinVal(list(",varname,"=chosen),winName=\"",winname,"\");}",sep="",collapse=""));
+	getChoice(question="Select from:",choice=choice,horizontal=FALSE,radio=TRUE,qcolor="red3",quiet=TRUE);
+	setPBSoptions("setChoice",NULL);
+}

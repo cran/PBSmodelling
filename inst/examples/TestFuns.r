@@ -6,6 +6,7 @@ print(funs)
 if (!any(funs=="createVector")) closeWin("vector");
 if (!any(funs=="focusWin")) closeWin(c("master","slave","drudge","employee"));
 if (!any(funs=="testWidgets")) closeWin(c("widWin","testW"));
+if (!any(funs=="chooseWinVal")) closeWin(c("choisir"));
 if (any(funs=="closeWin")){
 	closeWin(c("window","vector","testW","widWin"));
 	setWinVal(list(eN = 0, wtxt = "No examples chosen"), winName = "runE"); };
@@ -48,6 +49,33 @@ if (any(funs=="calcMin")) {
 	plot(afile); lines(xnew,ynew,col="red",lwd=2); 
 	addLabel(.05,.88,paste(paste(c("Linf","K","t0"),round(P,c(2,4,4)),sep=" = "),collapse="\n"),adj=0,cex=0.9);
 	};
+if (any(funs=="chooseWinVal")) {
+	dfnam <-
+	c("airquality","attitude","ChickWeight","faithful","freeny",
+	"iris","LifeCycleSavings","longley","morley","Orange",
+	"quakes","randu","rock","stackloss","swiss","trees")
+	wlist <- c(
+	"window name=\"choisir\" title=\"Test chooseWinVal\"",
+	"label text=\"Press <ENTER> in the green entry box
+	\\nto choose a file, then press <GO>\" sticky=W pady=5",
+	"grid 1 3 sticky=W",
+	"label text=File: sticky=W",
+	"entry name=fnam mode=character width=23 value=\"\" 
+	func=chFile entrybg=darkolivegreen1 pady=5",
+	"button text=GO bg=green sticky=W func=test",
+	"")
+	chFile <<- function(ch=dfnam,fn="fnam") {chooseWinVal(ch,fn,winname="choisir")};
+	test <<- function() {
+		getWinVal(winName="choisir",scope="L")
+		if (fnam!="" && any(fnam==dfnam)) {
+			file <- get(fnam);
+			pairs(file,gap=0); }
+		else {
+			resetGraph(); 
+			addLabel(.5,.5,"Press <ENTER> in the green entry box
+         \nto choose a file, then press <GO>", col="red",cex=1.5)}};
+	createWin(wlist,astext=T); test();
+	};
 if (any(funs=="createVector")) {
 	createVector(c(m=2,n=3,phi=0,k=1000),vectorLabels=c("x cycles","y cycles", "y phase", "points"),
 		func="drawLiss",windowname="vector");
@@ -82,6 +110,10 @@ if (any(funs=="focusWin")) {
 	};
 if (any(funs=="genMatrix")) {
 	plotBubbles(genMatrix(20,6));
+	};
+if (any(funs=="getChoice")) {
+	getChoice("What do you want?", c("Fame","Fortune","Health","Beauty","Lunch"),qcolor="red")
+	cat("\n====================\nYou chose: ");
 	};
 if (any(funs=="GT0")) {
 	plotGT0 <- function(eps=1,x1=-2,x2=10,n=1000,col="black") {

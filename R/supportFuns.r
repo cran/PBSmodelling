@@ -1008,12 +1008,11 @@ resetGraph <- function()
 
 	if (R.Version()$os!="mingw32")
 		defaultVals$gamma <- NULL
-
+	frame()
 	par(defaultVals)
 	frame()
 	invisible()
 } 
-
 
 # ***********************************************************
 # expandGraph:
@@ -1131,7 +1130,6 @@ plotAsp <- function(x,y,asp=1,...)
 	par(mai=old_mai)
 }
 
-
 # -------------------------------------------------------------
 # Function: plotCsum
 # --------------
@@ -1164,17 +1162,16 @@ plotCsum <- function (x, add = FALSE, ylim = c(0, 1), xlab = "Measure", ylab = "
 	invisible(data.frame(x=x,y=y))
 }
 
-
 # ***************** Bubble Plots *************************************
-#
 # Function to construct a bubble plot for a matrix z
-# by Jon Schnute
 #
 # z:     input matrix
 # xval:  x-values for the columns of z
 #        if xval=TRUE, first row contains x-values for the columns
 # yval:  y-values for the rows of z
 #        if yval=TRUE, first column contains y-values for the rows
+# dnam:  if TRUE, use dimnames as xval and yval
+#        (overwrites previously specified values)
 # rpro:  if rpro=TRUE, convert rows to proportions
 # cpro:  if cpro=TRUE, convert columns to proportions
 # rres:  if rres=TRUE, use row residuals (subtract row means)
@@ -1182,37 +1179,28 @@ plotCsum <- function (x, add = FALSE, ylim = c(0, 1), xlab = "Measure", ylab = "
 # powr:  power tranform; radii proportional to z^powr
 #        powr=0.5 gives bubble areas proportional to z
 # clrs:  colours used for positive and negative values
-# size:  size (inches) of the largest bubble
+# size:  size (inches) of the largest & smallest bubble
 # lwd:   line width for drawing circles
+# hide0: if TRUE, hide zero-value bubbles
 # debug: invoke browser if debug=TRUE
 # ...:   further parameters for the plot command (e.g., xlab)
-#
-# defaults: xval, yval, rpro, cpro, rres, cres, debug - all FALSE
-#           powr=1, lwd=2, clrs=c(colBlack,colRed), size=0.2
 # -----------------------------------------------------------
-plotBubbles <- function (z, xval = FALSE, yval = FALSE, rpro = FALSE, cpro = FALSE, rres = FALSE, 
-    cres = FALSE, powr = 1, clrs = c("black", "red"), size = 0.2, 
-    lwd = 2, debug = FALSE, ...) 
+plotBubbles <- function(z, xval=FALSE, yval=FALSE, dnam=FALSE, rpro=FALSE, 
+	cpro=FALSE, rres=FALSE, cres=FALSE, powr=1, size=0.2, lwd=2, 
+	clrs=c("black","red","blue"), hide0=FALSE, debug=FALSE, ...) 
 {
-	dz <- dim(z)
-	ny <- dz[1]
-	nx <- dz[2]
-	xval1 <- 1:nx
-	yval1 <- 1:ny
-	nx1 <- nx
-	ny1 <- ny
+	dz <- dim(z);  ny <- dz[1];  nx <- dz[2]
+	xval1 <- 1:nx;  yval1 <- 1:ny
+	nx1 <- nx;  ny1 <- ny
+
+	# If first row contains x-values for columns
 	if (mode(xval) == "logical") {
 		if (xval[1]) {
-			xval1 <- z[1, ]
-			ny1 <- ny - 1
-		}
-	}
+			xval1 <- z[1,]; ny1 <- ny - 1; } }
+	# If first column contains y-values for rows 
 	if (mode(yval) == "logical") {
 		if (yval[1]) {
-			yval1 <- z[, 1]
-			nx1 <- nx - 1
-		}
-	}
+			yval1 <- z[,1]; nx1 <- nx - 1; } }
 	xind <- (nx - nx1 + 1):nx
 	x2 <- xval1[xind]
 	yind <- (ny - ny1 + 1):ny
@@ -1221,61 +1209,63 @@ plotBubbles <- function (z, xval = FALSE, yval = FALSE, rpro = FALSE, cpro = FAL
 		x2 <- xval
 	if ((mode(yval) == "numeric") & (length(yval) == ny1)) 
 		y2 <- yval
+	zz <- array(z[yind, xind],dim=c(length(yind),length(xind)),dimnames=dimnames(z)) # new 8/30/07
+
+	# dimnames are to be used to over-ride xval and yval
+	if (dnam & !is.null(dimnames(zz))) { # new 8/30/07
+		if (!is.null(dimnames(zz)[[2]])) { # new 8/30/07
+			xnam <- as.numeric(dimnames(zz)[[2]]);
+			if (!any(is.na(xnam)) && (length(xnam)==1 || all(diff(xnam)>0 | all(diff(xnam)<0)))) # new 8/30/07
+				x2 <- xnam;  # strictly increasing / decreasing
+		}
+		if (!is.null(dimnames(zz)[[1]])) { # new 8/30/07
+			ynam <- as.numeric(dimnames(zz)[[1]])
+			if (!any(is.na(ynam)) && (length(ynam)==1 || all(diff(ynam)>0 | all(diff(ynam)<0)))) # new 8/30/07
+				y2 <- ynam;  # strictly increasing / decreasing
+		}
+	};
 	xx <- rep(x2, each = length(y2))
 	yy <- rep(y2, length(x2))
-	zz <- z[yind, xind]
-	minz <- min(zz)
-	maxz <- max(zz)
+	minz <- min(zz,na.rm=TRUE);  maxz <- max(zz,na.rm=TRUE);
 	if (rpro | cpro) {
 		if (minz < 0) {
 			zz <- zz - minz
 			minz <- 0
-			maxz <- max(zz)
-		}
-	}
+			maxz <- max(zz,na.rm=TRUE) } }
 	if (rpro) {
-		zs <- apply(zz, 1, sum)
-		zz <- sweep(zz, 1, zs, "/")
-	}
+		zs <- apply(zz, 1, sum, na.rm=TRUE)
+		zz <- sweep(zz, 1, zs, "/") }
 	if (cpro) {
-		zs <- apply(zz, 2, sum)
-		zz <- sweep(zz, 2, zs, "/")
-	}
+		zs <- apply(zz, 2, sum, na.rm=TRUE)
+		zz <- sweep(zz, 2, zs, "/") }
 	if (rres) {
-		zm <- apply(zz, 1, mean)
-		zz <- sweep(zz, 1, zm, "-")
-	}
+		zm <- apply(zz, 1, mean, na.rm=TRUE)
+		zz <- sweep(zz, 1, zm, "-") }
 	if (cres) {
-		zm <- apply(zz, 2, mean)
-		zz <- sweep(zz, 2, zm, "-")
-	}
+		zm <- apply(zz, 2, mean, na.rm=TRUE)
+		zz <- sweep(zz, 2, zm, "-") }
+	zNA <- is.na(zz) | is.nan(zz) | is.infinite(zz); zz[zNA] <- 0;
 	z0 <- sign(zz) * abs(zz)^abs(powr)
-	z1 <- z0
-	z1[z0 < 0] <- NA
-	z2 <- -z0
-	z2[z0 >= 0] <- NA
-	za <- max(z0)
-	zb <- min(z0)
-	zc <- max(abs(z0))
-	sz1 <- max(0.001, za * size/zc)
-	sz2 <- max(0.001, -zb * size/zc)
-	if (debug) 
-		browser()
-	symbols(xx, yy, circles = as.vector(abs(z0)), inches = size, 
-		...)
-	if (debug) 
-		browser()
-	if (za > 0) {
-		symbols(xx, yy, circles = as.vector(z1), inches = sz1, 
-		        fg = clrs[1], lwd = lwd, add = TRUE, ...)
-	}
-	if (zb < 0) {
+	z1 <- z3 <- z0;  z1[z0 <= 0] <- NA; z3[z0<0 | z0>0] <- NA;
+	z2 <- -z0; z2[z0 >= 0] <- NA;
+	za <- max(z0,na.rm=TRUE);  zb <- min(z0,na.rm=TRUE)
+	zM <- max(abs(z0))
+	sz1 <- max(za * size/zM, 0.001)
+	sz2 <- max(-zb * size/zM, 0.001)
+	if (debug) browser()
+	symbols(xx, yy, circles = as.vector(abs(z0)), inches = size, fg=0, ...)
+	if (debug) browser()
+	if (!hide0 && !all(is.na(z3))) {
+		symbols(xx, yy, circles = as.vector(z3), inches = 0.001, 
+			fg = clrs[3], lwd = lwd, add = TRUE, ...) }
+	if (!all(is.na(z2))) {
 		symbols(xx, yy, circles = as.vector(z2), inches = sz2, 
-		        fg = clrs[2], lwd = lwd, add = TRUE, ...)
-	}
-	invisible()
+			fg = clrs[2], lwd = lwd, add = TRUE, ...) }
+	if (!all(is.na(z1))) {
+		symbols(xx, yy, circles = as.vector(z1), inches = sz1, 
+			fg = clrs[1], lwd = lwd, add = TRUE, ...) }
+	invisible(z0)
 }
-
 
 # ***********************************************************
 # genMatrix:
@@ -1291,7 +1281,6 @@ genMatrix <- function (m,n,mu=0,sigma=1)
    matrix(rnorm(m*n,mean=mu,sd=sigma), m, n)
 }
 
-
 # ***********************************************************
 # addArrows:
 #  Calls 'arrows' function using relative (0:1) coordinates
@@ -1300,22 +1289,22 @@ genMatrix <- function (m,n,mu=0,sigma=1)
 #  y1 - draw from
 #  x2 - draw to
 #  y2 - draw to
+#  ... - arguments used by key, such as "lines", "text", or "rectangle"
 # -----------------------------------------------------------
 addArrows <- function (x1, y1, x2, y2, ...) 
 {
 	uxy <- par()$usr
-	ux1 <- uxy[1]
-	ux2 <- uxy[2]
-	uy1 <- uxy[3]
-	uy2 <- uxy[4]
+	ux1 <- uxy[1]; ux2 <- uxy[2]
+	uy1 <- uxy[3]; uy2 <- uxy[4]
 	px1 <- ux1 + x1 * (ux2 - ux1)
 	px2 <- ux1 + x2 * (ux2 - ux1)
 	py1 <- uy1 + y1 * (uy2 - uy1)
 	py2 <- uy1 + y2 * (uy2 - uy1)
+	if(par()$xlog) { px1 <- 10^px1; px2 <- 10^px2 }
+	if(par()$ylog) { py1 <- 10^py1; py2 <- 10^py2 }
 	arrows(px1, py1, px2, py2, ...)
 	invisible(NULL)
 }
-
 
 # ***********************************************************
 # addLegend:
@@ -1328,16 +1317,15 @@ addArrows <- function (x1, y1, x2, y2, ...)
 addLegend <- function (x, y, ...) 
 {
 	uxy <- par()$usr
-	x1 <- uxy[1]
-	x2 <- uxy[2]
-	y1 <- uxy[3]
-	y2 <- uxy[4]
+	x1 <- uxy[1]; x2 <- uxy[2]
+	y1 <- uxy[3]; y2 <- uxy[4]
 	x0 <- x1 + x * (x2 - x1)
 	y0 <- y1 + y * (y2 - y1)
+	if(par()$xlog) x0 <- 10^x0
+	if(par()$ylog) y0 <- 10^y0
 	legend(x0, y0, ...)
 	invisible(NULL)
 }
-
 
 # ***********************************************************
 # addLabel:
@@ -1348,17 +1336,16 @@ addLegend <- function (x, y, ...)
 #   ... - arguments used by text, such as "adj", "cex", or "col"
 # Result: label 'txt' at (x,y) in current plot
 # -----------------------------------------------------------
-addLabel <- function (x, y, txt, ...) 
-{
+addLabel <- function (x, y, txt, ...) {
 	uxy <- par()$usr
-	x1 <- uxy[1]
-	x2 <- uxy[2]
-	y1 <- uxy[3]
-	y2 <- uxy[4]
+	x1 <- uxy[1]; x2 <- uxy[2]
+	y1 <- uxy[3]; y2 <- uxy[4]
 	x0 <- x1 + x * (x2 - x1)
 	y0 <- y1 + y * (y2 - y1)
+	if(par()$xlog) x0 <- 10^x0
+	if(par()$ylog) y0 <- 10^y0
 	text(x0, y0, txt, ...)
-	invisible(NULL)
+	invisible()
 }
 
 # ***********************************************************
@@ -1892,11 +1879,11 @@ runExamples <- function () {
 		}
 		if (eN == 0) {
 			wtxt <- "No examples chosen"
-			closeWin(name = c("window","widWin","testW"))
+			closeWin(name = c("window","widWin","testW","choisir"))
 		}
 		else {
 			if (eN != 99)
-				closeWin(name = c("widWin","testW"))
+				closeWin(name = c("widWin","testW","choisir"))
 			source(paste(act, ".r", sep = ""))
 			wnam <- paste(act, "Win.txt", sep = "")
 			wtxt <- paste(readLines(wnam), collapse = "\n")
@@ -1904,7 +1891,7 @@ runExamples <- function () {
 		setWinVal(list(wtxt = wtxt), winName = "runE")
 	}
 	.runExHelperQuit <<- function() {
-		closeWin(c("window","widWin","testW","runE"))
+		closeWin(c("window","widWin","testW","choisir","runE"))
 		setwd(.cwd)
 		remove(list = setdiff(ls(pos = 1), .cls), pos = 1)
 		return()
