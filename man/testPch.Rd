@@ -18,7 +18,7 @@ testPch(pch=1:100, ncol=10, grid=TRUE, newframe=TRUE, bs=FALSE)
 	\item{newframe}{logical; if \code{TRUE} reset the graph, otherwise overlay 
 		on top of the current graph.}
 	\item{bs}{logical; if \code{TRUE}, show backslash characters used in text 
-		statements (e.g., \code{30\\272C} = 30\eqn{^\circ}{°}C).}
+		statements (e.g., \code{30\\272C} = 30\eqn{^\circ}{ degrees}C).}
 }
 \examples{
 testPch(123:255)

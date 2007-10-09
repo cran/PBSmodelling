@@ -18,7 +18,8 @@
 }
 
 \usage{
-initHistory(hisname,indexname=NULL,sizename=NULL,modename=NULL,func=NULL,overwrite=TRUE)
+initHistory(hisname,indexname=NULL,sizename=NULL,modename=NULL,
+  func=NULL,overwrite=TRUE)
 rmHistory(hisname="", index="")
 addHistory(hisname="")
 forwHistory(hisname="")

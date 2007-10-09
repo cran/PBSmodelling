@@ -1,2 +1,2 @@
-call build PBSmodelling
+call Rbuild PBSmodelling
 pause

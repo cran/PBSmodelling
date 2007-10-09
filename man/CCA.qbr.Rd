@@ -33,8 +33,8 @@
 \details{
   Handline surveys for rockfish have been conducted in 
   Johnstone Strait (British Columbia) and adjacent waterways 
-  (126\eqn{^\circ}{°}37'W to 126\eqn{^\circ}{°}53'W, 
-  50\eqn{^\circ}{°}32'N to 50\eqn{^\circ}{°}39'N) since 1986. 
+  (126\eqn{^\circ}{ degrees}37'W to 126\eqn{^\circ}{ degrees}53'W, 
+  50\eqn{^\circ}{ degrees}32'N to 50\eqn{^\circ}{ degrees}39'N) since 1986. 
   Yamanaka and Richards (1993) describe surveys conducted in 1986, 
   1987, 1988, and 1992. In 2001, the Rockfish Selective Fishery 
   Study (Berry 2001) targeted quillback rockfish \emph{Sebastes 
@@ -44,8 +44,8 @@
   in 2004 essentially repeated the 1992 survey design. Fish samples 
   from surveys have been supplemented by commercial handline 
   fishery samples taken from a larger region 
-  (126\eqn{^\circ}{°}35'W to 127\eqn{^\circ}{°}39'W, 
-  50\eqn{^\circ}{°}32'N to 50\eqn{^\circ}{°}59'N) in the years 
+  (126\eqn{^\circ}{ degrees}35'W to 127\eqn{^\circ}{ degrees}39'W, 
+  50\eqn{^\circ}{ degrees}32'N to 50\eqn{^\circ}{ degrees}59'N) in the years 
   1984-1985, 1989-1991, 1993, 1996, and 2000 (Schnute and Haigh 
   2007).
 }

@@ -1,2 +1,2 @@
-call check PBSmodelling
+call Rcheck PBSmodelling
 pause

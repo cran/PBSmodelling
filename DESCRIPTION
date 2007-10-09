@@ -1,6 +1,6 @@
 Package: PBSmodelling
-Version: 1.59
-Date: 2007-08-30
+Version: 1.61
+Date: 2007-10-09
 Title: PBS Modelling
 Author: Jon T. Schnute <SchnuteJ@pac.dfo-mpo.gc.ca>,
   Alex Couture-Beil <alex@mofo.ca>, and
@@ -21,4 +21,4 @@ Description: PBS Modelling provides software to facilitate the design,
   PBSmodelling-UG.pdf. To use this package effectively, please consult
   the guide.
 License: GPL version 2 or newer
-Packaged: Thu Aug 30 11:07:20 2007; haighr
+Packaged: Tue Oct  9 13:33:51 2007; Rowan

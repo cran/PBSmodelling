@@ -1,6 +1,13 @@
 PBSmodelling - Changes
 ----------------------
-1.59 - Aug 30, 2007 Rowan
+1.61 - Oct 9, 2007  Rowan - CRAN version
+  - Removed extended ASCII characters from CCA.qbr.Rd and testPch.Rd.
+  - Removed old batch files (check.bat, build.bat, pack.bat, unpack.bat, makePDF.bat).
+  - Updated User's Guide regarding batch files.
+1.60 - Oct 2, 2007 Alex
+  - Addresses the C warnings introduced by the new R C api.
+  - Modified one of the strings???
+1.59 - Aug 30, 2007 Rowan - CRAN version
   - Fixed bugs in plotBubbles: to handle 1-column matrices, to handle null dimnames if dnam=T.
 1.58 - Aug 28, 2007 Rowan
   - Corrected User's Guide to reflect proper history function names (e.g, initHistory vs. initPBShistory).

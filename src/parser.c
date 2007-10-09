@@ -16,30 +16,30 @@ void dispError(char *error, SEXP env, SEXP fname, SEXP lineNum)
 	SEXP callStr,t,p;
 	int objs=0;
 	
-	//create list for func call
+	/*create list for func call*/
 	PROTECT(t = callStr = allocList(4));
 	objs++;
 	SET_TYPEOF(callStr, LANGSXP);
 	
-	//first element - function name
+	/*first element - function name*/
 	SETCAR(t, install(".catError2"));
 	
-	//create first arg - error message
+	/*create first arg - error message*/
 	PROTECT(p=allocVector(STRSXP, 1));
     objs++;
     SET_STRING_ELT(p, 0, mkChar(error));
 	t=CDR(t);
 	SETCAR(t, p);
 	
-	//2nd arg - fname
+	/*2nd arg - fname*/
 	t=CDR(t);
 	SETCAR(t, fname);
 	
-	//3rd arg - line number
+	/*3rd arg - line number*/
 	t=CDR(t);
 	SETCAR(t, lineNum);
 
-	//preform the call
+	/*preform the call*/
 	eval(callStr, env);
     UNPROTECT(objs);
 }
@@ -56,40 +56,40 @@ SEXP addPair(char *key, char *val, int *objs, SEXP list_names, SEXP list_names_v
 {
 	SEXP list, p;
 	
-	if (!key[0]) { //no key was given (i.e. "")
-		//create a 1 element list
+	if (!key[0]) { /*no key was given (i.e. "")*/
+		/*create a 1 element list*/
 	    PROTECT(list = allocVector(VECSXP, 1));
 	    (*objs)++;
 	    
-	    //create a single string and attach to 0th element of list
+	    /*create a single string and attach to 0th element of list*/
 	    PROTECT(p=allocVector(STRSXP, 1));
 	    (*objs)++;
 	    SET_STRING_ELT(p, 0, mkChar(val));
 	    SET_VECTOR_ELT(list, 0, p);
 
-	    //name them "key", and "value"
+	    /*name them "key", and "value"*/
 	    setAttrib(list, R_NamesSymbol, list_names_value_only);
 	    return list;
 	}
-	//otherwise save both key and value
+	/*otherwise save both key and value*/
 
-	//create a 2 element list
+	/*create a 2 element list*/
     PROTECT(list = allocVector(VECSXP, 2));
     (*objs)++;
     
-    //create a single string and attach as 0th element of list
+    /*create a single string and attach as 0th element of list*/
     PROTECT(p=allocVector(STRSXP, 1));
     (*objs)++;
     SET_STRING_ELT(p, 0, mkChar(key));
     SET_VECTOR_ELT(list, 0, p);
     
-    //create a single string and attach to 1st element of list
+    /*create a single string and attach to 1st element of list*/
     PROTECT(p=allocVector(STRSXP, 1));
     (*objs)++;
     SET_STRING_ELT(p, 0, mkChar(val));
     SET_VECTOR_ELT(list, 1, p);
     
-    //name them "key", and "value"
+    /*name them "key", and "value"*/
     setAttrib(list, R_NamesSymbol, list_names);
     
     return list;
@@ -116,7 +116,7 @@ int countVals(const char *s) {
     		continue;
     	}
     	if (c=='"') {
-    		quoted=!quoted; //toggle quote state
+    		quoted=!quoted; /*toggle quote state*/
     		quotefound=1;
     		continue;
     	}
@@ -127,10 +127,10 @@ int countVals(const char *s) {
     		if (quoted) {
     			continue;
     		}
-    		//save key and vals
+    		/*save key and vals*/
     		if (charfound || quotefound)
     			kvpair++;
-    		//reset word count
+    		/*reset word count*/
     		charfound=0;
     		quotefound=0;
     		continue;
@@ -138,7 +138,7 @@ int countVals(const char *s) {
     	charfound=1;
     }
     if (charfound || quotefound)
-    	kvpair++; //last word isnt caught by loop
+    	kvpair++; /*last word isnt caught by loop*/
     
 	return kvpair;
 }
@@ -161,15 +161,16 @@ SEXP strToList(SEXP str, SEXP env, SEXP fname, SEXP lineNum)
 {
 	SEXP list, list_names, list_names_value_only, p;
 	int objs=0, escape, quoted, equal, quotefound, j, i, kvpair;
-	char *key, *value, buf1[MAXSTRSIZE+1], buf2[MAXSTRSIZE+1], c, *s;
+	char *key, *value, buf1[MAXSTRSIZE+1], buf2[MAXSTRSIZE+1], c;
+	const char *s;
     
-    //make a char vector for "key", "value" names for list pairs
+    /*make a char vector for "key", "value" names for list pairs*/
     PROTECT(list_names = allocVector(STRSXP, 2));
     objs++;
     SET_STRING_ELT(list_names, 0,  mkChar("key"));
     SET_STRING_ELT(list_names, 1,  mkChar("value"));
 
-    //make a char vector for only "value" name for list pairs with no valid key
+    /*make a char vector for only "value" name for list pairs with no valid key*/
     PROTECT(list_names_value_only = allocVector(STRSXP, 1));
     objs++;
     SET_STRING_ELT(list_names_value_only, 0,  mkChar("value"));
@@ -188,7 +189,7 @@ SEXP strToList(SEXP str, SEXP env, SEXP fname, SEXP lineNum)
     key=buf1;
     value=buf2;
     
-    //make master list for the right length
+    /*make master list for the right length*/
     i=countVals(s);
     PROTECT(list = allocVector(VECSXP, i));
     objs++;
@@ -205,13 +206,13 @@ SEXP strToList(SEXP str, SEXP env, SEXP fname, SEXP lineNum)
     		escape=0;
     		continue;
     	}
-    	if (c=='\\') { //in R code - it had to also be in quotes, is this really the case?
-    		value[j++]=c; //don't strip them out yet - it might be a "character" or "characterVector"
+    	if (c=='\\') { /*in R code - it had to also be in quotes, is this really the case?*/
+    		value[j++]=c; /*don't strip them out yet - it might be a "character" or "characterVector"*/
     		escape=1;
     		continue;
     	}
     	if (c=='"') {
-    		quoted=!quoted; //toggle quote state
+    		quoted=!quoted; /*toggle quote state*/
     		quotefound=1;
     		continue;
     	}
@@ -220,7 +221,7 @@ SEXP strToList(SEXP str, SEXP env, SEXP fname, SEXP lineNum)
     			value[j++]=c;
     			continue;
     		}
-    		//error - single quotes must be escaped
+    		/*error - single quotes must be escaped*/
     		list=R_NilValue;
     		dispError("unexpected single quote found", env, fname, lineNum);
 			goto strToList_exit;
@@ -233,8 +234,8 @@ SEXP strToList(SEXP str, SEXP env, SEXP fname, SEXP lineNum)
     			value[j++]=c;
     			continue;
     		}
-    		//save key and vals
-    		//DON'T FORGET ABOUT CODE JUST BELOW LOOP
+    		/*save key and vals
+    		  DON'T FORGET ABOUT CODE JUST BELOW LOOP */
     		if (j || quotefound) {
     			value[j]='\0';
     			if (!equal)
@@ -248,7 +249,7 @@ SEXP strToList(SEXP str, SEXP env, SEXP fname, SEXP lineNum)
 				goto strToList_exit;
     		}
     		
-    		//reset counts
+    		/*reset counts*/
     		j=0;
     		quotefound=0;
     		equal=0;
@@ -259,7 +260,7 @@ SEXP strToList(SEXP str, SEXP env, SEXP fname, SEXP lineNum)
     	}
     	if (c=='=' && !quoted && !equal) {
     		if (!j) {
-    			//found "=value"
+    			/*found "=value"*/
 	    		list=R_NilValue;
 	    		dispError("unexpected '=' found", env, fname, lineNum);
 				goto strToList_exit;
@@ -272,7 +273,7 @@ SEXP strToList(SEXP str, SEXP env, SEXP fname, SEXP lineNum)
     		
     		continue;
     	}
-    	//if no cases were found, then treat as a regular char
+    	/*if no cases were found, then treat as a regular char*/
     	value[j++]=c;
     }
     if (quoted) {
@@ -280,8 +281,8 @@ SEXP strToList(SEXP str, SEXP env, SEXP fname, SEXP lineNum)
     	dispError("closing doublequote is missing", env, fname, lineNum);
 		goto strToList_exit;
     }
-    //save key and vals
-    //DON'T FORGET ABOUT ABOVE CODE IN LOOP
+    /*save key and vals
+      DON'T FORGET ABOUT ABOVE CODE IN LOOP*/
     if (j || quotefound) {
 	    value[j]='\0';
 	    if (!equal)
@@ -315,7 +316,8 @@ SEXP strToVector(SEXP str, SEXP env, SEXP fname, SEXP lineNum)
 {
 	SEXP list;
 	int objs=0, escape, quoted, quotefound, j, i, vecIndex;
-	char value[MAXSTRSIZE+1], c, *s;
+	char value[MAXSTRSIZE+1], c;
+	const char *s;
 
 
     PROTECT(str = AS_CHARACTER(str));
@@ -328,7 +330,7 @@ SEXP strToVector(SEXP str, SEXP env, SEXP fname, SEXP lineNum)
     j=0;
     
     
-    //make master list for the right length
+    /*make master list for the right length*/
     i=countVals(s);
     PROTECT(list = allocVector(STRSXP, i));
     objs++;
@@ -361,7 +363,7 @@ SEXP strToVector(SEXP str, SEXP env, SEXP fname, SEXP lineNum)
     		continue;
     	}
     	if (c=='"') {
-    		quoted=!quoted; //toggle quote state
+    		quoted=!quoted; /*toggle quote state*/
     		quotefound=1;
     		continue;
     	}
@@ -373,19 +375,19 @@ SEXP strToVector(SEXP str, SEXP env, SEXP fname, SEXP lineNum)
     			value[j++]=c;
     			continue;
     		}
-    		//save vals
+    		/*save vals*/
     		if (j || quotefound) {
     			value[j]='\0';
     			SET_STRING_ELT(list, vecIndex++, mkChar(value));
     		}
     		
-    		//reset counts
+    		/*reset counts*/
     		j=0;
     		quotefound=0;
     		
     		continue;
     	}
-    	//if no cases were found, then treat as a regular char
+    	/*if no cases were found, then treat as a regular char*/
     	value[j++]=c;
     }
     if (quoted) {
@@ -394,7 +396,7 @@ SEXP strToVector(SEXP str, SEXP env, SEXP fname, SEXP lineNum)
 		goto strToVector_exit;
     }
     if (j || quotefound) {
-    	//save vals
+    	/*save vals*/
     	value[j]='\0';
     	SET_STRING_ELT(list, vecIndex++, mkChar(value));
 	}
@@ -406,17 +408,19 @@ strToVector_exit:
 }
 
 
-//returns a string without any leading #comments
-//and strips off leftover whitespace on the right side
+/*returns a string without any leading #comments
+ *and strips off leftover whitespace on the right side */
 SEXP stripComments(SEXP str)
 {
 	int objs=0, escape, quoted, i, last_whitspace, escaped_whitespace;
 	int first_whitespace=0, non_white_found=0;
-	char c, *s;
+	char c;
+	char s[strlen(CHAR(STRING_ELT(str,0)))+1];
+	strcpy( s, CHAR(STRING_ELT(str,0)) );
 
     PROTECT(str = AS_CHARACTER(str));
     objs++;
-    s = CHAR(STRING_ELT(str,0));
+    /*s = CHAR(STRING_ELT(str,0));*/
 
     escape=0;
     quoted=0;
@@ -435,20 +439,20 @@ SEXP stripComments(SEXP str)
     	}
     	if (c=='\\') {
     		escape=1;
-    		last_whitspace=-1; //invalidate whitespace
+    		last_whitspace=-1; /*invalidate whitespace*/
     		escaped_whitespace=0;
     		non_white_found=1;
     		continue;
     	}
     	if (c=='"') {
-    		quoted=!quoted; //toggle quote state
-    		last_whitspace=-1; //invalidate whitespace
+    		quoted=!quoted; /*toggle quote state*/
+    		last_whitspace=-1; /*invalidate whitespace*/
     		escaped_whitespace=0;
     		non_white_found=1;
     		continue;
     	}
     	if (c=='#' && (!quoted || escaped_whitespace)) {
-    		//found where comment starts
+    		/*found where comment starts*/
     		if (i>0) {
     			if (last_whitspace>=0 && (s[i-1]==' ' || s[i-1]=='\t'))
     				i=last_whitspace;
@@ -464,12 +468,12 @@ SEXP stripComments(SEXP str)
     			first_whitespace++;
     		continue;
     	}
-    	//a normal char was found - invalidate last whitespace
+    	/*a normal char was found - invalidate last whitespace*/
     	last_whitspace=-1;
     	escaped_whitespace=0;
     	non_white_found=1;
     }
-    //no # was found - but there might be whitespace
+    /*no # was found - but there might be whitespace*/
     if (last_whitspace>=0)
 		s[last_whitspace]='\0';
 	SET_STRING_ELT(str, 0, mkChar(s+first_whitespace));
