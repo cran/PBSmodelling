@@ -823,48 +823,37 @@ setPBSext <- function(ext, cmd)
 	.PBSmod$.options$openfile[[ext]] <<- cmd
 }
 
-
 # ***********************************************************
 # openFile:
-#  opens a file for viewing - based off .PBSmod$.options$openfile
-# Arguments:
-#  fname - file to open
+#  opens a file for viewing based on System file
+#  extension association or .PBSmod$.options$openfile
 # -----------------------------------------------------------
-openFile <- function(fname="")
-{
-	if (length(fname)>1) {
-		for(i in 1:length(fname)) {
-			openFile(fname[i])
+openFile <- function(fname="") {
+	.openFile=function(fname) {
+		if (!exists(".PBSmod"))  .initPBSoptions()
+		if (fname=="")  fname=getWinAct()[1]
+		if (any(grep("^~", fname)))
+			fname <- path.expand(fname)
+		else if (!any(grep("^([a-z]:(\\\\|/)|\\\\\\\\|/)", fname, ignore.case = TRUE)))
+			fname <- paste(getwd(), "/", fname, sep="")
+		if (!file.exists(fname))
+			stop(paste("File \"", fname, "\" does not exist", sep=""))
+
+		ext <- sub("^.*\\.", "", fname)
+		if (.isReallyNull(.PBSmod$.options$openfile, ext)) {
+			if (!exists("shell.exec", mode="function")) 
+				stop(paste("There is no program associated with the extension '", ext, "'\n",
+				           "Please set an association with the setPBSext command\n"))
+			shell.exec(fname); return(fname)
+		} else {
+			cmd <- getPBSext(ext)
+			cmd <- gsub("%f", fname, cmd)
+			shell(cmd,wait=FALSE); return(cmd)
 		}
-		return(invisible())
 	}
-	if (!exists(".PBSmod"))
-		.initPBSoptions()
-	if (fname=="")
-		fname=getWinAct()[1]
-
-	if (any(grep("^~", fname)))
-		fname <- path.expand(fname)
-	else if (!any(grep("^([a-z]:(\\\\|/)|\\\\\\\\|/)", fname, ignore.case = TRUE)))
-		fname <- paste(getwd(), "/", fname, sep="")
-
-	if (!file.exists(fname))
-		stop(paste("File \"", fname, "\" does not exist", sep=""))
-
-	ext <- sub("^.*\\.", "", fname)
-	if (.isReallyNull(.PBSmod$.options$openfile, ext)) {
-		if (!exists("shell.exec", mode="function")) {
-			stop(paste("There is no program associated with the extension '", ext, "'\n",
-			           "Please set an association with the setPBSext command\n"))
-		}
-		shell.exec(fname)
-		return(invisible())
-	}
-	cmd <- getPBSext(ext)
-	cmd <- gsub("%f", fname, cmd)
-	shell(cmd); # RH system(cmd, wait=FALSE)
+	ops=sapply(fname,.openFile)
+	invisible(ops)
 }
-
 
 # ***********************************************************
 # promptOpenFile:
@@ -975,6 +964,8 @@ showArgs <- function(widget="")
 # -----------------------------------------------------------
 resetGraph <- function()
 {
+	warn <- options()$warn
+	options(warn = -1)
 	defaultVals <-
 	structure(list(xlog = FALSE, ylog = FALSE, adj = 0.5, ann = TRUE, 
 	ask = FALSE, bg = "transparent", bty = "o", cex = 1, cex.axis = 1, 
@@ -1011,8 +1002,9 @@ resetGraph <- function()
 	frame()
 	par(defaultVals)
 	frame()
+	options(warn = warn)
 	invisible()
-} 
+}
 
 # ***********************************************************
 # expandGraph:
@@ -1627,19 +1619,51 @@ show0 <- function (x, n, add2int = FALSE)
 }
 
 
-#view	Views first n rows of a data.frame or matrix
 # --------------------------------------------
-# Views first n rows of a data.frame or matrix
-# or first n elements of a vector or list.
-# All other objects are simply reflected.
-# --------------------------------------------
-view <- function (obj, n = 5) 
+# View first/last/random n element/rows of an object.
+view <- function (obj, n=5, last=FALSE, random=FALSE, ...) 
 {
-	if (is.data.frame(obj) | is.matrix(obj)) 
-		return(obj[1:min(nrow(obj), n), ])
-	if (is.list(obj) | is.vector(obj)) 
-		return(obj[1:min(length(obj), n)])
-	return(obj)
+	getn=function(n,N,last=FALSE,random=FALSE,...) {
+		n=min(n,N)
+		if (random) return(sample(1:N,n,...)) 
+		n1=ifelse(last,N-n+1,1); n2=ifelse(last,N,n)
+		return(n1:n2) }
+	showVec=function(obj,n,last=FALSE,random=FALSE,...){
+		N=length(obj); if (N==0) return("empty vector")
+		v.vec=obj[getn(n,N,last,random,...)]
+		return(v.vec) }
+	showTab=function(obj,n,last=FALSE,random=FALSE,...){
+		N=nrow(obj); if (N==0) return("empty table")
+		v.tab=obj[getn(n,N,last,random,...),]
+		return(v.tab) }
+	showLis=function(obj,n,last=FALSE,random=FALSE,...){
+		nL=length(obj); if (nL==0) return("empty list")
+		v.lis=list()
+		if (is.null(names(obj))) ii=1:nL else ii=names(obj)
+		for (i in 1:nL) {
+			iobj=obj[[i]]
+			if (is.data.frame(iobj) || is.matrix(iobj))
+				v.lis=c(v.lis,list(showTab(iobj,n,last,random,...)))
+			else if (is.list(iobj))
+				v.lis=c(v.lis,list(showLis(iobj,n,last,random,...)))
+			else if (is.vector(iobj) || is.integer(obj) || is.numeric(obj) || is.character(obj))
+				v.lis=c(v.lis,list(showVec(iobj,n,last,random,...)))
+			else  v.lis=c(v.lis,list(showAll(iobj))) 
+		}
+		names(v.lis)=ii; return(v.lis) }
+	showAll=function(obj){
+		return(obj) }
+
+	if (n==0) return("nada")
+	n=abs(n) # coerce to positive
+	if (is.data.frame(obj) || is.matrix(obj)) 
+		viewed=showTab(obj,n,last,random,...)
+	else if (is.list(obj)) 
+		viewed=showLis(obj,n,last,random,...)
+	else if (is.vector(obj) || is.integer(obj) || is.numeric(obj) || is.character(obj)) 
+		viewed=showVec(obj,n,last,random,...)
+	else viewed=showAll(obj)
+	print(viewed); invisible(viewed)
 }
 
 
@@ -2049,4 +2073,23 @@ runDemos <- function (package)
 		)))
 	createWin(list(win))
 	return(invisible(NULL))
+}
+
+#-------------------------------------------------
+# Show help files for package contents as HTML in browser window
+showHelp <- function(pat="methods") {
+	warn <- options()$warn
+	options(warn = -1)
+	Apacks = .packages(all.available = TRUE) # all packages
+	Spacks = findPat(pat,Apacks)             # show packages that match the pattern
+	npacks = length(Spacks)
+	if (npacks==0) { print("No such package"); return() }
+	getURL = function(x) {
+		path=system.file(package=x)
+		url=paste(path,"/html/00Index.html",sep="")
+		return(url) }
+	URLs=sapply(Spacks,getURL)
+	openFile(URLs)
+	options(warn = warn)
+	invisible(list(Apacks=Apacks,Spacks=Spacks,URLs=URLs))
 }

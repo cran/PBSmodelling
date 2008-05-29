@@ -1,5 +1,15 @@
 PBSmodelling - Changes
 ----------------------
+1.63 - May 29, 2008  Rowan
+  - Changed references to location of the user's guide.
+  - Added function 'showHelp()' to show Help Pages for packages that match the supplied pattern.
+  - Modified 'openFile()' somewhat; functionality should be the same.
+1.62 - May 22, 2008  Rowan
+  - Moved 'ChangeLog.txt' and 'PBSmodelling-UG.pdf' to .\inst\doc folder.
+  - Changed 'Rd2dvi' to 'RD2dvi$' in 'RmakePDF.bat' and 'RmakePDF2.bat'.
+  - Revised 'resetGraph()' to hide warnings about 'gamma'.
+  - Revised 'view()' to better handle object types, and to allow selection of 'last' and 'random' n elements/rows.
+  - Transferred 'DeveloperGuide.pdf' from 'developers' folder to 'doc' folder. Updated '00ReadMe.txt'.
 1.61 - Oct 9, 2007  Rowan - CRAN version
   - Removed extended ASCII characters from CCA.qbr.Rd and testPch.Rd.
   - Removed old batch files (check.bat, build.bat, pack.bat, unpack.bat, makePDF.bat).

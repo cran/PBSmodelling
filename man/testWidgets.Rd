@@ -16,7 +16,8 @@
 
 \details{
 	Following are the widgets and default values supported by PBS Modelling.
-	See Appendix A in \dQuote{PBSModelling-UG.pdf} for detailed descriptions.
+	For detailed descriptions, see Appendix A in \sQuote{PBSModelling-UG.pdf} 
+	located in the R directory \code{../library/PBSmodelling/doc}.
 
 \preformatted{
 button text="Calculate" font="" fg="black" bg="" width=0 

@@ -13,7 +13,7 @@ if "%2"=="" (
 	) else (
 	set page=%2)
 
-set dviP=.Rd2dvi
+set dviP=.Rd2dvi$
 set ext=aux;dvi;idx;ilg;ind;log;out;pdf;tex;toc
 SET PBS_NO_PAUSE=1
 call RPathCheck.bat

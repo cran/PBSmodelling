@@ -17,8 +17,8 @@
 	It also serves as a convenient prototype for building new R packages, 
 	along with instructions and batch files to facilitate that process.
 
-	The root library directory of \code{PBSmodelling} includes a complete 
-	user guide \dQuote{PBSmodelling-UG.pdf}. To use this package effectively, 
+	The R directory \code{../library/PBSmodelling/doc} includes a complete 
+	user guide \sQuote{PBSmodelling-UG.pdf}. To use this package effectively, 
 	please consult the guide.
 
 	\emph{PBS Modelling} comes packaged with interesting examples accessed 

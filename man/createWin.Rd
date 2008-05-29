@@ -20,8 +20,8 @@
 	can span multiple lines by including a backslash ('\\') character at the end of 
 	a line, prompting the suppression of the newline character.
 
-	For more details on widget types and markup file, see \dQuote{PBSModelling-UG.pdf} 
-	in the installation directory.
+	For more details on widget types and markup file, see \sQuote{PBSModelling-UG.pdf} 
+	in the R directory \code{../library/PBSmodelling/doc}.
 
 	It is possible to use a Window Description List produced by 
 	\code{compileDescription} rather than a file name for \code{fname}.

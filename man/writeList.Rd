@@ -34,8 +34,8 @@ writeList(x, fname, format="D", comments="")
 	Multiple rows of data for matrices or data frames must have equal 
 	numbers of entries (separated by whitespace).
 
-	For complete details, see \dQuote{PBSmodelling-UG.pdf} in R's 
-	directory \code{library/PBSmodelling}.
+	For complete details, see \sQuote{PBSmodelling-UG.pdf} in the 
+	R directory \code{../library/PBSmodelling/doc}.
 }
 \seealso{
 	\code{\link{readList}}, \code{\link{openFile}}
