@@ -39,5 +39,4 @@ testGT0 <- function(eps=c(7,5,3,1,.1),x1=-2,x2=10,n=1000) {
 
 testGT0()
 }
-
-\keyword{hplot}
+\keyword{optimize}

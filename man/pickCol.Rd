@@ -10,7 +10,7 @@
 
 \arguments{
 	\item{returnValue}{If \code{TRUE}, display the full colour palette, choose a colour, 
-		and return the hex value to the R session. If \code{FALSE}, use an intermediate 
+		and return the hex value to the R session. \cr If \code{FALSE}, use an intermediate 
 		GUI to interact with the palette and display the hex value of the chosen colour.}
 }
 

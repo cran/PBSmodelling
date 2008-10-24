@@ -1,16 +1,16 @@
 \name{runDemos}
 \alias{runDemos}
-\title{Interactive GUI for R demos}
+\title{Interactive GUI for R Demos}
 
 \description{
 	An interactive GUI for accessing demos from any R package installed on the 
-	user's system. \code{runDemos} is a convenient alternative to R\'s \code{demo} 
+	user's system. \code{runDemos} is a convenient alternative to R's \code{demo} 
 	function.
 }
 \usage{runDemos(package)}
 
 \arguments{
-	\item{package}{ display demos from a particular package (optional)}
+	\item{package}{ display demos from a particular package (optional).}
 }
 \details{
 	If the argument \code{package} is not specified, the function will look for 
@@ -25,6 +25,6 @@
 	not critical. \bold{--- USER BEWARE ---}
 }
 \seealso{
-	\code{\link{runExamples}}  for examples specific to PBSmodelling.
+	\code{\link{runExamples}}  for examples specific to \pkg{PBSmodelling}.
 }
 \keyword{utilities}

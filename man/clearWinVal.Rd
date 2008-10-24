@@ -4,7 +4,7 @@
 
 \description{
 	Remove all global variables that share a name in common with any widget variable name 
-	defined in \code{names(getWinVal())}. Use this function with caution.
+	defined in \cr \code{names(getWinVal())}. Use this function with caution.
 }
 
 \usage{clearWinVal()}

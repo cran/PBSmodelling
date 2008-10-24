@@ -14,7 +14,7 @@ ylab = "Cumulative Proportion", ...)
 
 \arguments{
 	\item{x}{vector or matrix of numeric values.}
-	\item{add}{logical; if \code{TRUE}, add the cumulative frequency curve to a current plot.}
+	\item{add}{logical: if \code{TRUE}, add the cumulative frequency curve to a current plot.}
 	\item{ylim}{limits for the y-axis.}
 	\item{xlab}{label for the x-axis.}
 	\item{ylab}{label for the y-axis.}

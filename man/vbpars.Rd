@@ -1,7 +1,7 @@
 \name{vbpars}
 \docType{data}
 \alias{vbpars}
-\title{Dataset: Initial Parameters for a von Bertalanffy Curve}
+\title{Data: Initial Parameters for a von Bertalanffy Curve}
 
 \description{
 	Starting parameter values for \code{Linf}, \code{K}, and \code{t0} for 
@@ -15,11 +15,12 @@
 	the starting values, minima, and maxima, respectively, for the three parameters.
 }
 \details{
-	Data for demonstration of the von Bertalanffy model used in the \code{calcMin} example.
+	Data for demonstration of the von Bertalanffy model used in 
+	the \code{\link{calcMin}} example.
 }
-\source{
-	Mittertreiner, A., and Schnute, J. 1985. Simplex: a manual and software package 
+\references{
+	Mittertreiner, A. and Schnute, J. (1985) Simplex: a manual and software package 
 	for easy nonlinear parameter estimation and interpretation in fishery research. 
-	Canadian Technical Report of Fisheries and Aquatic Sciences 1384: xi + 90 p. 
+	\emph{Canadian Technical Report of Fisheries and Aquatic Sciences} \bold{1384}, xi + 90 pp. 
 }
 \keyword{datasets}

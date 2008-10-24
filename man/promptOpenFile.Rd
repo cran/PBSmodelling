@@ -1,16 +1,13 @@
 \name{promptOpenFile}
 \alias{promptOpenFile}
 \title{Display an "Open File" Dialogue}
-
 \description{
 	Display the default \bold{Open} prompt provided by the Operating System.
 }
-
 \usage{
 promptOpenFile(initialfile="", filetype=list(c("*","All Files")), 
                open=TRUE)
 }
-
 \arguments{
 	\item{initialfile}{file name of the text file containing the list.}
 	\item{filetype}{a list of character vectors indicating file types made available 
@@ -19,18 +16,15 @@ promptOpenFile(initialfile="", filetype=list(c("*","All Files")),
 		element gives an optional descriptor name for the file type. The supplied 
 		\code{filetype} list appears as a set of choices in the pull-down box labelled 
 		\dQuote{Files of type:"}.}
-	\item{open}{logical; if \code{TRUE} display \bold{Open} prompt, 
+	\item{open}{logical: if \code{TRUE} display \bold{Open} prompt, 
 		if \code{FALSE} display \bold{Save As} prompt.}
 }
-
 \value{
 	The file name and path of the file selected by the user.
 }
-
 \seealso{
 	\code{\link{promptSaveFile}}
 }
-
 \examples{
 \dontrun{
 # Open a filename, and return it line by line in a vector
@@ -41,5 +35,4 @@ promptOpenFile("intial_file.txt", filetype=list(c(".txt", "text files"),
                c(".r", "R files"), c("*", "All Files")))
 }
 }
-
-\keyword{misc}
+\keyword{file}

@@ -87,4 +87,4 @@ vector length=5 vertical=F names=eqOut labels="Cmax p1 F2 x1 x2" width=6 entrybg
 label text="------History---------------------------------------" font="bold" fg=blue sticky=SW
 grid 1 2
 	history name=FRhist func=runModel sticky=W import="FishHist.txt" 
-	text name=msg value="Notes:" height=7 width=18 edit=T
+	text name=msg value="Notes:" height=7 width=18 edit=T font="times 9" bg=antiquewhite scrollbar=F

@@ -17,6 +17,6 @@ getPBSoptions(option)
 \value{
 	Value of the specified option, or \code{NULL} if the specified option is not found.
 }
-\seealso{ \code{\link{getPBSext}} }
+\seealso{ \code{\link{getPBSext}}, \code{\link{readPBSoptions}} }
 
 \keyword{methods}

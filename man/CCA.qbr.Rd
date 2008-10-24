@@ -1,7 +1,7 @@
 \name{CCA.qbr}
 \docType{data}
 \alias{CCA.qbr}
-\title{Dataset: Sampled Counts of Quillback Rockfish 
+\title{Data: Sampled Counts of Quillback Rockfish 
 (Sebastes maliger)}
 
 \description{
@@ -56,29 +56,31 @@
 }
 
 \references{
-  Berry, M.D. 2001. Area 12 (Inside) Rockfish Selective Fishery 
-  Study. Science Council of British Columbia, Project Number FS00-
-  05.
+  Berry, M.D. (2001) \emph{Area 12 (Inside) Rockfish Selective Fishery 
+  Study}. Science Council of British Columbia, Project Number \bold{FS00-05}.
   
-  Schnute, J.T., and Haigh, R. 2007. Compositional analysis of 
+  Schnute, J.T. and Haigh, R. (2007) Compositional analysis of 
   catch curve data with an application to \emph{Sebastes maliger}. 
-  ICES Journal of Marine Science (in press).
+  \emph{ICES Journal of Marine Science} \bold{64}, 218--233.
   
-  Yamanaka, K.L. and Richards, L.J. 1993. 1992 Research catch and 
+  Yamanaka, K.L. and Richards, L.J. (1993) 1992 Research catch and 
   effort data on nearshore reef-fishes in British Columbia 
-  Statistical Area 12. Canadian Manuscript Report of Fisheries and 
-  Aquatic Sciences 2184, 77 pp.
+  Statistical Area 12. \emph{Canadian Manuscript Report of Fisheries and 
+  Aquatic Sciences} \bold{2184}, 77 pp.
 }
 
 \examples{
 # Plot age proportions (blue bubbles = survey data, red = commercial)
-data("CCA.qbr", package="PBSmodelling")
+data(CCA.qbr); clrs=c("cornflowerblue","orangered")
 z <- CCA.qbr; cyr <- attributes(z)$cyrs;
 z <- apply(z,2,function(x){x/sum(x)}); z[,cyr] <- -z[,cyr];
 x <- as.numeric(dimnames(z)[[2]]); xlim <- range(x) + c(-.5,.5);
 y <- as.numeric(dimnames(z)[[1]]); ylim <- range(y) + c(-1,1);
-plotBubbles(z,xval=x,yval=y,powr=.5,size=0.15,lwd=1,clrs=c("blue","red"),
-            xlim=xlim,ylim=ylim,xlab="Year",ylab="Age",cex.lab=1.5)
+expandGraph(mgp=c(2,.5,0),las=1)
+plotBubbles(z,xval=x,yval=y,powr=.5,size=0.15,clrs=clrs,
+   xlim=xlim,ylim=ylim,xlab="Year",ylab="Age",cex.lab=1.5)
+addLegend(.5,1,bty="n",pch=1,cex=1.2,col=clrs,
+   legend=c("Survey","Commercial"),horiz=TRUE,xjust=.5)
 }
 
 \keyword{datasets}

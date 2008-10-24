@@ -5,8 +5,8 @@
 \description{
 	Display an interactive GUI to demonstrate PBS Modelling examples.
 
-	The example source files can be found in the directory \code{PBSmodelling/examples}, 
-	located in R's directory \code{library}.
+	The example source files can be found in the R directory 
+	\code{.../library/PBSmodelling/examples}.
 }
 \usage{runExamples()}
 
@@ -20,7 +20,7 @@
 	\code{PBSmapping} - \code{FishTows}.
 }
 \note{
-	The examples are copied from \code{PBSmodelling/examples} to R's current 
+	The examples are copied from \code{.../library/PBSmodelling/examples} to R's current 
 	temporary working directory and run from there.
 }
 \seealso{

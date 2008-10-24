@@ -10,9 +10,11 @@
 \usage{createWin(fname, astext=FALSE)}
 
 \arguments{
-	\item{fname}{file name of Window Description File or list returned from \link{parseWinFile}.}
-	\item{astext}{logical; if \code{TRUE}, interpret \code{fname} as a vector of strings with 
-		each element representing a line in a Window Description File.}
+	\item{fname}{name of \emph{window description file} 
+	  or list returned from \code{parseWinFile}.}
+	\item{astext}{logical: if \code{TRUE}, interpret \code{fname} 
+	  as a vector of strings with each element representing a line 
+	  in a \emph{window description file}.}
 }
 
 \details{
@@ -20,15 +22,15 @@
 	can span multiple lines by including a backslash ('\\') character at the end of 
 	a line, prompting the suppression of the newline character.
 
-	For more details on widget types and markup file, see \sQuote{PBSModelling-UG.pdf} 
-	in the R directory \code{../library/PBSmodelling/doc}.
+	For more details on widget types and markup file, see \dQuote{PBSModelling-UG.pdf} 
+	in the R directory \cr \code{.../library/PBSmodelling/doc}.
 
 	It is possible to use a Window Description List produced by 
 	\code{compileDescription} rather than a file name for \code{fname}.
 
 	Another alternative is to pass a vector of characters to \code{fname} and set 
 	\code{astext=T}. This vector represents the file contents where each element 
-	is equivalent to a new line in the Window Description File.
+	is equivalent to a new line in the \emph{window description file}.
 }
 
 \note{
@@ -50,14 +52,13 @@
 
 \examples{
 \dontrun{
-#see file testWidgets\LissWin.txt in PBSmodelling package directory
+# See file .../library/PBSmodelling/testWidgets/LissWin.txt
 
 # Calculate and draw the Lissajous figure
 drawLiss <- function() {
-	getWinVal(scope="L");
-	ti <- 2*pi*(0:k)/k; x <- sin(2*pi*m*ti); y <- sin(2*pi*(n*ti+phi));
-	plot(x,y,type=ptype); invisible(NULL); };
-
+   getWinVal(scope="L"); ti=2*pi*(0:k)/k;
+   x=sin(2*pi*m*ti);     y=sin(2*pi*(n*ti+phi));
+   plot(x,y,type=ptype); invisible(NULL); };
 createWin(system.file("testWidgets/LissWin.txt",package="PBSmodelling"));
 }
 }

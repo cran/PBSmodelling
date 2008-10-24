@@ -1,15 +1,15 @@
 \name{testWidgets}
 \alias{testWidgets}
 \alias{widgets}
-\title{Displays Sample GUIs and their Source Code}
+\title{Display Sample GUIs and their Source Code}
 
 \description{
 	Display an interactive GUI to demonstrate the available widgets in PBS Modelling.
-	A \code{text} window displays the Window Description File source code. The user
+	A \code{text} window displays the \emph{window description file} source code. The user
 	can modify this sample code and recreate the test GUI by pressing the button below.
 
-	The Window Description Files can be found in the directory \code{PBSmodelling/testWidgets}
-	located in the R directory \code{library}.
+	The \emph{Window Description Files} can be found in the R directory \cr
+	\code{.../library/PBSmodelling/testWidgets}.
 }
 
 \usage{testWidgets()}
@@ -17,7 +17,7 @@
 \details{
 	Following are the widgets and default values supported by PBS Modelling.
 	For detailed descriptions, see Appendix A in \sQuote{PBSModelling-UG.pdf} 
-	located in the R directory \code{../library/PBSmodelling/doc}.
+	located in the R directory \code{.../library/PBSmodelling/doc}.
 
 \preformatted{
 button text="Calculate" font="" fg="black" bg="" width=0 

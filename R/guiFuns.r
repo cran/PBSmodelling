@@ -2992,7 +2992,10 @@ forwHistory <- function(hisname="")
 # -----------------------------------------------------------
 lastHistory <- function(hisname="")
 {
-	jumpHistory(hisname, length(PBS.history[[hisname]])-1)
+	if (hisname=="")
+		hisname <- getWinAct()[1]
+	if(length(PBS.history[[hisname]])-1>0)
+		jumpHistory(hisname, length(PBS.history[[hisname]])-1)
 }
 
 
@@ -3004,7 +3007,10 @@ lastHistory <- function(hisname="")
 # -----------------------------------------------------------
 firstHistory <- function(hisname="")
 {
-	jumpHistory(hisname, 1)
+	if (hisname=="")
+		hisname <- getWinAct()[1]
+	if(length(PBS.history[[hisname]])>1)
+		jumpHistory(hisname, 1)
 }
 
 
@@ -3835,14 +3841,13 @@ clearWinVal <- function()
 	return(x)
 }
 
-# ***********************************************************
-# getChoice:
+#2008-09-05-------------------------------------RH
 # Prompts user for an input from choices displayed in a GUI.
-# The default getChoice() yields T or F.
+# The default getChoice() yields TRUE or FALSE.
 # Answer is stored in .PBSmod$options$getChoice (or whatever winname is supplied).
 # Arguments:
-#    question   - question or prompting statement
 #    choice     - vector of strings to choose from
+#    question   - question or prompting statement
 #    winname    - window name for getChoice (default="getChoice")
 #    horizontal - if T, display the choices horizontally, else vertically 
 #    radio      - if T, display the choices as radio buttons, else buttons
@@ -3852,9 +3857,9 @@ clearWinVal <- function()
 # Examples:
 #    getChoice("What do you want?",c("Everything","Nothing","Lunch","Money","Fame"),qcolor="red",gui=F)
 #    getChoice("Who`s your daddy?",c("Stephen Harper","Homer Simpson","Jon Schnute"),horiz=F,radio=T,gui=F)
-# -----------------------------------------------------------
-getChoice <- function(question="Make a choice: ",choice=c("Yes","No"),winname="getChoice",
-                      horizontal=TRUE, radio=FALSE,qcolor="blue",gui=TRUE,quiet=FALSE) {
+# ------------------------------------------------
+getChoice <- function(choice=c("Yes","No"),question="Make a choice: ",winname="getChoice",
+                      horizontal=TRUE, radio=FALSE,qcolor="blue",gui=FALSE,quiet=FALSE) {
 
 #Construct the hidden choice function
 	fn1 <- paste(".makeChoice <<- function(){
@@ -3869,13 +3874,15 @@ getChoice <- function(question="Make a choice: ",choice=c("Yes","No"),winname="g
 #Construct an onClose function
 	fn2 <- paste(
 		".closeChoice <<- function() {\n",
-		"chosen <- getPBSoptions(\"getChoice\");\n",
+		"chosen <- getPBSoptions(\"",winname,"\");\n",
 		"active <- getPBSoptions(\"activeWin\");\n",
 		ifelse(quiet,"","print(chosen);\n"),
-		"focusWin(winName=active);}",sep="",collapse="");
+		"if (is.null(chosen)) setPBSoptions(\"",winname,"\",\"abort\")\n",
+		"if (gui && !is.null(active)) focusWin(winName=active);\n",
+		"invisible(chosen)}",sep="",collapse="");
 	setChoice <- getPBSoptions("setChoice");
 	if (!is.null(setChoice))
-	fn2 <- sub(";}",setChoice,fn2)
+		fn2 <- sub(";\\\ninvisible\\(chosen\\)}",setChoice,fn2) # only used by chooseWinVal
 	eval(parse(text=fn2));
 
 #Construct the Window Description file
@@ -3883,8 +3890,8 @@ getChoice <- function(question="Make a choice: ",choice=c("Yes","No"),winname="g
 	nrow <- ifelse(horizontal,1,n); ncol <- ifelse(horizontal,n,1);
 	btype <- ifelse(radio,"radio","button");
 	btext <- paste("blist <- c(\"window name=\\\"",winname,"\\\" title=Choice",sep="",collapse="");
-	if (gui) btext <- paste(btext," onClose=.closeChoice\",",sep="",collapse="")
-	if(!gui) btext <- paste(btext,"\", ",sep="",collapse="");
+	btext <- paste(btext," onClose=.closeChoice\",",sep="",collapse="")
+	#if(!gui) btext <- paste(btext,"\", ",sep="",collapse="");
 	qtext <- paste("\"label text=\\\"",question,"\\\" font=\\\"bold 10\\\" fg=\\\"",
 		qcolor,"\\\" sticky=W\",",sep="",collapse="");
 	btext <- paste(btext,qtext,"\"grid ",nrow," ",ncol," sticky=W\",",sep="",collapse="")
@@ -3907,26 +3914,25 @@ getChoice <- function(question="Make a choice: ",choice=c("Yes","No"),winname="g
 #Create the Window Description file
 	createWin(blist,astext=TRUE)
 	if (radio) setWinVal(list(myC=0),winName=winname)
+	answer <- NULL
 	if (!gui) {
-		answer <- NULL;
-		while(is.null(answer)) {answer <- getPBSoptions(winname); };
-		return(answer) }
-	else return(invisible()); 
-};
+		while(is.null(answer)) {answer <- getPBSoptions(winname) } } 
+	invisible(answer)
+}
 
-# ***********************************************************
-# chooseWinVal:
-# Allows uswer to choose a string value from choices and write 
-# the chosen string into the specified variable of the specified
-# window.
+#2008-09-05-------------------------------------RH
+# Allows user to choose a string value from choices and write 
+# chosen string into specified variable of specified window.
 # Arguments:
 #    choice  - vector of strings to choose from
 #    varname - variable name to which choice is assigned in the target GUI.
 #    winname - window name for getChoice
-# -----------------------------------------------------------
+# ------------------------------------------------
 chooseWinVal <- function(choice,varname,winname="window") {
+	setPBSoptions("setChoice",NULL);
 	setPBSoptions("setChoice",
 		paste(";\nsetWinVal(list(",varname,"=chosen),winName=\"",winname,"\");}",sep="",collapse=""));
-	getChoice(question="Select from:",choice=choice,horizontal=FALSE,radio=TRUE,qcolor="red3",quiet=TRUE);
+	getChoice(choice=choice,question="Select from:",horizontal=FALSE,radio=TRUE,qcolor="red3",gui=TRUE,quiet=TRUE);
 	setPBSoptions("setChoice",NULL);
 }
+

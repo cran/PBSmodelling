@@ -1,6 +1,6 @@
 \name{plotTrace}
 \alias{plotTrace}
-\title{Plot Trace Lines from a data frame, matrix, or vector}
+\title{Plot Trace Lines from a Data Frame, Matrix, or Vector}
 \description{
 	Plot trace lines from a data frame or matrix where the first field contains x-values, 
 	and subsequent fields give y-values to be traced over x. If input is a vector, 

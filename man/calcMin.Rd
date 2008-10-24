@@ -28,7 +28,7 @@ calcMin(pvec, func, method="nlm", trace=0, maxit=1000, reltol=1e-8,
 		tracing. Default is \code{0}.}
 	\item{maxit}{The maximum number of iterations. Default is \code{1000}.}
 	\item{reltol}{Relative convergence tolerance. The algorithm stops if it is
-		unable to reduce the value by a factor of \code{reltol * (abs(val) + reltol)}
+		unable to reduce the value by a factor of \code{reltol*(abs(val)+reltol)}
 		at a step. Default is \code{1e-8}.}
 	\item{steptol}{A positive scalar providing the minimum allowable relative step length.
 			Default is \code{1e-6}.}

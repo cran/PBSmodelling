@@ -13,11 +13,11 @@
 
 	\code{PBSmodelling} contains examples that illustrate models built uisng 
 	other R packages, including \code{PBSmapping}, \code{odesolve}, 
-	\code{ddesolve}, and \code{BRugs}. 
+	\code{PBSddesolve}, and \code{BRugs}. 
 	It also serves as a convenient prototype for building new R packages, 
 	along with instructions and batch files to facilitate that process.
 
-	The R directory \code{../library/PBSmodelling/doc} includes a complete 
+	The R directory \code{.../library/PBSmodelling/doc} includes a complete 
 	user guide \sQuote{PBSmodelling-UG.pdf}. To use this package effectively, 
 	please consult the guide.
 

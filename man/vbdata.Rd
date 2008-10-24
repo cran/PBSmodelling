@@ -1,7 +1,7 @@
 \name{vbdata}
 \docType{data}
 \alias{vbdata}
-\title{Dataset: Length-at-Age Data for a von Bertalanffy Curve}
+\title{Data: Lengths-at-Age for von Bertalanffy Curve}
 
 \description{
 	Lengths-at-age for freshwater mussels (\emph{Anodonta kennerlyi}).
@@ -13,11 +13,14 @@
 }
 \details{
 	Data for demonstartion of the von Bertalanffy model used in the 
-	\code{calcMin} example.
+	\code{\link{calcMin}} example.
 }
 \source{
-	Mittertreiner, A., and Schnute, J. 1985. Simplex: a manual and software package 
+  Fisheries and Oceans Canada - Mittertreiner and Schnute (1985)
+}
+\references{
+	Mittertreiner, A. and Schnute, J. (1985) Simplex: a manual and software package 
 	for easy nonlinear parameter estimation and interpretation in fishery research. 
-	Canadian Technical Report of Fisheries and Aquatic Sciences 1384: xi + 90 p. 
+	\emph{Canadian Technical Report of Fisheries and Aquatic Sciences} \bold{1384}, xi + 90 pp. 
 }
 \keyword{datasets}

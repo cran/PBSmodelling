@@ -1,7 +1,7 @@
 \name{plotACF}
 \alias{plotACF}
 \title{
-	Plot Autocorrelation Bars From a data frame, matrix, or vector
+	Plot Autocorrelation Bars From a Data Frame, Matrix, or Vector
 }
 \description{
 	Plot autocorrelation bars (ACF) from a data frame, matrix, or vector.

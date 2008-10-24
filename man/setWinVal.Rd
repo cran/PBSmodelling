@@ -27,7 +27,7 @@ setWinVal(vars, winName)
 	Alternatively, any element can be updated by appending its index in square brackets 
 	to the end of the \code{name}. The \code{data} widget is indexed differently 
 	than the \code{matrix} widget by adding "d" after the brackets. This tweak is necessary 
-	for the internal coding (bookkeeping) of PBS Modelling. Example: \code{"foo[1,1]d"}.
+	for the internal coding (bookkeeping) of \emph{PBS Modelling}. Example: \code{"foo[1,1]d"}.
 }
 \seealso{
 	\code{\link{getWinVal}}, \code{\link{createWin}}

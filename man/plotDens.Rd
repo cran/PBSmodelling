@@ -1,6 +1,6 @@
 \name{plotDens}
 \alias{plotDens}
-\title{Plot Density Curves from a data frame, matrix, or vector}
+\title{Plot Density Curves from a Data Frame, Matrix, or Vector}
 \description{
 	Plot the density curves from a data frame, matrix, or vector. 
 	The mean density curve of the data combined is also shown.

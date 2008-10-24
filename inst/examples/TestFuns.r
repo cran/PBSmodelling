@@ -76,6 +76,9 @@ if (any(funs=="chooseWinVal")) {
          \nto choose a file, then press <GO>", col="red",cex=1.5)}};
 	createWin(wlist,astext=T); test();
 	};
+if (any(funs=="cleanProj")) {
+	cleanProj(prefix="TestFuns", suffix=c("_junk.aaa","_junk.bbb"), files=c("TestFuns_JUNK1", "TestFuns_JUNK2"))
+	};
 if (any(funs=="createVector")) {
 	createVector(c(m=2,n=3,phi=0,k=1000),vectorLabels=c("x cycles","y cycles", "y phase", "points"),
 		func="drawLiss",windowname="vector");
@@ -112,8 +115,14 @@ if (any(funs=="genMatrix")) {
 	plotBubbles(genMatrix(20,6));
 	};
 if (any(funs=="getChoice")) {
-	getChoice("What do you want?", c("Fame","Fortune","Health","Beauty","Lunch"),qcolor="red")
+	getChoice(c("Fame","Fortune","Health","Beauty","Lunch"),"What do you want?",qcolor="red",gui=TRUE)
 	cat("\n====================\nYou chose: ");
+	};
+if (any(funs=="getYes")) {
+	if(getYes("Click Yes or No:"))
+		showAlert("YES :)")
+	else
+		showAlert("NO :(")
 	};
 if (any(funs=="GT0")) {
 	plotGT0 <- function(eps=1,x1=-2,x2=10,n=1000,col="black") {
@@ -129,8 +138,16 @@ if (any(funs=="GT0")) {
 	testGT0();
 	};
 if (any(funs=="openFile")) {
-	setPBSext("html", "notepad.exe %f" );
-	openFile("TestFuns_openFile.html");
+	sys=Sys.info()[["sysname"]]
+	if (sys=="Windows") prog="notepad"
+	else if (sys=="Darwin" && .Platform$GUI=="AQUA") prog="TextEdit"
+	else prog="gedit"
+	setPBSext("html", paste(prog,"%f") )
+	openFile("TestFuns_openFile.html")
+	clearPBSext("html")
+	}
+if (any(funs=="openProjFiles")) {
+	openProjFiles("vonB", c(".r", "data.txt", "Win.txt"))
 	};
 if (any(funs=="pad0")) {
 	x <- pad0(x=123,n=10,f=0:7);
@@ -159,6 +176,15 @@ if (any(funs=="plotCsum")) {
 if (any(funs=="plotDens")) {
 	z <- data.frame(y1=rnorm(50,sd=2),y2=rnorm(50,sd=1),y3=rnorm(50,sd=.5));
 	plotDens(z,lwd=3);
+	};
+if (any(funs=="plotFriedEggs")) {
+	x=rnorm(5000,10,3); y=-x+rnorm(5000,1,4); z=x+rnorm(5000,1,3)
+	A=data.frame(x=x,y=y,z=z)
+	plotFriedEggs(A,eggs=TRUE,rings=FALSE);  cat("Here are the eggs...\n")
+	oldAsk=par("ask"); par(ask=TRUE)
+	plotFriedEggs(A,eggs=FALSE,rings=TRUE);  cat("Here are the rings...\n")
+	plotFriedEggs(A,eggs=FALSE,rings=FALSE); cat("And the pepper alone. END.\n")
+	par(ask=oldAsk)
 	};
 if (any(funs=="plotTrace")) {
 	z <- data.frame(x=1:50,y1=rnorm(50,sd=3),y2=rnorm(50,sd=1),y3=rnorm(50,sd=.25))
@@ -199,7 +225,8 @@ if (any(funs=="showArgs")) {
 	showArgs();
 	};
 if (any(funs=="testCol")) {
-	testCol(c("plum","tomato","olive","peach","honeydew"));
+	#testCol(c("plum","tomato","olive","peach","honeydew"));
+	testCol()
 	};
 if (any(funs=="testLty")) {
 	testLty(newframe = TRUE);
@@ -224,8 +251,8 @@ if (any(funs=="writeList")) {
 	writeList(list(trees=view(trees),swiss=view(swiss)),fname="wList.txt",format="P");
 	openFile("wList.txt");
 	};
-
 }
+
 drawLiss <- function() {
 	getWinVal(scope="L");
 	ti <- 2*pi*(0:k)/k;;  x <- sin(2*pi*m*ti);  y <- sin(2*pi*(n*ti+phi));

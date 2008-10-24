@@ -6,7 +6,7 @@ grid 1 4 sticky=W
   button text="R Code" func=openFile action=TestFuns.r
   button text=Window func=openFile action=TestFunsWin.txt
 
-grid 2 21 byrow=FALSE
+grid 2 24 byrow=FALSE
 radio mode=character sticky=W func=TestFuns name=funs value=closeWin text=CLOSE
 radio mode=character sticky=W func=TestFuns name=funs value=addArrows text=addArrows
 radio mode=character sticky=W func=TestFuns name=funs value=addLabel text=addLabel
@@ -15,6 +15,7 @@ radio mode=character sticky=W func=TestFuns name=funs value=calcFib text=calcFib
 radio mode=character sticky=W func=TestFuns name=funs value=calcGM text=calcGM
 radio mode=character sticky=W func=TestFuns name=funs value=calcMin text=calcMin
 radio mode=character sticky=W func=TestFuns name=funs value=chooseWinVal text=chooseWinVal
+radio mode=character sticky=W func=TestFuns name=funs value=cleanProj text=cleanProj
 radio mode=character sticky=W func=TestFuns name=funs value=createVector text=createVector
 radio mode=character sticky=W func=TestFuns name=funs value=drawBars text=drawBars
 radio mode=character sticky=W func=TestFuns name=funs value=expandGraph text=expandGraph
@@ -22,8 +23,12 @@ radio mode=character sticky=W func=TestFuns name=funs value=findPat text=findPat
 radio mode=character sticky=W func=TestFuns name=funs value=focusWin text=focusWin
 radio mode=character sticky=W func=TestFuns name=funs value=genMatrix text=genMatrix
 radio mode=character sticky=W func=TestFuns name=funs value=getChoice text=getChoice
+radio mode=character sticky=W func=TestFuns name=funs value=getYes text="getYes|showAlert"
 radio mode=character sticky=W func=TestFuns name=funs value=GT0 text=GT0
+radio mode=character sticky=W func=openExamples name=funs value=openExamples text=openExamples action=PBSmodelling,fib,.c,.r
 radio mode=character sticky=W func=TestFuns name=funs value=openFile text=openFile
+radio mode=character sticky=W func=openPackageFile name=funs value=openPackageFile text=openPackageFile action=PBSmodelling,/doc/PBSmodelling-UG.pdf
+radio mode=character sticky=W func=TestFuns name=funs value=openProjFiles text=openProjFiles
 radio mode=character sticky=W func=TestFuns name=funs value=pad0 text=pad0
 radio mode=character sticky=W func=TestFuns name=funs value=pickCol text=pickCol
 radio mode=character sticky=W func=TestFuns name=funs value=plotACF text=plotACF
@@ -31,6 +36,7 @@ radio mode=character sticky=W func=TestFuns name=funs value=plotAsp text=plotAsp
 radio mode=character sticky=W func=TestFuns name=funs value=plotBubbles text=plotBubbles
 radio mode=character sticky=W func=TestFuns name=funs value=plotCsum text=plotCsum
 radio mode=character sticky=W func=TestFuns name=funs value=plotDens text=plotDens
+radio mode=character sticky=W func=TestFuns name=funs value=plotFriedEggs text=plotFriedEggs
 radio mode=character sticky=W func=TestFuns name=funs value=plotTrace text=plotTrace
 radio mode=character sticky=W func=TestFuns name=funs value=promptOpenFile text=promptOpenFile
 radio mode=character sticky=W func=TestFuns name=funs value=promptSaveFile text=promptSaveFile

@@ -1,5 +1,5 @@
 # Two linked populations (reserved and fished)
-#--------------------------------------------------
+#2008-08-25---------------------------------------
 # Functions that define and run the model,
 # with parameters shared globally for time series.
 #--------------------------------------------------
@@ -31,7 +31,7 @@ seegx <- function(){
 	for (i in 1:2) {
 		y <- g1(x,r,M,gam); y1 <- g1(x1,r,M,gam);
 		if (i==2) y <- x*y;
-		xlim <- range(x,na.rm=T); ylim <- range(y,na.rm=T);
+		xlim <- range(x,na.rm=TRUE); ylim <- range(y,na.rm=TRUE);
 		plot(0,0,type="n",xlim=xlim,ylim=ylim,xlab="x",ylab=makeExpression(switch(i,"g(x)","x*g(x)")),cex.lab=large);
 		switch (i,abline(h=0,v=0,col="grey"),abline(a=0,b=M/r,col="red",lwd=3));
 		lines(x,y,col="dodgerblue",lwd=3)
@@ -95,7 +95,7 @@ check <- function() {
 		if (mod==1) {
 			if (rCont <= 0) {rCont <- 0.1; cat("\n***** r reset to 0.1; reminder r > 0");};
 			if (Mcont<=0 | Mcont>=rCont) {Mcont <- rCont/2; cat("\n***** M reset to mid-point; reminder 0 < M < r");};
-			if (any(Fcont<0)) {Fcont<-pmax(Fcont,0,na.rm=T); FresCont<-Fcont[1]; FminCont<-Fcont[2]; FmaxCont<-Fcont[3]; Fbig<-Fcont[4];}; 
+			if (any(Fcont<0)) {Fcont<-pmax(Fcont,0,na.rm=TRUE); FresCont<-Fcont[1]; FminCont<-Fcont[2]; FmaxCont<-Fcont[3]; Fbig<-Fcont[4];}; 
 			aCont <- pmax(0,aCont);
 			FresDisc <- 1-exp(-FresCont); FminDisc <- 1-exp(-FminCont); FmaxDisc <- 1-exp(-FmaxCont);
 			hbig <- 1-exp(-Fbig); Mdisc <- 1-exp(-Mcont); rDisc <- exp(rCont)-1; aDisc <- p1p2*(1-exp(-aCont/p1p2)); };
@@ -105,8 +105,8 @@ check <- function() {
 			if (Mdisc<=0 | Mdisc>=min(1,rDisc)) {Mdisc <- min(1,rDisc)/2; cat("\n***** M reset to mid-point; reminder 0 < M < min(1,r)");};
 			aDisc <- pmax(0,aDisc);
 			if (aDisc>=p1*(1-p1)) { aDisc <- p1*(1-p1)-.01; cat("\n***** a reset maximum-0.01; remember a < p1*p2"); };
-			if (any(Fdisc<0)) {Fdisc<-pmax(Fdisc,0,na.rm=T); FresDisc<-Fdisc[1]; FminDisc<-Fdisc[2]; FmaxDisc<-Fdisc[3]; hbig<-Fdisc[4];}; 
-			if (any(Fdisc>1)) {Fdisc<-pmin(Fdisc,1,na.rm=T); FresDisc<-Fdisc[1]; FminDisc<-Fdisc[2]; FmaxDisc<-Fdisc[3]; hbig<-Fdisc[4];};
+			if (any(Fdisc<0)) {Fdisc<-pmax(Fdisc,0,na.rm=TRUE); FresDisc<-Fdisc[1]; FminDisc<-Fdisc[2]; FmaxDisc<-Fdisc[3]; hbig<-Fdisc[4];}; 
+			if (any(Fdisc>1)) {Fdisc<-pmin(Fdisc,1,na.rm=TRUE); FresDisc<-Fdisc[1]; FminDisc<-Fdisc[2]; FmaxDisc<-Fdisc[3]; hbig<-Fdisc[4];};
 			FresCont <- -log(1-FresDisc); FminCont <- -log(1-FminDisc); FmaxCont <- -log(1-FmaxDisc); 
 			Fbig <- -log(1-hbig); Mcont <- -log(1-Mdisc); rCont <- log(1+rDisc); aCont <- -p1p2*log(1-aDisc/p1p2); };
 	}
@@ -167,7 +167,7 @@ runModel <- function() {
 		abline(h=K,col="grey");
 		lines(tt,y1+y2,col=clrs[3],lwd=2);
 		lines(tt,y1,col=clrs[1],lwd=2); lines(tt,y2,col=clrs[2],lwd=2);
-		legend(x="topright",lwd=3,col=clrs[1:3],legend=c("Reserve","Fishery","Total"),cex=big,horiz=T,bty="n")
+		legend(x="topright",lwd=3,col=clrs[1:3],legend=c("Reserve","Fishery","Total"),cex=big,horiz=TRUE,bty="n")
 
 		if (mod==1) {
 			dNlim <- range(dy1,dy2,dy1+dy2); dNlim <- dNlim + yfac*c(-1,1)*diff(dNlim);
@@ -181,7 +181,7 @@ runModel <- function() {
 		plot(0,0,xlim=xlim,ylim=Clim, xlab="",ylab="C",type="n");
 		title("Cactch C",line=0.5,col.main="#400080");
 		lines(tt,C12,col=clrs[3],lwd=2); lines(tt,C2,col=clrs[2],lwd=2); lines(tt,C1,col=clrs[1],lwd=2); 
-		mtext("time",outer=T,side=1,line=2.5,adj=.55,cex=big); }; 
+		mtext("time",outer=TRUE,side=1,line=2.5,adj=.55,cex=big); }; 
 
 	invisible(yout); };
 
@@ -234,7 +234,7 @@ yield <- function () { # Equilibrium Yield Equations (Table 4)
 		for (z in zval) {
 			xx <- Zout$p1; yy <- Zout[,"F2"]; zz <- Zout[,z];
 			x95 <- Z95$p1; y95 <- Z95[,"F2"];
-			Zint <- interp(xx,yy,zz,duplicate="mean",linear=T,
+			Zint <- interp(xx,yy,zz,duplicate="mean",linear=TRUE,
 				xo=seq(min(xx),max(xx),length=ncell),yo=seq(min(yy),max(yy),length=ncell));
 			#assign(paste("Zint",z,sep="."),Zint, pos=1);
 			if (act=="contour")
@@ -243,14 +243,14 @@ yield <- function () { # Equilibrium Yield Equations (Table 4)
 			if (act=="image"){
 				iclr <- rev(rainbow(40,start=0.05,end=0.7)); assign("zclr",iclr,pos=1)
 				levs <- seq(ylim[1],ylim[2],len=length(iclr));
-				zlev <- seq(min(zz,na.rm=T),max(zz,na.rm=T),len=length(iclr));
+				zlev <- seq(min(zz,na.rm=TRUE),max(zz,na.rm=TRUE),len=length(iclr));
 				ztck <- approx(zlev,levs,pretty(zz)); 
 				ytck <- ztck$y[!is.na(ztck$y)]; ylab <- ztck$x[!is.na(ztck$y)]; ntck <-length(ytck);
 				plot(0,0,type="n",xlim=xlim,ylim=ylim,xlab="",ylab="F2");
-				image(Zint,add=T,col=iclr,xlab="",ylab="");
+				image(Zint,add=TRUE,col=iclr,xlab="",ylab="");
 				lines(x=c(par()$usr[1],pvec[2],NA,par()$usr[1],pvec[2]),y=c(hl[1],hl[1],NA,hl[2],hl[2]),col="grey10");
 				points(x95,y95,pch=1,cex=medium);
-				rect(1.02*xlim[2],levs[-length(levs)],1.04*xlim[2],levs[-1],col=iclr,border=F);
+				rect(1.02*xlim[2],levs[-length(levs)],1.04*xlim[2],levs[-1],col=iclr,border=FALSE);
 				segments(rep(1.02*xlim[2],ntck),ytck,rep(1.04*xlim[2],ntck),ytck);
 				text(1.01*xlim[2],ytck,ylab,adj=c(1,0),cex=medium);
 			};
@@ -259,7 +259,7 @@ yield <- function () { # Equilibrium Yield Equations (Table 4)
 			xden <- apply(Zint$z,1,function(x){length(x[!is.na(x)])});
 			if (xden[1]<xden[length(xden)]) space<-1 else space <-2;
 			addLabel(switch(space,.07,.92),switch(space,.85,.07),z,cex=huge,col=clrs[match(z,zval)],adj=c(1,0));
-			mtext("p1",outer=T,side=1,line=2,cex=big,adj=.55); }; };
+			mtext("p1",outer=TRUE,side=1,line=2,cex=big,adj=.55); }; };
 	
 	if (act=="pairs") {
 		resetGraph(); par(mgp=c(2,.75,0),las=1);
@@ -274,7 +274,7 @@ yield <- function () { # Equilibrium Yield Equations (Table 4)
 	
 }; 
 
-fig4 <- function(wmf=T){
+fig4 <- function(wmf=TRUE){
 	check(); # apply the standard checks
 	getWinVal(scope="L"); act <- getWinAct()[1]; unpackList(pbs,scope="L");
 	resetGraph(); 
@@ -289,10 +289,10 @@ fig4 <- function(wmf=T){
 		for (i in 1:2) {
 			y <- g1(x,r,M,j); y1 <- g1(x1,r,M,j);
 			if (i==2) y <- x*y;
-			xlim <- range(x,na.rm=T); ylim <- range(y,na.rm=T); ylim<-c(0,switch(i,1,0.42));
+			xlim <- range(x,na.rm=TRUE); ylim <- range(y,na.rm=TRUE); ylim<-c(0,switch(i,1,0.42));
 			plot(0,0,type="n",xlim=xlim,ylim=ylim,xlab="",ylab=makeExpression(switch(i,"g(x)","x*g(x)")),
 				xaxt="n",cex.axis=big,cex.lab=huge);
-			axis(1,labels=ifelse(par()$mfg[1]==4,T,T),cex.axis=big);
+			axis(1,labels=ifelse(par()$mfg[1]==4,TRUE,TRUE),cex.axis=big);
 			if(par()$mfg[1]==4) mtext("x",side=1,line=2.5,cex=large);
 			switch (i,abline(h=0,v=0,col="grey"),abline(a=0,b=M/r,col="red",lwd=3));
 			lines(x,y,col="dodgerblue",lwd=3)
@@ -306,8 +306,18 @@ fig4 <- function(wmf=T){
 #===================================================================================================
 pbs <- list(tiny=0.5, small=0.8, medium=1, big=1.25, large=1.5, huge=2); # cex sizes
 remove(list=ls(1)[is.element(ls(1),c("yout","Yout","Zout"))],pos=1); # remove objects from previous session
-if (!require(odesolve, quietly=TRUE)) stop("The odesolve package is required for this example")
-if (!require(PBSmodelling, quietly=TRUE)) stop("The PBSmodelling package is required for this example")
-if (!require(akima, quietly=TRUE)) stop("The akima package is required for this example")
-if (!require(ddesolve, quietly=TRUE)) stop("The akima package is required for this example")
+ips = installed.packages(); ip=ips[,"Package"]; names(ip)=ips[,"Version"]
+for (i in c("PBSmodelling","odesolve","akima")) {
+	if (any(ip==i)) eval(parse(text=paste("require(",i,", quietly=TRUE)",sep="")))
+	else {
+		ii=paste("The",i,"package is required for this example")
+		showAlert(ii,i,"error"); stop(ii,call.=FALSE) } }
+if (any(ip=="PBSddesolve")) 
+	require(PBSddesolve,quietly=TRUE) else
+	if (any(ip=="ddesolve")) {
+		require(ddesolve,quietly=TRUE) 
+		showAlert("ddesolve is now called PBSddesolve on CRAN","Information only") } else {
+		ii="The PBSddesolve package is required for this example"
+		showAlert(ii,"PBSddesolve","error"); stop(ii,call.=FALSE) } 
 createWin("FishResWin.txt");
+

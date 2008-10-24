@@ -4,7 +4,8 @@
 
 \description{
 	Create a basic window containing a vector and a submit button. 
-	This provides a quick way to create a window without the need for a Window Description File.
+	This provides a quick way to create a window without the need 
+	for a \emph{window description file}.
 }
 
 \usage{

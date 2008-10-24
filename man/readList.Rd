@@ -8,7 +8,7 @@
 	used by the \code{dput} function or an ad hoc \code{PBSmodelling} format. 
 	The function \code{readList} detects the format automatically.
 
-	For information about the \code{PBSmodelling} format, see \code{\link{writeList}}.
+	For information about the \code{PBSmodelling} format, see \code{writeList}.
 }
 
 \usage{readList(fname)}

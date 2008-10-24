@@ -21,7 +21,7 @@ chooseWinVal(choice, varname, winname="window")
 }
 \value{
   No value is returned directly. The choice is written to the PBS options 
-  workspace, accessible through \code{getPBSoptions("getChoice")}. Also set 
+  workspace, accessible through \cr \code{getPBSoptions("getChoice")}. Also set 
   in PBS options is the window name from which the choice was activated.
 }
 \note{ 

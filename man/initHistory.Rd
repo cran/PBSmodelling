@@ -9,7 +9,7 @@
 \alias{clearHistory}
 \alias{lastHistory}
 \alias{firstHistory}
-\title{Create Structures of a New History Widget}
+\title{Create Structures for a New History Widget}
 
 \description{
 	PBS history functions (below) are available to those who would like to 
@@ -33,9 +33,9 @@ clearHistory(hisname="")
 \arguments{
 	\item{hisname}{name of the history "list" to manipulate. If it is omitted, 
 		the function uses the value of \code{getWinAct()[1]} as the history name. 
-		This allows the calling of functions directly from the Window Description File 
+		This allows the calling of functions directly from the \emph{window description file} 
 		(except \code{initHistory}, which must be called before \code{createWin()}).}
-	\item{indexname}{name of the index entry widget in the Window Description File. 
+	\item{indexname}{name of the index entry widget in the \emph{window description file}. 
 		If \code{NULL}, then the current index feature will be disabled.}
 	\item{sizename}{name of the current size entry widget. If \code{NULL}, then the 
 		current size feature will be disabled.}
@@ -53,18 +53,18 @@ clearHistory(hisname="")
 	GUI variables so that they can be redisplayed later, rather like a slide show. 
 
 	Normally, a user would invoke a history widget simply by including a reference to it 
-	in the Window Description File. However, PBS Modelling includes support functions (above) 
+	in the \emph{window description file}. However, PBS Modelling includes support functions (above) 
 	for customized applications.
 
 	To create a customized history, each button must be described separately in the 
-	Window Description File rather than making reference to the history widget.
+	\emph{window description file} rather than making reference to the history widget.
 
 	The history "List" must be initialized before any other functions may be called. 
 	The use of a unique history name (\code{hisname}) is used to associate a unique 
 	history session with the supporting functions.
 	
 	The \code{indexname} and \code{sizename} arguments correspond to the given names 
-	of entry widgets in the Window Description File, which will be used to display the 
+	of entry widgets in the \emph{window description file}, which will be used to display the 
 	current index and total size of the list. The \code{indexname} entry widget can also 
 	be used by \code{jumpHistory} to retrieve a target index.
 }

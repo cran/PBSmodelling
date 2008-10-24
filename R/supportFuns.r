@@ -2,55 +2,13 @@
 #                      PBS Modelling                       #
 # ---------------------------------------------------------#
 #                                                          #
-# Authors:                                                 # 
+# Authors:                                                 #
 #  Jon T. Schnute <SchnuteJ@pac.dfo-mpo.gc.ca>,            #
 #  Alex Couture-Beil <alex@mofo.ca>, and                   #
 #  Rowan Haigh <HaighR@pac.dfo-mpo.gc.ca>                  #
+#  Anisa Egeli <EgeliA@pac.dfo-mpo.gc.ca>                  #
 #                                                          #
 ############################################################
-
-
-# ***********************************************************
-# .initPBSoptions:
-#  called from zzz.R's .First.lib() intialization function
-# -----------------------------------------------------------
-.initPBSoptions <- function()
-{
-	if (!exists(".PBSmod"))
-		.PBSmod <<- list()
-	if (is.null(.PBSmod$.options))
-		.PBSmod$.options <<- list()
-	if (is.null(.PBSmod$.options$openfile))
-		.PBSmod$.options$openfile <<- list()
-}
-
-
-# ***********************************************************
-# setPBSoptions:
-#  change User Option
-# Input:
-#  option - name of option to change
-#  value  - new value of option
-# -----------------------------------------------------------
-setPBSoptions <- function(option, value)
-{
-	.PBSmod$.options[[option]] <<- value
-}
-
-
-# ***********************************************************
-# getPBSoptions:
-#  retrieve a User Option
-# Input:
-#  option - name of option to retrieve
-# -----------------------------------------------------------
-getPBSoptions <- function(option)
-{
-	if (missing(option))
-		return(.PBSmod$.options)
-	return(.PBSmod$.options[[option]])
-}
-
 
 # ***********************************************************
 # unpackList:
@@ -103,49 +61,6 @@ compileDescription <- function(descFile, outFile="")
 	cat("\n")
 	if (outFile!="")
 		sink()
-}
-
-
-# ***********************************************************
-# writeList:
-#  writes a list to a file in "D" or "P" format
-# Arguments:
-#  x        - list to save
-#  fname    - file to write list to
-#  format   - write list in "D" or "P" format
-#  comments - include string as comment at the top of file
-# -----------------------------------------------------------
-writeList <- function(x, fname="", format="D", comments="")
-{
-
-	NoComments<-missing(comments)
-	comments <- sub("^", "#", comments)
-
-	if (format=="D") {
-		dput(x, fname)
-		if (file.exists(fname) && !NoComments) {
-			output <- scan(fname, what=character(0), sep="\n")
-			output <- paste(output, collapse="\n")
-
-			sink(fname)
-				#add comments
-				if (all(comments!="#")) {
-					cat(paste(comments, collapse="\n")); cat("\n");
-				}
-				#spit out original output from dput
-				cat(output)
-				cat("\n")
-			sink()
-		}
-		return(fname)
-	}
-	if (format=="P") {
-		if (!is.list(x))
-			stop("x must be a list.")
-		.writeList.P(x, fname, comments)
-		return(fname)
-	}
-	stop(paste("format \"",format,"\" not recognized."))
 }
 
 
@@ -281,39 +196,6 @@ writeList <- function(x, fname="", format="D", comments="")
 
 	if (fname!="")
 		sink()
-}
-
-
-# ***********************************************************
-# readList:
-#  returns a list in either "D" or "P" format read from disk
-# Arguments:
-#  fname - file to read
-# -----------------------------------------------------------
-readList <- function(fname)
-{
-	#detect file type
-	f <- scan(fname, what=character(), sep="\n", quiet=TRUE)
-	for(i in 1:length(f)) {
-		if (!any(grep("^[ \t]*#", f[i]))) {
-
-			if (any(grep("^[ \t]*structure", f[i])))
-				fileformat <- "D"
-			else if (any(grep("^[ \t]*list", f[i])))
-				fileformat <- "R"
-			else if (any(grep("^[ \t]*\\$", f[i])))
-				fileformat <- "P"
-			else
-				stop("unknown fileformat detected.")
-			break;
-		}
-	}
-	if (fileformat == "R" || fileformat == "D") {
-		return(eval(parse(fname)))
-	}
-	if (fileformat == "P") {
-		return(.readList.P(fname))
-	}
 }
 
 
@@ -782,79 +664,6 @@ createVector <- function (vec, vectorLabels=NULL, func="", windowname="vectorwin
 	createWin(winList)
 }
 
-
-# ***********************************************************
-# getPBSext:
-#  retrieve previously saved command
-# Arguments:
-#  ext - file extension
-# -----------------------------------------------------------
-getPBSext <- function(ext)
-{
-	if (!exists(".PBSmod")) {
-		stop(".PBSmod was not found")
-	}
-	if (missing(ext))
-		return(.PBSmod$.options$openfile)
-	if (.isReallyNull(.PBSmod$.options$openfile, ext))
-		return(NULL)
-	return(.PBSmod$.options$openfile[[ext]])
-}
-
-
-# ***********************************************************
-# setPBSext:
-#  associate a new command with file types
-#  use "%f" in cmd to designate where the filename will be placed
-# Arguments:
-#  ext - file extension
-#  cmd - cmd to open these types of files
-# -----------------------------------------------------------
-setPBSext <- function(ext, cmd)
-{
-	if (!exists(".PBSmod")) {
-		stop(".PBSmod was not found")
-	}
-	if (!any(grep("%f", cmd)))
-		stop(paste("No %f was found in supplied command \"", cmd, 
-		           "\".\n%f must be used to indicate where the filename will ",
-		           "be inserted by openfile().\n",
-		           "Did you mean \"", cmd, " %f\"?", sep=""))
-	.PBSmod$.options$openfile[[ext]] <<- cmd
-}
-
-# ***********************************************************
-# openFile:
-#  opens a file for viewing based on System file
-#  extension association or .PBSmod$.options$openfile
-# -----------------------------------------------------------
-openFile <- function(fname="") {
-	.openFile=function(fname) {
-		if (!exists(".PBSmod"))  .initPBSoptions()
-		if (fname=="")  fname=getWinAct()[1]
-		if (any(grep("^~", fname)))
-			fname <- path.expand(fname)
-		else if (!any(grep("^([a-z]:(\\\\|/)|\\\\\\\\|/)", fname, ignore.case = TRUE)))
-			fname <- paste(getwd(), "/", fname, sep="")
-		if (!file.exists(fname))
-			stop(paste("File \"", fname, "\" does not exist", sep=""))
-
-		ext <- sub("^.*\\.", "", fname)
-		if (.isReallyNull(.PBSmod$.options$openfile, ext)) {
-			if (!exists("shell.exec", mode="function")) 
-				stop(paste("There is no program associated with the extension '", ext, "'\n",
-				           "Please set an association with the setPBSext command\n"))
-			shell.exec(fname); return(fname)
-		} else {
-			cmd <- getPBSext(ext)
-			cmd <- gsub("%f", fname, cmd)
-			shell(cmd,wait=FALSE); return(cmd)
-		}
-	}
-	ops=sapply(fname,.openFile)
-	invisible(ops)
-}
-
 # ***********************************************************
 # promptOpenFile:
 #  opens a prompt and asks a user to select a file.
@@ -974,7 +783,7 @@ resetGraph <- function()
 	col.sub = "black", crt = 0, family = "", 
 	fg = "black", fig = c(0, 1, 0, 1), fin = c(7.166665625, 7.166665625
 	), font = as.integer(1), font.axis = as.integer(1), font.lab = as.integer(1), 
-	font.main = as.integer(2), font.sub = as.integer(1), gamma = 1, 
+	font.main = as.integer(2), font.sub = as.integer(1), 
 	lab = as.integer(c(5, 5, 7)), las = as.integer(0), lend = "round", 
 	lheight = 1, ljoin = "round", lmitre = 10, lty = "solid", 
 	lwd = 1, mai = c(0.95625, 0.76875, 0.76875, 0.39375), mar = c(5.1, 
@@ -990,15 +799,14 @@ resetGraph <- function()
 	"ylog", "adj", "ann", "ask", "bg", "bty", "cex", "cex.axis", 
 	"cex.lab", "cex.main", "cex.sub", "col", "col.axis", "col.lab", 
 	"col.main", "col.sub", "crt", "family", "fg", "fig", "fin", 
-	"font", "font.axis", "font.lab", "font.main", "font.sub", "gamma", 
+	"font", "font.axis", "font.lab", "font.main", "font.sub", 
 	"lab", "las", "lend", "lheight", "ljoin", "lmitre", "lty", "lwd", 
 	"mai", "mar", "mex", "mfcol", "mfg", "mfrow", "mgp", "mkh", "new", 
 	"oma", "omd", "omi", "pch", "pin", "plt", "ps", "pty", 
 	"srt", "tck", "tcl", "usr", "xaxp", "xaxs", "xaxt", "xpd", "yaxp", 
 	"yaxs", "yaxt"))
-
-	if (R.Version()$os!="mingw32")
-		defaultVals$gamma <- NULL
+	#if (R.Version()$os!="mingw32")
+	#	defaultVals$gamma <- NULL
 	frame()
 	par(defaultVals)
 	frame()
@@ -1014,12 +822,11 @@ resetGraph <- function()
 #  mgp - margin points
 #  ... - additional par settings
 # -----------------------------------------------------------
-expandGraph	<- function(mar=c(4,3,1.2,0.5), mgp=c(1.6,.5,0),...)
+expandGraph <- function(mar=c(4,3,1.2,0.5), mgp=c(1.6,.5,0),...)
 {
 	par(mar=mar, mgp=mgp, ...)
 	invisible()
 }
-
 
 # ***********************************************************
 # drawBars:
@@ -1380,59 +1187,6 @@ pickCol <- function(returnValue=TRUE) {
 	tkgrid(entry,button)
 }
 
-
-# ***********************************************************
-# testCol:
-#  displays test colours
-# Arguments:
-#  cnam - colour names to search for
-# -----------------------------------------------------------
-testCol <- function(cnam=colors()[sample(length(colors()),15)]) {
-
-	#get similar colours
-	getCol <- function(x) {
-		palette <- colors()
-		n <- length(palette)
-		z <- NULL
-		for (i in x) {
-			a <- regexpr(i,palette)
-			b <- (1:n)[a>0]
-			z <- union(z,b)
-		}
-		lovely <- palette[z]
-		return(lovely)
-	}
- 
-	clrs <- getCol(grep("^[^#0-9]", cnam,value=TRUE))
-	clrs <- c(clrs, 
-	          grep("^#[0-9a-f]{6}$", cnam, value=TRUE, ignore.case=TRUE), 
-	          grep("^[0-9]+$", cnam, value=TRUE, ignore.case=TRUE)
-	          )
-	# fiddle for mfrow
-	N <- length(clrs); din <- par()$din; x <- din[1]; y <- din[2]
-	cell <- sqrt(prod(din)/N)
-	cols <- ceiling(x/cell); rows <- ceiling(y/cell)
-	if (N <= rows*cols-cols) rows <- rows-1
- 
-	par0 <- par(no.readonly = TRUE)
- 
-	xlim <- c(1, cols) + c(-.25,.25); ylim <- c(-rows,-1) + c(-.25,.25)
-	par(mfrow=c(1,1),mai=c(.05,.05,.05,.05))
-	plot(0,0,xlim=xlim,ylim=ylim,type="n",axes=FALSE,xlab="",ylab="")
-	k <- 0
-	for (i in 1:rows) {
-		for (j in 1:cols) {
-			k <- k+1
-			points(j,-i, col=clrs[k], pch=16,cex=5)
-			text(j,-i-.04*diff(ylim),clrs[k],cex=.6)
-		}
-	}
-	#addLabel(.5,.98,paste("Colours = ",paste(cnam,collapse=", "),sep=""))
-	par(par0)
-	invisible(clrs)
-}
-
-
 # ***********************************************************
 # testLty:
 #  Display line types available
@@ -1451,7 +1205,6 @@ testLty <- function (newframe = TRUE)
 	par(par0)
 	invisible(NULL)
 }
-
 
 # ***********************************************************
 # testLwd:
@@ -1503,7 +1256,7 @@ testPch <- function (pch=1:100, ncol=10, grid=TRUE, newframe=TRUE, bs=FALSE)
 	if(length(pchy)<length(yval)) {
 		pchy <- c(pchy,floor((pchy[length(pchy)]+ncol)/ncol)*ncol);
 	}
-	ylab <- pchy - ncol
+	ylab <- pchy - ncol + 1
 	par(usr=c(xlim,ylim))
 	if (grid) {
 		abline(v=seq(.5,ncol+.5,1),h=seq(rlim[1]-.5,rlim[2]+.5,1),col="gray");
@@ -1526,37 +1279,6 @@ testPch <- function (pch=1:100, ncol=10, grid=TRUE, newframe=TRUE, bs=FALSE)
 	mtext(ylab, side=2, line=1, at=yval, cex=1.3, col="red",las=1)
 	mtext(paste(ifelse(bs,"BACKSLASH","PCH"),"CHARACTERS (",pch[1],"-",pch[npch],")"), side=3, line=2.2, cex=1.2)
 	par(par0); invisible(yval);
-}
-
-
-# ***********************************************************
-# clearAll:
-#  remove all data in the global environment
-# Arguments:
-#  hidden  - if T remove all variables including dot variables
-#  verbose - list all removed variables
-# -----------------------------------------------------------
-clearAll <- function(hidden=TRUE, verbose=TRUE) 
-{
-	objs <- ls(all.names = TRUE, pos = ".GlobalEnv")
-	if (verbose && length(objs))
-		print(objs)
-	rmlist <- ls(all.names = hidden, pos = ".GlobalEnv")
-	rm(list = rmlist, pos = ".GlobalEnv")
-	if (verbose) {
-		cat("Removed:\n")
-		if (length(rmlist))
-			print(rmlist)
-		else
-			cat("\n")
-
-		cat("Remaining:\n")
-		if (length(ls(all.names = TRUE, pos = ".GlobalEnv")))
-			print(ls(all.names = TRUE, pos = ".GlobalEnv"))
-		else
-			cat("\n")
-	}
-	invisible()
 }
 
 # ----------------------------------------------------------
@@ -1879,63 +1601,6 @@ testWidgets <- function () {
 }
 
 # ***********************************************************
-# runExamples:
-#  Display a master GUI to display examples
-# -----------------------------------------------------------
-runExamples <- function () {
-	.runExHelper <<- function() {
-		getWinVal(scope = "L")
-		act <- getWinAct()[1]
-		if (!exists("act") || !exists("eN")) 
-			return()
-		if (act == "quit") {
-			closeWin()
-			setwd(.cwd)
-			remove(list = setdiff(ls(pos = 1), .cls), pos = 1)
-			return()
-		}
-		if (act == "__USE_EDIT__") {
-			if (wtxt == "\n" || wtxt == "No examples chosen\n") 
-				return()
-			winDesc <- strsplit(wtxt, "\n")[[1]]
-			createWin(winDesc, astext = TRUE)
-			return()
-		}
-		if (eN == 0) {
-			wtxt <- "No examples chosen"
-			closeWin(name = c("window","widWin","testW","choisir"))
-		}
-		else {
-			if (eN != 99)
-				closeWin(name = c("widWin","testW","choisir"))
-			source(paste(act, ".r", sep = ""))
-			wnam <- paste(act, "Win.txt", sep = "")
-			wtxt <- paste(readLines(wnam), collapse = "\n")
-		}
-		setWinVal(list(wtxt = wtxt), winName = "runE")
-	}
-	.runExHelperQuit <<- function() {
-		closeWin(c("window","widWin","testW","choisir","runE"))
-		setwd(.cwd)
-		remove(list = setdiff(ls(pos = 1), .cls), pos = 1)
-		return()
-	}
-	.cls <<- ls(pos = 1, all = TRUE)
-	.cwd <<- getwd()
-	pckg <- "PBSmodelling"
-	dnam <- "examples"
-	rdir <- system.file(package = pckg)
-	wdir <- paste(rdir, "/", dnam, sep = "")
-	fnam <- paste(wdir, list.files(wdir), sep = "/")
-	rtmp <- tempdir()
-	file.copy(fnam, rtmp, overwrite = TRUE)
-	setwd(rtmp)
-	createWin("runExamplesWin.txt")
-	msg <- paste("Examples are running in ", rtmp, sep = "")
-	setWinVal(list(wtxt = msg), winName = "runE")
-}
-
-# ***********************************************************
 # runDemos:
 #  Display a GUI to display something equivalent to R's demo()
 # -----------------------------------------------------------
@@ -2077,6 +1742,8 @@ runDemos <- function (package)
 
 #-------------------------------------------------
 # Show help files for package contents as HTML in browser window
+# Author: Rowan Haigh
+#-------------------------------------------------
 showHelp <- function(pat="methods") {
 	warn <- options()$warn
 	options(warn = -1)
@@ -2092,4 +1759,695 @@ showHelp <- function(pat="methods") {
 	openFile(URLs)
 	options(warn = warn)
 	invisible(list(Apacks=Apacks,Spacks=Spacks,URLs=URLs))
+}
+
+#-------------------------------------------------
+# showVignettes:
+#  Display a GUI to display something equivalent to R's vignette()
+# Arguments: package = string specifying a package name.
+# Author: Anisa Egeli
+#-------------------------------------------------
+showVignettes <- function (package)
+{
+	if (!exists(".dwd",where=1)) .dwd <<- getwd()
+	if (!exists(".dls",where=1)) .dls <<- c(".dls",ls(pos = 1, all = TRUE));
+	closeWin();
+
+	x <- vignette()
+	if (missing(package)) {
+		#display a list of packages to choose from
+		pkgVignette <- unique(x$results[,"Package"])
+		radios <- list(list(list(type="label", text="Select a package to view available vignettes.", sticky="w", padx=12)))
+		i <- 2
+		for(pkg in pkgVignette) {
+			len <- length(x$results[,"Package"][x$results[,"Package"]==pkg])
+			if (len==1)
+				items <- "(1 vignette)"
+			else
+				items <- paste("(",len," vignettes)", sep="")
+			radios[[i]] <- list(list(type="radio",
+			                    name="pkg",
+			                    value=pkg,
+			                    text=paste(pkg, items),
+			                    mode="character",
+			                    sticky="w",
+			                    padx=12))
+			i <- i+1
+		}
+		xxy <<- win <- list(title = "R Vignettes", windowname = "pbs.vignette", onclose=".dClose",
+			.widgets = list(list(type="grid", .widgets=c(
+
+			list(list(
+			list(type="label", text=paste("R Vignettes", paste(rep(" ", times=100), collapse="")), font="bold underline", fg="red3", padx=10, sticky="w")
+			)),
+			radios,
+			list(list(
+			list(type="button", "function"=".viewPkgVignette", action="pkg", text="View Vignettes", sticky="w", padx=12)
+			))
+			))))
+		createWin(list(win))
+		return(invisible(NULL))
+	}
+
+	#display vignettes from a certain package
+	x <- x$results[x$results[,"Package"]==package,]
+	radios <- list(list(list(type="label", text="Select a Vignette to view.", sticky="w", padx=12)))
+	i <- 2
+
+	if (is.null(dim(x))) {
+		tmp<-names(x)
+		dim(x)<-c(1,4)
+		colnames(x)<-tmp
+	}
+	for(j in 1:length(x[,1])) {
+		vignetteDir <- file.path(x[j,"LibPath"], package, "doc")
+		path <- tools::list_files_with_type(vignetteDir, "vignette")
+		path <- path[x[j,"Item"]==tools::file_path_sans_ext(basename(path))]
+
+		if (length(path)==0)
+			stop("error - could not find the path for vignette - this is most likely a bug!")
+
+		radios[[i]] <- list(list(type="radio",
+		                    name="vignette",
+		                    value=path,
+		                    text=x[j,"Item"],
+		                    mode="character",
+		                    font="underline",
+		                    sticky="w",
+		                    padx=12))
+		i <- i+1
+		radios[[i]] <- list(list(type="label",
+		                    text=x[j,"Title"],
+		                    sticky="w",
+		                    wraplength=500,
+		                    padx=20
+		                    ))
+		i <- i+1
+	}
+	xx <<- win <- list(title = paste("R Vignettes:", package), windowname = "pbs.vignette", onclose=".dClose",
+		.widgets = list(list(type="grid", .widgets=c(
+			list(list(
+				list(type="label", text=paste(package, paste(rep(" ", times=100), collapse="")), font="bold underline", fg="red3", sticky="w")
+			)),
+			radios,
+			list(list(list(type="null", pady=4))),
+				list(list(
+					list(type="grid", sticky="w", pady=3, .widgets=
+						list(
+							list(
+								list(type="button", "function"=".viewPkgVignette", action="vignette", text="View Vignette", sticky="w", padx=12),
+								list(type="button", "function"=".viewPkgVignette", action="source", text="View Source", sticky="w", padx=12),
+								list(type="button", "function"="showVignettes", action="", text="All Packages", sticky="w", padx=12)
+							)
+						)
+					)
+				))
+			)
+		)))
+	createWin(list(win))
+	return(invisible(NULL))
+}
+
+#-------------------------------------------------
+# .viewPkgVignettes:
+#  Display a GUI to display something equivalent to R's vignette()
+#-------------------------------------------------
+.viewPkgVignette <- function()
+{
+	act <- getWinAct()[1]
+	if (act=="pkg")
+		return(showVignettes(getWinVal("pkg")$pkg))
+	vignette <- getWinVal("vignette")$vignette
+	if (act=="vignette")
+		 vignette <- paste(tools::file_path_sans_ext(vignette), ".pdf", sep="")
+	openFile(vignette)
+	return(invisible(NULL))
+}
+
+#-------------------------------------------------
+# writeList:
+#  writes a list to a file in "D" or "P" format
+# Arguments:
+#  x        - list to save
+#  fname    - file to write list to
+#  format   - write list in "D" or "P" format
+#  comments - include string as comment at the top of file
+# Change (Anisa Egeli): Function previously crashed R if an empty 
+#   list was given for the first argument. This function is the same 
+#   except that now there is a check, and the function will stop if
+#   the list is empty. (The error message is changed appropriately)
+#-------------------------------------------------
+writeList <- function(x, fname="", format="D", comments="")
+{
+	NoComments<-missing(comments)
+	comments <- sub("^", "#", comments)
+
+	if (format=="D") {
+		dput(x, fname)
+		if (file.exists(fname) && !NoComments) {
+			output <- scan(fname, what=character(0), sep="\n")
+			output <- paste(output, collapse="\n")
+
+			sink(fname)
+				#add comments
+				if (all(comments!="#")) {
+					cat(paste(comments, collapse="\n")); cat("\n");
+				}
+				#spit out original output from dput
+				cat(output)
+				cat("\n")
+			sink()
+		}
+		return(fname)
+	}
+	if (format=="P") {
+		if (!is.list(x) || !length(x))
+			stop("x must be a non-empty list.")
+		.writeList.P(x, fname, comments)
+		return(fname)
+	}
+	stop(paste("format \"",format,"\" not recognized."))
+}
+
+#-------------------------------------------------
+# readList:
+#  returns a list in either "D" or "P" format read from disk
+# Arguments:
+#  fname - file to read
+# Change (Anisa Egeli): There is a check to see if the file exists. 
+#   This allows try(readList(...), silent=TRUE) to catch the error.
+#-------------------------------------------------
+readList <- function(fname)
+{
+	if(!file.exists(fname))
+		stop(paste("File", fname, "does not exist."))
+
+	#detect file type
+	f <- scan(fname, what=character(), sep="\n", quiet=TRUE)
+	for(i in 1:length(f)) {
+		if (!any(grep("^[ \t]*#", f[i]))) {
+
+			if (any(grep("^[ \t]*structure", f[i])))
+				fileformat <- "D"
+			else if (any(grep("^[ \t]*list", f[i])))
+				fileformat <- "R"
+			else if (any(grep("^[ \t]*\\$", f[i])))
+				fileformat <- "P"
+			else
+				stop("unknown fileformat detected.")
+			break;
+		}
+	}
+	if (fileformat == "R" || fileformat == "D") {
+		return(eval(parse(fname)))
+	}
+	if (fileformat == "P") {
+		return(.readList.P(fname))
+	}
+}
+
+
+#2008-04-29-------------------------------------JS
+# Show results of the calculation in string x
+#-------------------------------------------------
+showRes <- function(x, cr=TRUE, pau=TRUE) {
+  cat(">",x," "); if(cr==TRUE) cat("\n");
+  if(pau) pause("...") else cat("...\n");
+  xres <- eval(parse(text=x));
+  print(xres); 
+  cat("************** Results shown above **************\n\n");
+  if(pau) pause();
+  invisible(xres); };
+
+#2008-08-28-------------------------------------AE
+# Remove all data in the global environment
+# Arguments:
+#  hidden  - if T remove all variables including dot variables
+#  verbose - list all removed variables
+#  PBSsave - if TRUE, do not remove .PBSmod
+# ------------------------------------------------
+clearAll <- function(hidden=TRUE, verbose=TRUE, PBSsave=TRUE) {
+	objs <- ls(all.names = TRUE, pos = ".GlobalEnv")
+	if (verbose && length(objs))
+		print(objs)
+	rmlist <- ls(all.names = hidden, pos = ".GlobalEnv")
+	if(PBSsave)
+		rmlist=rmlist[rmlist!=".PBSmod"]
+	rm(list = rmlist, pos = ".GlobalEnv")
+	if (verbose) {
+		cat("Removed:\n")
+		if (length(rmlist))
+			print(rmlist)
+		else
+			cat("\n")
+
+		cat("Remaining:\n")
+		if (length(ls(all.names = TRUE, pos = ".GlobalEnv")))
+			print(ls(all.names = TRUE, pos = ".GlobalEnv"))
+		else
+			cat("\n")
+	}
+	invisible()
+}
+
+#2008-09-03----------------------------------SM/RH
+#  Pairs plot featuring fried eggs and beer.
+#  Original code by Steve Martell (UBC).
+#-------------------------------------------------
+plotFriedEggs <- function(A, eggs=TRUE, rings=TRUE,
+		levs=c(0.01,0.1,0.5,0.75,0.95), pepper=200, replace=FALSE,
+		jitt=c(1,1), bw=25, histclr=NULL) {
+	require(KernSmooth)
+	expandGraph(las=1,mgp=c(0,.75,0))
+
+	panel.cor <- function(x, y, digits=2, prefix="", cex.cor) {
+		usr <- par("usr"); on.exit(par(usr))
+		par(usr = c(0, 1, 0, 1))
+		r <- (cor(x, y))
+		txt <- format(c(r, 0.123456789), digits=digits)[1]
+		txt <- paste(prefix, txt, sep="")
+		if(missing(cex.cor)) cex <- 0.8/strwidth(txt)
+		#text(0.5, 0.5, txt, cex = cex * r)
+		beer(round(r,2)) }
+
+	panel.hist <- function(x) {
+		usr <- par("usr"); on.exit(par(usr))
+		par(usr = c(usr[1:2], 0, 1.25))
+		h <- hist(x,breaks=20,plot=FALSE)
+		breaks <- h$breaks; nB <- length(breaks)
+		y <- h$counts; y <- y/max(y)
+		if (!is.null(histclr)) {clrs=histclr; bord=1}
+		else if (eggs) {clrs=c("moccasin","burlywood"); bord="saddlebrown" }
+		else if (rings) {clrs=c("lightsteelblue1","steelblue"); bord="darkblue" }
+		else {clrs=c("grey85","grey40"); bord="black" }
+		rect(breaks[-nB],0,breaks[-1],y,col=clrs,border=bord);  box() }
+
+	fried.eggs <- function(x, y) {
+		bwx=(max(x)-min(x))/bw; bwy=(max(y)-min(y))/bw
+		est <- bkde2D(cbind(x,y),bandwidth=c(bwx,bwy),gridsize=c(51, 51))
+		est$fhat=est$fhat/max(est$fhat)
+		levs=sort(levs); maxct=max(levs)
+		nlev=length(levs); is.white=rev(is.element(nlev:1,seq(nlev,1,-2))); is.yolk=!is.white
+		thelines=contourLines(est$x1,est$x2,est$fhat,levels=levs)
+
+		crap=colorRamp(c("sandybrown","gold","white"),space="Lab")
+		yolks=apply(crap(seq(.3,.8,len=nlev)),1,function(x){rgb(x[1],x[2],x[3],maxColorValue=255)})
+		crap=colorRamp(c("snow","whitesmoke"),space="Lab")
+		whites=apply(crap(seq(0,1,len=nlev)),1,function(x){rgb(x[1],x[2],x[3],maxColorValue=255)})
+
+		for (i in 1:(nlev-1)) {
+			ii=nlev-i+1
+			if (is.yolk[i]) clr=yolks else clr=whites
+			polygon(thelines[[i]]$x,thelines[[i]]$y,col=clr[ii],border="grey",lwd=1) }
+		if(pepper>0) pepper.mill(x,y,scale=0:7/10)
+		polygon(thelines[[nlev]]$x,thelines[[nlev]]$y,col="white",border="grey",lwd=1)
+		box() }
+
+	smoke.rings <- function(x, y) {
+		bwx=(max(x)-min(x))/bw; bwy=(max(y)-min(y))/bw
+		est <- bkde2D(cbind(x,y),bandwidth=c(bwx,bwy),gridsize=c(51, 51))
+		est$fhat=est$fhat/max(est$fhat)
+		levs=sort(levs); maxct=max(levs)
+		nlev=length(levs)
+		points(x,y,pch=20,col="grey",cex=0.2)
+		crap=colorRamp(c("white","cornflowerblue","black"),space="Lab") # smoke ring ramp function bounded by white and black
+		clrs=apply(crap(seq(.2,.7,len=nlev)),1,function(x){rgb(x[1],x[2],x[3],maxColorValue=255)})
+		if (pepper>0) pepper.mill(x,y,scale=0)
+		contour(est$x1,est$x2,est$fhat,drawlabels=FALSE,add=TRUE,levels=levs,lwd=2,col=clrs)
+		box() }
+
+	pepper.mill = function (x,y,scale=0:9/10) { # grind some pepper
+		N=length(x)
+		xi=sample(1:N,pepper,replace=ifelse(pepper>N,TRUE,replace))
+		points(jitter(x[xi],factor=jitt[1]),jitter(y[xi],factor=ifelse(is.na(jitt[2]),jitt[1],jitt[2])),
+			pch=20,cex=0.5,col=grey(scale)) }
+
+	beer <- function(v, col.glass=c("#C6D5D8","#6D939E")) {
+		usr=par("usr")
+		ymin=usr[3]; ymax=usr[4]; yrng=ymax-ymin
+		ymin1=usr[3]+.1*yrng
+		ymax1=usr[4]-.2*yrng
+		yrng1=ymax1-ymin1
+		ymax2=ymin1+abs(v)*yrng1
+		xmid=(usr[2]+usr[1])/2
+		ymid=(ymax1+ymin1)/2
+		xrng=(usr[2]-usr[1])
+		Lbot=xmid-.15*xrng; Rbot=xmid+.15*xrng; Ltop=xmid-.25*xrng; Rtop=xmid+.25*xrng             # sides of glass
+		Lbeer=xmid-(.15+abs(v)*.1)*xrng;  Rbeer=xmid+(.15+abs(v)*.1)*xrng                          # top of beer
+
+		curved=function(x,yval,scale=0.2) {
+			xmin=min(x,na.rm=TRUE); xmax=max(x,na.rm=TRUE)
+			s=(2/pi)*asin(sqrt((x-xmin)/(xmax-xmin))) # scale between 0 and 1
+			smid=mean(s,na.rm=TRUE)
+			ycur=scale/cos(s-smid); ycur=yval+ycur-max(ycur,na.rm=TRUE); return(ycur) }
+
+		xbot=seq(Lbot,Rbot,len=100); ybot=curved(xbot,ymin1) # bottom of glass
+		xtop=seq(Ltop,Rtop,len=100); ytop=curved(xtop,ymax1) # top of glass
+		xglass=c(xbot,rev(xtop)); yglass=c(ybot,rev(ytop))   # curved glass poly
+
+		#xbeer=c(Lbot,Lbeer,Rbeer,Rbot,Lbot); ybeer=c(ymin1,ymax2,ymax2,ymin1,ymin1) # rectangular beer poly
+		xsip=seq(Lbeer,Rbeer,len=100); 
+		if (v==0) ysip=ybot else ysip=curved(xsip,ymax2)  # top of beer
+		xbeer=c(xbot,rev(xsip)); ybeer=c(ybot,rev(ysip))        # curved beer poly
+		bubblex=runif(round(500*abs(v),0),xmid-(.15+abs(v*.95)*.1)*xrng,xmid+(.15+abs(v*.95)*.1)*xrng)
+		if (v==0) yfroth=ybot else yfroth=curved(bubblex,ymax2)
+		#bubbley=runif(round(500*abs(v),0),ymax2-.02*yrng1,ymax2+.02*yrng1)
+		bubbley=runif(round(500*abs(v),0),yfroth-.02*yrng1,yfroth+.02*yrng1)
+
+		polygon(xglass,yglass,,col="aliceblue",border=FALSE)              # glass surface
+		lines(xtop,ymax1+abs(ytop-ymax1),lwd=2,col=col.glass[1])          # top back rim
+		if (v!=0) {
+			polygon(xbeer,ybeer,col=ifelse(v<0,"orange","gold"),border="burlywood")                # beer
+			points(bubblex,bubbley,pch=21,col=ifelse(v<0,"orange","gold"),bg="white",cex=seq(0.1,1,length=10)) }
+		lines(xbot,ybot,lwd=3,col=col.glass[1])                           # bottom edge
+		lines(xbot,ybot-.005,lwd=1,col=col.glass[2])                      # bottom edge shadow
+		lines(c(Lbot,Ltop),c(ymin1,ymax1),lwd=4,col=col.glass[1])         # left edge
+		lines(c(Lbot-.01,Ltop-.01),c(ymin1,ymax1),lwd=1,col=col.glass[2]) # left edge shadow
+		lines(c(Rbot,Rtop),c(ymin1,ymax1),lwd=4,col=col.glass[1])         # right edge
+		lines(c(Rbot+.01,Rtop+.01),c(ymin1,ymax1),lwd=1,col=col.glass[2]) # right edge shadow
+		lines(xtop,ytop,lwd=3,col=col.glass[1])                           # top front rim
+		text(xmid,ymid,labels=c(paste(ifelse(v<0,"-","+"),abs(v))),cex=abs(v*100)^.1)
+	}
+	if (eggs) lower=fried.eggs else if (rings) lower=smoke.rings else lower=pepper.mill
+	pairs(A,lower.panel=lower,diag.panel=panel.hist,upper.panel=panel.cor,gap=0,label.pos=0.92)
+}
+
+#2008-09-08-------------------------------------RH
+# Display test colours as circular patches
+# Arguments:
+#  cnam - colour names to search for
+# ------------------------------------------------
+testCol <- function(cnam=colors()[sample(length(colors()),15)]) {
+
+	#get similar colours
+	getCol <- function(x) {
+		palette <- colors()
+		n <- length(palette)
+		z <- NULL
+		for (i in x) {
+			a <- regexpr(i,palette)
+			b <- (1:n)[a>0]
+			z <- union(z,b)
+		}
+		lovely <- palette[z]
+		return(lovely)
+	}
+ 
+	clrs <- getCol(grep("^[^#0-9]", cnam,value=TRUE))
+	clrs <- c(clrs, 
+	          grep("^#[0-9a-f]{6}$", cnam, value=TRUE, ignore.case=TRUE), 
+	          grep("^[0-9]+$", cnam, value=TRUE, ignore.case=TRUE)
+	          )
+	# fiddle for mfrow
+	N <- length(clrs); din <- par()$din; x <- din[1]; y <- din[2]
+	cell <- sqrt(prod(din)/N)
+	cols <- ceiling(x/cell); rows <- ceiling(y/cell)
+	if (N <= rows*cols-cols) rows <- rows-1
+
+	par0 <- par(no.readonly = TRUE)
+	xlim <- c(1, cols) + c(-.25,.25); ylim <- c(-rows,-1) + c(-.25,.25)
+
+	resetGraph()
+	par(mfrow=c(1,1),mai=c(.05,.05,.05,.05))
+	plot(0,0,xlim=xlim,ylim=ylim,type="n",axes=FALSE,xlab="",ylab="")
+	k <- 0
+	for (i in 1:rows) {
+		for (j in 1:cols) {
+			k <- k+1
+			points(j,-i, col=clrs[k], pch=16,cex=5)
+			text(j,-i-.04*diff(ylim),clrs[k],cex=.6) } }
+	par(par0)
+	invisible(clrs)
+}
+
+#2008-10-24-------------------------------------RH; Rev. JTS
+#  Display a master GUI to display examples
+#-------------------------------------------------
+runExamples <- function () {
+	allWin=c("runE","window","widWin","testW","choisir","Swiss") # all potential windows open
+	.runExHelper <<- function() {
+		getWinVal(scope = "L")
+		act <- getWinAct()[1]
+		if (!exists("act") || !exists("eN")) return()
+		if (act == "quit") { 
+			.runExHelperQuit()
+		} else if (act=="clear") {
+			wtxt <- "No examples chosen"
+			closeWin(name=setdiff(allWin,"runE"))
+		} else if (act == "__USE_EDIT__") {
+			if (wtxt == "\n" || wtxt == "No examples chosen\n") return()
+			winDesc <- strsplit(wtxt, "\n")[[1]]
+			createWin(winDesc, astext = TRUE)
+			return()
+		} else if (act=="SwissTalk") {
+			closeWin(name=setdiff(allWin,"runE"))
+			tnam=paste(act,".txt",sep="") # talk description file
+			wtxt <- paste(readLines(tnam), collapse = "\n")
+			presentTalk(tnam)
+		} else {
+			if (act!="TestFuns")
+				closeWin(name=setdiff(allWin,c("runE","window")))
+			source(paste(act, ".r", sep = ""))
+			wnam <- paste(act, "Win.txt", sep = "") # window description file
+			wtxt <- paste(readLines(wnam), collapse = "\n")
+		}
+		setWinVal(list(wtxt=wtxt), winName="runE")
+	}
+	.runExHelperQuit <<- function() {
+		closeWin(name=allWin)
+		setwd(.cwd)
+		remove(list = setdiff(ls(pos = 1), .cls), pos = 1)
+		return()
+	}
+	.cls <<- ls(pos = 1, all = TRUE)
+	.cwd <<- getwd()
+	pckg <- "PBSmodelling"
+	dnam <- "examples"
+	rdir <- system.file(package = pckg)
+	wdir <- paste(rdir, "/", dnam, sep = "")
+	fnam <- paste(wdir, list.files(wdir), sep = "/")
+	rtmp <- tempdir()
+	file.copy(fnam, rtmp, overwrite = TRUE)
+	setwd(rtmp)
+	createWin("runExamplesWin.txt")
+	msg <- paste("Examples are running in ", rtmp, sep = "")
+	setWinVal(list(wtxt = msg), winName = "runE")
+}
+
+#2008-09-08-------------------------------------JS
+#  Prints the class, mode, type, and attributes
+#  of the given object x.
+#-------------------------------------------------
+isWhat <- function(x) {
+  cat("class: "); print(class(x));
+  cat("mode:  "); print(mode(x));
+  cat("type:  "); print(typeof(x));
+  att=attributes(x)
+  cat(paste("attributes:",ifelse(is.null(att)," NULL\n","\n"),sep=""))
+  if (!is.null(att)) print(att)
+  invisible() }
+
+#2008-09-22------------------------------------ACB
+# Opens a file for viewing based on System file
+# extension association or .PBSmod$.options$openfile
+#-------------------------------------------------
+openFile <- function(fname="") {
+	.openFile=function(fname) {
+		if (!exists(".PBSmod"))  .initPBSoptions()
+		if (fname=="")  fname=getWinAct()[1]
+		if (any(grep("^~", fname)))
+			fname <- path.expand(fname)
+		else if (!any(grep("^([a-z]:(\\\\|/)|\\\\\\\\|/)", fname, ignore.case = TRUE)))
+			fname <- paste(getwd(), "/", fname, sep="")
+		if (!file.exists(fname))
+			stop(paste("File \"", fname, "\" does not exist", sep=""))
+
+		ext <- sub("^.*\\.", "", fname)
+		if (.isReallyNull(.PBSmod$.options$openfile, ext)) {
+			if (!exists("shell.exec", mode="function")) 
+				stop(paste("There is no program associated with the extension '", ext, "'\n",
+				           "Please set an association with the setPBSext command\n"))
+			shell.exec(fname); return(fname)
+		} else {
+			cmd <- getPBSext(ext)
+			cmd <- gsub("%f", fname, cmd)
+			if (.Platform$OS.type=="windows")
+				shell(cmd,wait=FALSE)
+			else
+				system(cmd,wait=FALSE)
+			return(cmd)
+		}
+	}
+	ops=sapply(fname,.openFile)
+	invisible(ops)
+}
+
+#2008-10-02------------------------------ACB/AE/RH
+# Change user options. Arguments:
+#   option - name of option to change
+#   value  - new value of option
+# AE: Now a value '.PBSmod$.options$.optionsChanged' is set to TRUE when an option is changed,
+#   so that the user doesn't always have to be prompted to save the options file.
+#   By default, '.PBSmod$.options$.optionsChanged' is not set or NULL.
+#   Also, if an option is set to "" or NULL then it is removed.
+#   '.initPBSoptions()' is now called first (options starting with a dot "." do not set '.optionsChanged').
+# RH: if the value is a sublist of an option, it can be changed individually using 'sublist=TRUE'.
+#Start setPBSoptions------------------------------
+setPBSoptions <- function(option, value, sublist=FALSE) {
+	.initPBSoptions()
+	if(!is.null(value) && length(value)==1 && value=="") value=NULL
+ 	if(substr(option, 1, 1)!="." && !identical(.PBSmod$.options[[option]], value))
+		.PBSmod$.options$.optionsChanged<<-TRUE
+	if(is.null(value) && !sublist)
+		.PBSmod$.options <<- .removeFromList(.PBSmod$.options, option)
+	else{
+		if(is.list(value) && sublist){
+			for (i in 1:length(value)){
+				ii=names(value[i]); if (ii=="") next
+				ival=value[[i]]
+				txt=paste(".PBSmod$.options$",option,ifelse(ii=="","","$"),ii," <<- ival",sep="")
+				eval(parse(text=txt))
+			}
+		}
+		else .PBSmod$.options[[option]] <<- value
+	}
+}
+#End setPBSoptions--------------------------------
+
+#2008-10-06----------------------------------AE/RH
+# Remove items from a list.
+#Start .removeFromList----------------------------
+.removeFromList = function (l, items) 
+{
+	if (!length(l) || !length(items))  return(l)
+	keep = l[!is.element(names(l),items)]
+	return(keep) }
+#End .removeFom List------------------------------
+
+#200x-xx-xx-------------------------------------AE
+# Called from zzz.R's .First.lib() intialization function
+#Start .initPBSoptions----------------------------
+.initPBSoptions <- function() {
+	if (!exists(".PBSmod"))
+		.PBSmod <<- list()
+	if (is.null(.PBSmod$.options))
+		.PBSmod$.options <<- list()
+	if (is.null(.PBSmod$.options$openfile))
+		.PBSmod$.options$openfile <<- list()
+}
+#End .initPBSoptions------------------------------
+
+#2000x-xx-xx-----------------------------------ACB
+# Retrieve a user option.  Argument:
+#   option - name of option to retrieve
+#Start getPBSoptions------------------------------
+getPBSoptions <- function(option) {
+	if (missing(option))
+		return(.PBSmod$.options)
+	return(.PBSmod$.options[[option]])
+}
+#End getPBSoptions--------------------------------
+
+#2000x-xx-xx-----------------------------------ACB
+# Retrieve previously saved command.  Argument:
+#  ext - file extension
+#Start getPBSext----------------------------------
+getPBSext <- function(ext) {
+	if (!exists(".PBSmod"))
+		stop(".PBSmod was not found")
+	if (missing(ext))
+		return(.PBSmod$.options$openfile)
+	if (.isReallyNull(.PBSmod$.options$openfile, ext))
+		return(NULL)
+	return(.PBSmod$.options$openfile[[ext]])
+}
+#End getPBSext------------------------------------
+
+#20008-07-31--------------------------------ACB/AE
+# Associate a new command with file types;
+#  use "%f" in cmd to designate where the filename will be placed.
+# AE: Added the setting of 'optionsChanged'
+# Arguments:
+#  ext - file extension
+#  cmd - cmd to open these types of files
+#Start setPBSext----------------------------------
+setPBSext <- function(ext, cmd) {
+	if (!exists(".PBSmod")) 
+		stop(".PBSmod was not found")
+	if (!any(grep("%f", cmd)))
+		stop(paste("No %f was found in supplied command \"", cmd, 
+		           "\".\n%f must be used to indicate where the filename will ",
+		           "be inserted by openfile().\n",
+		           "Did you mean \"", cmd, " %f\"?", sep=""))
+		           
+	if(is.null(.PBSmod$.options$openfile[[ext]]) ||
+			.PBSmod$.options$openfile[[ext]]!=cmd)
+		.PBSmod$.options.optionsChanged<<-TRUE
+		
+	.PBSmod$.options$openfile[[ext]] <<- cmd
+}
+#End setPBSext------------------------------------
+
+#2008-07-21-------------------------------------AE
+# Disassociate any number of file extensions from commands
+#  previously save with setPBSext.
+# Argument:
+#  ext - optional character vector of file extensions to
+#        clear; if unspecified, all associations are removed
+#Start clearPBSext--------------------------------
+clearPBSext=function(ext){
+  .initPBSoptions()
+  if(missing(ext))
+    .PBSmod$.options$openfile<<-list()
+  else{
+    oldLen=length(.PBSmod$.options$openfile)
+    .PBSmod$.options$openfile<<-.removeFromList(.PBSmod$.options$openfile, ext)
+    if(oldLen!=length(.PBSmod$.options$openfile))
+      .PBSmod$.options$.optionsChanged<<-TRUE
+  }
+}
+#End clearPBSext----------------------------------
+
+
+# ***********************************************************
+# writePBSoptions:
+#  Save PBS options to a text file
+# Input:
+#  fname - name of options file (or path to this file)
+# -----------------------------------------------------------
+writePBSoptions=function(fname="PBSoptions.txt"){
+  .initPBSoptions()
+  
+  if(fname!="PBSoptions.txt")
+    .PBSmod$.options$.optionsFile<<-fname
+    
+	.PBSmod$.options$.optionsChanged<<-NULL
+	
+	saveOpt=.PBSmod$.options[-grep("^[.]", names(.PBSmod$.options))]
+  writeList(saveOpt, fname)
+}
+
+# ***********************************************************
+# readPBSoptions:
+#  Load PBS options from a text file. The loaded options will
+#  overwrite existing ones in memory; however, an existing
+#  option in memory will not be cleared if this option does
+#  not exist in the options file.
+# Input:
+#  fname - name of options file (or path to this file)
+# Output:
+#   returns FALSE if file did not exist or if read failed
+#   otherwise returns TRUE
+# -----------------------------------------------------------
+readPBSoptions=function(fname="PBSoptions.txt"){
+  .initPBSoptions()
+     
+  optList=try(readList(fname), silent=TRUE)
+  if(class(optList)=="try-error")
+    return(FALSE)
+    
+  .PBSmod$.options<<-.mergeLists(.PBSmod$.options, optList)
+  if(fname!="PBSoptions.txt")
+    .PBSmod$.options$.optionsFile<<-fname
+  .PBSmod$.options$.optionsChanged<<-NULL
 }
