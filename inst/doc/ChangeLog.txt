@@ -1,11 +1,51 @@
 PBSmodelling Changes
 ====================
+2.06  2009-03-06  Rowan
+  - POSTED ON CRAN
+  - Changed 'convSlashes.Rd' & 'doAction.Rd' to reflect new functionality of '\code{}' in R.2.9.0.
+
+2.05  2009-03-05  Rowan
+  - Added 'PBSmodelling-Updates.pdf' to the vignettes.
+  - Added 'testAlpha' and 'viewCode' to 'TestFuns' for 'runExamples()'.
+
+2.04  2009-03-04  Rowan
+  - Added new function 'testAlpha()' to display transparency values.
+  - Added new hidden function '.findSquare()' to determine rows m and columns n from a vector N.
+  - Revised 'runDemos()' to require packages as needed.
+  - Revised 'packList()' to pack an explicit value instead of object values.
+  - Revised 'evalCall()' to optionally check additional arguments in '.default()' functions and 'par()'.
+  - Revised function '.makeCleanVec()' to allow file names with spaces.
+  - Removed easy-to-change isntances of "<<-", replaced with either 'assign()' or 'packList()'.
+
+2.03  2009-02-24  Rowan
+  - Revised functions 'cleanProj()', '.doClean()', 'cleanWD()' and '.doCleanWD()'.
+  - Added new function 'packList()' that packs objects from one environment (typically local) into a list object in another environment (typically global).
+  - Revised the 'par()' defaults in 'resetGraph()'.
+  - Revised the BRugs plotting functions to use 'evalCall()' and to use an expanded colour vector.
+  - Implemented 'evalCall()' in 'plotCsum'
+
+2.02  2009-02-23  Rowan
+  - Revised functions 'cleanProj()' and '.doClean()' to delete project junk files.
+  - Added new functions 'cleanWD()' and '.doCleanWD()' to delete specified files.
+  - Revised 'showArgs()' to display the widget arguments in a more visible manner.
+  - Added new non-GUI functions 'getPrefix()' and 'getSuffix()' to search for and return all prefixes/suffixes of system files on the specified path.
+  - Revised 'plotBubbles()' to increase its versatility.
+  - Added new function 'evalCall()' to evaluate function calls with pontentially duplicated arguments due to '...'.
+  - Added new function 'showPacks()' to check if specified packages are missing from a user's system (Jon).
+  - Added new function 'convSlashes()' to convert slashes depending on OS.
+	(duplicates somewhat the functionality of '.addSlashes()')
+  - Added new function 'viewCode()' to collect the R-code of all functions in a specified package on the user's system.
+  - Added new function 'doAction()' which executes the action created by a widget.
+  - Added new function '.forceMode()' to coerce modes into those specified, if possible (relpaces '.convertMode()' in 'readList()').
+	Note: I could not use this algorithm to replace '.convertMode()' generally because this affects logical values derived from GUIs.
+  - Changed the definition of '.pFormatDefs$array' (formerly not used) in '.widgetDefs.r'.
+  - Revised 'writeList()' and 'readList()' to handle n-dimensional arrays in PBS format.
+  - Changed the grouping of functions within existing and new *.r files (only relevant to the package builders).
+
 2.01  2008-10-24  Jon
-  - POSTED ON CRAN.
-  - Revisions to support case-sensitive file names in Unix
-  Effected files: runExamplesWin.txt, CCA.r, SGM.r, YPR.r, supportFuns.r (runExamples)
+  - POSTED ON CRAN
 2.00  2008-10-23  Rowan
-  - Appears ready in Windows
+  - Bumped up the vesion for CRAN
 1.92  2008-10-23  Jon/Rowan
   - Revised the User's Guide, the example document 'vonBDoc.pdf', and the talk description file 'SwissTalk.txt'.
 1.91  2008-10-09  Rowan

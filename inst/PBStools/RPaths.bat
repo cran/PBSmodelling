@@ -5,7 +5,7 @@ if not defined PBS_SETLOCAL (
 
 rem ***** Edit the six PATH variables listed below *****
 
-set R_Root=C:\WinApps\R\R-2.7.2
+set R_Root=C:\WinApps\R\R-2.8.1
 set TOOLS_PATH=C:\Utils\Rtools\bin
 set PERL_PATH=C:\WinApps\Perl\bin
 set MINGW_PATH=C:\Utils\Rtools\MinGW\bin

@@ -124,15 +124,13 @@
 # Arguments:
 #   winName - name of map to initialize
 # -----------------------------------------------------------
-.map.init <- function(winName)
-{
-	.PBSmod[[winName]] <<- list()
-
+.map.init <- function(winName) {
+	packList(winName,".PBSmod",list()) #.PBSmod[[winName]] <<- list()
 	#to hold tclvar pointers
-	.PBSmod[[winName]]$widgetPtrs <<- list()
-
+	target=paste(".PBSmod[[\"",winName,"\"]]",sep="")
+	eval(parse(text=paste("packList(\"widgetPtrs\",",target,",list())",sep=""))) #.PBSmod[[winName]]$widgetPtrs <<- list()
 	#to hold widget definition lists (i.e. from win desc file)
-	.PBSmod[[winName]]$widgets <<- list()
+	eval(parse(text=paste("packList(\"widgets\",",target,",list())",sep=""))) #.PBSmod[[winName]]$widgets <<- list()
 }
 
 
@@ -572,7 +570,7 @@ focusWin <- function(winName, winVal=TRUE)
 		stop(paste("supplied winName \"", winName, "\" is not a valid window", sep=""))
 	tkfocus(.PBSmod[[winName]]$tkwindow)
 	if (winVal)
-		.PBSmod$.activeWin <<- winName
+		packList(".activeWin",".PBSmod",winName) #.PBSmod$.activeWin <<- winName
 }
 
 
@@ -1443,22 +1441,16 @@ parseWinFile <- function(fname, astext=FALSE)
 	#now passed in function - to enable overriding
 	# a "constant" defines how the parameters should look.
 
-
 	namedArguments <- 0 # determines if we can accept unnamed arguments
 	paramData <- list() #extracted params from a line to return
-	typeDefined <- 0 #this must be set before returning
-
+	typeDefined <- 0    #this must be set before returning
 	if (inputStr=="") {
 		.catError(paste("input line is empty", sep=""), fname, line.start)
-		return(NULL)
-	}
-
+		return(NULL) }
 	#split input string into seperate arguments
 	s<-.convertParamStrToList(inputStr, fname, line.start, line.end, sourcefile)
-
 	for(j in 1:length(s)) {
 		value<-s[[j]]$value
-
 		#argument is named, unnamed arguments are no longer valid
 		if (!is.null(s[[j]]$key)) {
 			namedArguments <- 1 
@@ -1467,22 +1459,18 @@ parseWinFile <- function(fname, astext=FALSE)
 			if (typeDefined==0) {
 				if (key=="type") {
 					typeDefined <- 1;
-
 					#case of type is ignored
 					paramData[[key]] <- value <- casefold(value, upper=FALSE) 
-
 					#fetch argument Ordering
 					argOrder <- paramOrder[[value]]
 				}
 			}
 		}
-
 		#argument is not named (no key was given)
 		else if(namedArguments==0) {
 			if (j==1) {
 				#first argument must be "type"
 				widgetType <- paramData$type <- casefold(value)
-
 				#fetch argument Ordering
 				argOrder <- paramOrder[[widgetType]]
 				if (is.null(argOrder)) {
@@ -1502,26 +1490,20 @@ parseWinFile <- function(fname, astext=FALSE)
 				paramData[[argName]] <- value
 			}
 		}
-
 		#error - unnamed arg given after named arg
 		else {
 			.catError(paste("unnamed argument with value \"",value,"\" given after a named argument.", sep=""), fname, line.start, line.end, sourcefile)
 			return(NULL)
 		}
 	}
-
 	#test if a type has been defined
 	if (typeDefined==0) {
 		.catError(paste("no widget type given", sep=""), fname, line.start, line.end, sourcefile)
-		return(NULL)
-	}
-
+		return(NULL) }
 	#check that widget type is valid
 	if(.isReallyNull(paramOrder, paramData$type)) {
 		.catError(paste("unknown widget type '", paramData$type,"'", sep=""), fname, line.start, line.end, sourcefile)
-		return(NULL)
-	}
-
+		return(NULL) }
 	#test if all given arguments are valid arguments of the given type
 	#and then convert from character to another type if applicable
 	errorFound <- 0
@@ -1544,7 +1526,6 @@ parseWinFile <- function(fname, astext=FALSE)
 			if (fullParamName != givenNames[i]) {
 				names(paramData)[i] <- fullParamName
 			}
-
 			#check supplied argument data matches grep pattern (if defined)
 			if (!is.null(argOrder[[pos]]$grep)) {
 				if (!any(grep(argOrder[[pos]]$grep, paramData[[i]]))) {
@@ -1553,7 +1534,6 @@ parseWinFile <- function(fname, astext=FALSE)
 					errorFound <- 1
 				}
 			}
-
 			#some strings - if character need to be stripped of slashes, or sub-divided
 			if (errorFound == 0 && !is.null(argOrder[[pos]]$class)) {
 				if (argOrder[[pos]]$class=="character") {
@@ -1589,7 +1569,6 @@ parseWinFile <- function(fname, astext=FALSE)
 	}
 	if (errorFound != 0)
 		return(NULL)
-
 	#check that all required arguments have been supplied
 	for(i in 1:length(argOrder)) {
 		if (argOrder[[i]]$required) {
@@ -1608,12 +1587,10 @@ parseWinFile <- function(fname, astext=FALSE)
 	}
 	if (errorFound != 0)
 		return(NULL)
-
 	#convert default values from character class to specified class ($mode in widgetDefs.r)
 	if ( !.isReallyNull(paramData,"value") && !.isReallyNull(paramData,"mode") && paramData$type=="radio" ) {
 		paramData$value <- as(paramData$value, paramData$mode)
 	}
-
 	#store debug information to be used if there are any errors while building the GUI
 	sourceCode <- c()
 	if (line.start<=line.end && !missing(sourcefile)) {
@@ -1622,7 +1599,6 @@ parseWinFile <- function(fname, astext=FALSE)
 		}
 	}
 	paramData$.debug <- list(sourceCode=sourceCode, fname=fname, line.start=line.start, line.end=line.end)
-
 	return(paramData)
 }
 
@@ -2718,16 +2694,16 @@ parseWinFile <- function(fname, astext=FALSE)
 
 	saveSlideBounds <- function(slider, curVar, minVar, maxVar)
 	{
-		minVal <<- tclvalue(minVar)
-		curVal <<- tclvalue(curVar)
-		maxVal <<- tclvalue(maxVar)
+		assign("minVal",tclvalue(minVar),envir=.GlobalEnv) #minVal <<- tclvalue(minVar)
+		assign("curVal",tclvalue(curVar),envir=.GlobalEnv) #curVal <<- tclvalue(curVar)
+		assign("maxVal",tclvalue(maxVar),envir=.GlobalEnv) #maxVal <<- tclvalue(maxVar)
 
 		if (any(grep("^-?[0-9]*$",minVal)))
-			lastMinVal <<- minVal
+			assign("lastMinVal",minVal,envir=.GlobalEnv) #lastMinVal <<- minVal
 		if (any(grep("^-?[0-9]*$",curVal)))
-			lastCurVal <<- curVal
+			assign("lastCurVal",curVal,envir=.GlobalEnv) #lastCurVal <<- curVal
 		if (any(grep("^-?[0-9]*$",maxVal)))
-			lastMaxVal <<- maxVal
+			assign("lastMaxVal",maxVal,envir=.GlobalEnv) #lastMaxVal <<- maxVal
 	}
 
 	convertCurVal <- function(widget, slideVar, curVar)
@@ -3104,7 +3080,6 @@ addHistory <- function(hisname="")
 	}
 	.updateHistory(hisname)
 }
-
 
 # ***********************************************************
 # rmHistory:
@@ -3490,7 +3465,7 @@ sortHistory <- function(file="",outfile=file,hisname="")
 # -----------------------------------------------------------
 .extractData <- function(command, action, winName)
 {
-	.PBSmod$.activeWin <<- winName
+	packList(".activeWin",".PBSmod",winName) #.PBSmod$.activeWin <<- winName
 
 	setWinAct(winName, action)
 
@@ -3774,7 +3749,7 @@ clearWinVal <- function()
 
 
 # ***********************************************************
-# .convertMode:
+# .convertMode (deprecated,see code in supportFuns):
 #   converts a variable into a mode without showing any warnings
 # Arguments:
 #   x    - variable to convert
@@ -3927,12 +3902,105 @@ getChoice <- function(choice=c("Yes","No"),question="Make a choice: ",winname="g
 #    choice  - vector of strings to choose from
 #    varname - variable name to which choice is assigned in the target GUI.
 #    winname - window name for getChoice
-# ------------------------------------------------
+#Start chooseWinVal-------------------------------
 chooseWinVal <- function(choice,varname,winname="window") {
 	setPBSoptions("setChoice",NULL);
 	setPBSoptions("setChoice",
 		paste(";\nsetWinVal(list(",varname,"=chosen),winName=\"",winname,"\");}",sep="",collapse=""));
 	getChoice(choice=choice,question="Select from:",horizontal=FALSE,radio=TRUE,qcolor="red3",gui=TRUE,quiet=TRUE);
-	setPBSoptions("setChoice",NULL);
+	setPBSoptions("setChoice",NULL); }
+#---------------------------------End chooseWinVal
+
+#2009-02-03-------------------------------------RH
+# Executes the action created by a widget.
+#Start doAction-----------------------------------
+doAction=function(act,envir=.GlobalEnv){
+	if (missing(act)) {
+		if(is.null(.PBSmod$.activeWin)) return()
+		act=getWinAct()[1] }
+	if(is.null(act) || act=="") return()
+	expr=gsub("`","\"",act)
+	eval(parse(text=expr),envir=envir)
+	invisible(act) }
+#-------------------------------------End doAction
+
+#cleanProj------------------------------2009-02-24
+# Anisa's cleanProj function modified for flexibility.
+#--------------------------------------------AE/RH
+cleanProj=function(prefix, suffix, files) {
+	if (missing(suffix)) suffix = character(0)
+	if (missing(files))  files  = character(0)
+	rowLen = ceiling(sqrt(max(length(suffix), length(files))))
+	if (rowLen == 0) return(invisible(FALSE))
+	winDesc = c("window name=cleanWindow title=Clean",
+		paste("entry name=cleanPrefix value=\"", prefix, "\" label=Prefix ",
+			"mode=character width=12 font=\"bold 9\"", sep = ""),
+		"label text=\"\n\nSuffixes to Clean\" font=\"bold 9\"", 
+		.makeCleanVec("suff", suffix, rowLen), 
+		"label text=\"\n\nFiles to Clean\" font=\"bold 9\"", 
+		.makeCleanVec("file", files, rowLen), 
+		"grid 1 3 relief=groove padx=4 pady=4", 
+		"button function=.selectCleanBoxes action=1 text=\"Select All\" padx=4 pady=4", 
+		"button function=.selectCleanBoxes action=0 text=\"Deselect All\" padx=4 pady=4", 
+		"button function=doAction text=Clean bg=aliceblue padx=4 pady=4 action=\"PBSmodelling:::.doClean(); closeWin(`cleanWindow`)\"")
+	createWin(winDesc, astext = TRUE) 
+	invisible(TRUE) }
+
+#.doClean-------------------------------2009-02-24
+# Used by cleanProj(); function called when Clean button is pressed.
+#--------------------------------------------AE/RH
+.doClean=function(){
+	prefix=getWinVal("cleanPrefix",winName="cleanWindow")[[1]]
+	vecList=.removeFromList(getWinVal(winName="cleanWindow"), "cleanPrefix")
+	filenames=character(0)
+	for(i in names(vecList)){
+		ii=vecList[[i]] # named logical vector
+		type=sub("[[:digit:]]*$", "", i)
+		if(type=="suff")
+			filenames=c(filenames, Sys.glob(paste(prefix,names(ii)[ii], sep="")))
+		else
+			filenames=c(filenames, Sys.glob(names(ii)[ii]))
+	}
+	if(!length(filenames))
+		showAlert("No files to delete.")
+	else if(getYes(paste("Delete ", paste(filenames, collapse=", "), "?",sep="")))
+		file.remove(filenames) 
+	remaining=file.exists(filenames)
+	if(sum(remaining)) 
+		showAlert(paste("Failed to delete",paste(filenames[remaining],collapse=", ")))
 }
+
+#.cleanWD-------------------------------2009-02-24
+# Clean all potential garbage files.
+#-----------------------------------------------RH
+cleanWD=function(files){ # Clean all nuisance files
+	rowLen = ceiling(sqrt(length(files)))
+	if (rowLen == 0) {
+		try(closeWin("cleanWD"),silent=TRUE); return(invisible(FALSE)) }
+	winDesc = c("window name=cleanWD title=Clean",
+		"label text=\"\n\nFiles to Clean\" font=\"bold 9\"",
+		.makeCleanVec("file", files, rowLen),
+		"grid 1 3 relief=groove padx=4 pady=4", 
+		"button function=.selectCleanBoxes action=1 text=\"Select All\" padx=4 pady=4", 
+		"button function=.selectCleanBoxes action=0 text=\"Deselect All\" padx=4 pady=4", 
+		"button function=doAction text=Clean bg=aliceblue padx=4 pady=4 action=\"PBSmodelling:::.doCleanWD(); closeWin(`cleanWD`)\"")
+	createWin(winDesc, astext = TRUE) 
+	invisible(TRUE) }
+
+#.doCleanWD-----------------------------2009-02-24
+# Anisa's .doClean function modified for file names only
+#-----------------------------------------------RH
+.doCleanWD=function () { 
+	vec=getWinVal(winName="cleanWD",scope="L")
+	vecList=logical()
+	for (i in names(vec)) vecList=c(vecList,vec[[i]])
+	filenames = names(vecList)[vecList]
+	filenames=Sys.glob(filenames)
+	if (!length(filenames)) 
+		showAlert("No files to delete.")
+	else if (getYes(paste("Delete ", paste(filenames, collapse = ", "), "?", sep = ""))) 
+		file.remove(filenames)
+	remaining = file.exists(filenames)
+	if (sum(remaining)) 
+		showAlert(paste("Failed to delete", paste(filenames[remaining], collapse = ", "))) }
 

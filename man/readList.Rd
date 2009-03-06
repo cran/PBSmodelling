@@ -18,7 +18,7 @@
 }
 
 \seealso{
-\code{\link{writeList}}, \code{\link{unpackList}}
+	\code{\link{writeList}}, \code{\link{unpackList}}, \code{\link{packList}}
 }
 
 \keyword{list}

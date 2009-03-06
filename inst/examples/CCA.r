@@ -282,9 +282,9 @@ modCompile <- function() { # Initialize and compile the WinBUGS model
 	suff <- paste(fnam,year,sep=".");
 	ai   <- acut[2:length(acut)]; ai[length(ai)] <- A; y <- pi.obs;
 	dat  <- list(k=k,B=B,b0=b0,m=m,b=bh,g=g,ai=ai,y=y);
-	bugsData(dat,"CCADat.txt");
-	modelCheck("CCAMod.txt");  # check model syntax
-	modelData("CCADat.txt");   # load current data
+	bugsData(dat,"CCAdat.txt");
+	modelCheck("CCAmod.txt");  # check model syntax
+	modelData("CCAdat.txt");   # load current data
 	modelCompile(nc);          # compile with nc chains
 	modelGenInits();           # generate randoms inits
 	samplesSet(pmon);          # parameters to monitor

@@ -4,12 +4,12 @@
 	library.dynam("PBSmodelling", pkg, lib)
 	.initPBSoptions()
 	cat("
-PBS Modelling 2.01 -- Copyright (C) 2005-2008 Fisheries and Oceans Canada
+PBS Modelling 2.06 -- Copyright (C) 2005-2009 Fisheries and Oceans Canada
 
 A complete user guide 'PBSmodelling-UG.pdf' appears 
 in the '.../library/PBSmodelling/doc' folder.
 
-Built on Oct 24, 2008
+Built on Mar 6, 2009
 Pacific Biological Station, Nanaimo
 
 ")

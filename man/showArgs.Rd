@@ -3,19 +3,23 @@
 \title{Display Expected Widget Arguments}
 
 \description{
-	Display the order and default values of \bold{all} widget arguments. 
-	The list can be shortened by specifying a single widget name.
+  For each widget specified, display its arguments in order with their default values. 
+  The display list can be expanded to report each argument on a single line.
 }
-
 \usage{
-showArgs(widget="")
+showArgs(widget, width=70, showargs=FALSE)
 }
 
 \arguments{
-	\item{widget}{If specified, information about this one widget only is displayed. 
-		The default displays information about all widgets.}
+  \item{widget}{vector string of widget names; if not specified (default), 
+    the function displays information about all widgets in alphabetical order.}
+  \item{width}{numeric width used by \code{strwrap} to wrap lines of the widget
+    usage section.}
+  \item{showargs}{logical:, if \code{TRUE}, the display also lists each argument
+    on single line after the widget usage section.}
 }
 \value{
-	A text stream to the R console. Cannot be directed to a file or other device.
+	A text stream to the R console. Invisibly returns the widget usage lines.
 }
 \keyword{utilities}
+\keyword{character}

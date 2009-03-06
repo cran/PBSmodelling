@@ -224,6 +224,9 @@ if (any(funs=="show0")) {
 if (any(funs=="showArgs")) {
 	showArgs();
 	};
+if (any(funs=="testAlpha")) {
+	testAlpha()
+	};
 if (any(funs=="testCol")) {
 	#testCol(c("plum","tomato","olive","peach","honeydew"));
 	testCol()
@@ -246,6 +249,9 @@ if (any(funs=="unpackList")) {
 	};
 if (any(funs=="view")) {
 	print("View(swiss)"); print(view(swiss));
+	};
+if (any(funs=="viewCode")) {
+	viewCode("PBSmodelling")
 	};
 if (any(funs=="writeList")) {
 	writeList(list(trees=view(trees),swiss=view(swiss)),fname="wList.txt",format="P");

@@ -21,8 +21,8 @@
 	the working directory. However, pre-existing objects will be overwritten 
 	if their names co-incide with names used by the various demos. Also, 
 	depending on conditions, the user may lose working directory focus. 
-	We suggest that users run this demo from a project where data objects are 
-	not critical. \bold{--- USER BEWARE ---}
+	We suggest that cautious users run this demo from a project where data objects are 
+	not critical.
 }
 \seealso{
 	\code{\link{runExamples}}  for examples specific to \pkg{PBSmodelling}.

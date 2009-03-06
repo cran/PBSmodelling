@@ -6,14 +6,14 @@
 }
 \usage{
 plotBubbles(z, xval=FALSE, yval=FALSE, dnam=FALSE, rpro=FALSE, 
-   cpro=FALSE, rres=FALSE, cres=FALSE, powr=1, size=0.2, lwd=2,
-   clrs=c("black","red","blue"), hide0=FALSE, debug=FALSE, ...) 
+   cpro=FALSE, rres=FALSE, cres=FALSE, powr=0.5, size=0.2, lwd=1,
+   clrs=c("black","red","blue"), hide0=FALSE, frange=0.1, ...) 
 }
 \arguments{
-	\item{z}{input matrix}
-	\item{xval}{x-values for the columns of \code{z}. 
+	\item{z}{input matrix, array (2 dimensions) or data frame.}
+	\item{xval}{x-values and/or labels for the columns of \code{z}. 
 		if \code{xval=TRUE}, the first row contains x-values for the columns.}
-	\item{yval}{y-values for the rows of \code{z}. 
+	\item{yval}{y-values and/or labels for the rows of \code{z}. 
 		If \code{yval=TRUE}, the first column contains y-values for the rows.}
 	\item{dnam}{logical: if \code{TRUE}, attempt to use \code{dimnames} of input
 		matrix \code{z} as \code{xval} and \code{yval}. The \code{dimnames} are 
@@ -31,8 +31,8 @@ plotBubbles(z, xval=FALSE, yval=FALSE, dnam=FALSE, rpro=FALSE,
 	\item{clrs}{colours (3-element vector) used for positive, negative, 
 		and zero values, respectively.}
 	\item{hide0}{logical: if \code{TRUE}, hide zero-value bubbles.}
-	\item{debug}{logical: if \code{TRUE}, display debug information.}
-	\item{...}{additional arguments for \code{symbols} function.}
+	\item{frange}{number specifying the fraction by which the range of the axes should be extended.}
+	\item{...}{additional arguments for plotting functions.}
 }
 \details{
 	The function \code{plotBubbles} essentially flips the \code{z} matrix 

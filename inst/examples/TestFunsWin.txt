@@ -6,7 +6,7 @@ grid 1 4 sticky=W
   button text="R Code" func=openFile action=TestFuns.r
   button text=Window func=openFile action=TestFunsWin.txt
 
-grid 2 24 byrow=FALSE
+grid 2 25 byrow=FALSE
 radio mode=character sticky=W func=TestFuns name=funs value=closeWin text=CLOSE
 radio mode=character sticky=W func=TestFuns name=funs value=addArrows text=addArrows
 radio mode=character sticky=W func=TestFuns name=funs value=addLabel text=addLabel
@@ -47,6 +47,7 @@ radio mode=character sticky=W func=TestFuns name=funs value=scalePar text=scaleP
 radio mode=character sticky=W func=TestFuns name=funs value=setPBSext text=setPBSext
 radio mode=character sticky=W func=TestFuns name=funs value=show0 text=show0
 radio mode=character sticky=W func=TestFuns name=funs value=showArgs text=showArgs
+radio mode=character sticky=W func=TestFuns name=funs value=testAlpha text=testAlpha
 radio mode=character sticky=W func=TestFuns name=funs value=testCol text=testCol
 radio mode=character sticky=W func=TestFuns name=funs value=testLty text=testLty
 radio mode=character sticky=W func=TestFuns name=funs value=testLwd text=testLwd
@@ -54,4 +55,5 @@ radio mode=character sticky=W func=TestFuns name=funs value=testPch text=testPch
 radio mode=character sticky=W func=TestFuns name=funs value=testWidgets text=testWidgets
 radio mode=character sticky=W func=TestFuns name=funs value=unpackList text=unpackList
 radio mode=character sticky=W func=TestFuns name=funs value=view text=view
+radio mode=character sticky=W func=TestFuns name=funs value=viewCode text=viewCode
 radio mode=character sticky=W func=TestFuns name=funs value=writeList text=writeList

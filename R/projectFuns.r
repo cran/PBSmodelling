@@ -261,17 +261,17 @@ promptWriteOptions=function(fname=""){
   }
 }
 
-# ***********************************************************
-# declareGUIoptions:
+#declareGUIoptions----------------------2009-03-03
 #  Used to add options that a GUI uses/loads. The widget
 #  names in the window description file should match.
 # Input:
 #  newOptions - a character vector of option names
-# -----------------------------------------------------------
+#--------------------------------------------AE/RH
 declareGUIoptions=function(newOptions){
   .initPBSoptions()
-  .PBSmod$.options$.optionsDeclared<<-.mergeVectors(.PBSmod$.optionsDeclared,
-			newOptions)
+  #.PBSmod$.options$.optionsDeclared<<-.mergeVectors(.PBSmod$.optionsDeclared,newOptions)
+  .optionsDeclared=.mergeVectors(.PBSmod$.optionsDeclared,newOptions)
+  packList(".optionsDeclared",".PBSmod$.options")
 }
 
 # ***********************************************************
@@ -325,7 +325,7 @@ setGUIoptions=function(option){
 #          chosen for deletion. Each will have a
 #          corresponding checkbox.
 # -----------------------------------------------------------
-cleanProj=function(prefix, suffix, files){
+.old.cleanProj=function(prefix, suffix, files){ #deprecated
 	if(missing(suffix))
 		suffix=character(0)
 	if(missing(files))
@@ -636,7 +636,7 @@ showAlert=function(message, title="Alert", icon="warning"){
 
 #This is used by cleanProj. It is the function that is called when the Clean
 #button is pressed.
-.doClean=function(){
+.old.doClean=function(){
 	prefix=getWinVal("cleanPrefix")[[1]]
 	vecList=.removeFromList(getWinVal(), "cleanPrefix")
 	filenames=character(0)
@@ -659,29 +659,25 @@ showAlert=function(message, title="Alert", icon="warning"){
 				collapse=", ")))
 }
 
-#This is used by cleanProj. It is used to create the strings describing the
-#checkbox vectors.
+#.makeCleanVec--------------------------2009-03-03
+# This is used by cleanProj() to create the strings describing checkbox vectors.
+#--------------------------------------------AE/RH
 .makeCleanVec=function(vecName, items, rowLen){
 	vecDesc=character(0)
-
 	nItems=length(items)
- 	nVecs=ceiling(nItems/rowLen)
-
+	nVecs=ceiling(nItems/rowLen)
 	if(!nVecs)
 		return(vecDesc)
-
 	for(i in 1:nVecs){
 		vecI=paste("vector names=", vecName, i, " ", sep="")
 		currItems=items[((i-1)*rowLen+1):min(rowLen*i, nItems)]
-		itemStr=paste(currItems, collapse=" ")
+		itemStr=paste("\'",paste(currItems, collapse="\' \'"),"\'",sep="")
 		vecI=paste(vecI, 'vecnames="', itemStr, '" ', sep="")
 		vecI=paste(vecI, 'labels="', itemStr, '"', sep="")
 		vecI=paste(vecI, " length=", length(currItems), sep="")
-		vecI=paste(vecI,
-				" mode=logical vertical=FALSE value=TRUE padx=4 pady=4")
+		vecI=paste(vecI," mode=logical vertical=FALSE value=TRUE padx=4 pady=4")
 		vecDesc=c(vecDesc, vecI)
 	}
-
 	return(vecDesc)
 }
 

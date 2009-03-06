@@ -1,10 +1,11 @@
 \name{cleanProj}
 \alias{cleanProj}
-\title{Launch a GUI for File Deletion}
+\title{Launch a GUI for Project File Deletion}
 
 \description{
   Launches a new window which contains an interface for deleting 
-  junk files from the working directory.
+  junk files associated with a prefix and a set of suffixes 
+  (e.g., PBSadmb project) from the working directory.
 }
 \usage{
 cleanProj(prefix, suffix, files)

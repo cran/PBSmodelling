@@ -331,7 +331,9 @@
 	list(param='type', required=TRUE, class="character"),
 	list(param='mode', required=FALSE, class="character", default="numeric"),
 	list(param='dim', required=TRUE, class="characterVector"),
-	list(param='byright', required=FALSE, class="logical", default=TRUE)
+	list(param='dimnames', required=FALSE, class="characterVector"),
+	list(param='byright', required=FALSE, class="logical", default=FALSE),
+	list(param='byrow', required=FALSE, class="logical", default=TRUE)
 	)
 
 .pFormatDefs$data <- list(

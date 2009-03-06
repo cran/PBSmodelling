@@ -59,4 +59,4 @@ autoC <- function() {
 	
 #~~ <°)))<< ~~~~~~~~~~~~
 require(PBSmodelling);
-createWin("YPRWin.txt");
+createWin("yprWin.txt");

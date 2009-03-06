@@ -21,7 +21,7 @@ writeList(x, fname, format="D", comments="")
 	The \code{"D"} format is equivalent to using R's \code{base} functions 
 	\code{dput} and \code{dget}, which support all R objects.
 
-	The \code{"P"} format only supports named lists of vectors, matrices, and data frames. 
+	The \code{"P"} format only supports named lists of vectors, matrices, arrays, and data frames. 
 	Scalars are treated like vectors. Nested lists are not supported. 
 
 	The \code{"P"} format writes each named element in a list using the 
@@ -33,12 +33,19 @@ writeList(x, fname, format="D", comments="")
 
 	Multiple rows of data for matrices or data frames must have equal 
 	numbers of entries (separated by whitespace).
+	
+	Using \code{"P"} formatting, array data are written the same way that 
+	they are displayed in the R console: \cr
+	\code{nrow=dim()[1]}, \code{ncol=dim()[2]} \cr
+	repeated by scrolling through successively higher dimensions, increasing the 
+	index from left to right within each dimension. The flattened table will have 
+	\code{dim()[2]} columns.
 
 	For complete details, see \dQuote{PBSmodelling-UG.pdf} in the 
 	R directory \code{.../library/PBSmodelling/doc}.
 }
 \seealso{
-	\code{\link{readList}}, \code{\link{openFile}}
+	\code{\link{readList}}, \code{\link{openFile}}, \code{\link{unpackList}}, \code{\link{packList}}
 }
 \examples{
 \dontrun{
