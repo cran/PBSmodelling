@@ -14,6 +14,9 @@
   \item{base}{y-value of the base of each bar}
   \item{...}{further graphical parameters (see \code{par}) may also be supplied as arguments}
 }
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \examples{
 plot(0:10,0:10,type="n")
 drawBars(x=1:9,y=9:1,col="deepskyblue4",lwd=3)

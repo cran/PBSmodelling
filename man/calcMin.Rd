@@ -59,16 +59,16 @@ calcMin(pvec, func, method="nlm", trace=0, maxit=1000, reltol=1e-8,
 	\item{AIC}{Akaike's Information Criterion}
 	\item{message}{Convergence message from the minimization routine.}
 }
-
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \note{
 	Some arguments to \code{calcMin} have no effect depending on the \code{method} chosen.
 }
-
 \seealso{
 	\code{\link{scalePar}}, \code{\link{restorePar}}, \code{\link{calcMin}}, \code{\link{GT0}} \cr
 	In the \code{stats} package: \code{nlm}, \code{nlminb}, and \code{optim}.
 }
-
 \examples{
 Ufun <- function(P) {
 	Linf <- P[1]; K <- P[2]; t0 <- P[3]; obs <- afile$len;

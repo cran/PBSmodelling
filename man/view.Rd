@@ -18,4 +18,7 @@ view(obj, n=5, last=FALSE, random=FALSE, ...)
     (without replacement) of \code{obj} are displayed.}
   \item{...}{additional arguments (e.g., \code{replace=T} if specifying \code{random=T}).}
 }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \keyword{print}

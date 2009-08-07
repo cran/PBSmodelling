@@ -23,6 +23,9 @@ plotACF(file, lags=20,
 	\code{samplesHistory("*",beg=0,plot=FALSE)} rather than \code{samplesAutoC} 
 	which calls \code{plotAutoC}.
 }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \examples{
 resetGraph(); plotACF(trees,lwd=2,lags=30);
 }

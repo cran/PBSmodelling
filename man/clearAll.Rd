@@ -14,5 +14,7 @@ clearAll(hidden=TRUE, verbose=TRUE, PBSsave=TRUE)
 	\item{verbose}{if \code{TRUE}, report all removed items.}
 	\item{PBSsave}{if \code{TRUE}, do not remove \code{.PBSmod}.}
 }
-
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \keyword{methods}

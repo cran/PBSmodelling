@@ -19,5 +19,7 @@ convSlashes(expr, os=.Platform$OS.type, addQuotes=FALSE)
   Returns the input string modified to have the appropriate slashes for the 
   specified operating system.
 }
-\author{ Rowan Haigh, Pacific Biological Station, Nanaimo BC }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \keyword{ character }

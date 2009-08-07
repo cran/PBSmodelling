@@ -6,7 +6,8 @@
 	Make local or global variables (depending on the scope specified) from 
 	the named components of a list.
 }
-\usage{unpackList(x, scope="L")
+\usage{
+unpackList(x, scope="L")
 }
 \arguments{
 	\item{x}{named list to unpack.}
@@ -16,8 +17,11 @@
 \value{
 	A character vector of unpacked variable names.
 }
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \seealso{
-	\code{\link{readList}}
+  \code{\link{packList}}, \code{\link{readList}}, \code{\link{writeList}}
 }
 \examples{
 x <- list(a=21,b=23);

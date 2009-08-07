@@ -20,6 +20,9 @@ testPch(pch=1:100, ncol=10, grid=TRUE, newframe=TRUE, bs=FALSE)
 	\item{bs}{logical: if \code{TRUE}, show backslash characters used in text 
 		statements (e.g., \code{30\\272C} = 30\eqn{^\circ}{ degrees}C).}
 }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \examples{
 testPch(123:255)
 testPch(1:25,ncol=5)

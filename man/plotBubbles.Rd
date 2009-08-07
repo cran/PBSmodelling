@@ -41,6 +41,9 @@ plotBubbles(z, xval=FALSE, yval=FALSE, dnam=FALSE, rpro=FALSE,
 	bottom y-value and the last row is displayed as the top y-value. The 
 	function's original intention was to display proportions-at-age vs. year.
 }
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \seealso{
 	\code{\link{genMatrix}}
 }

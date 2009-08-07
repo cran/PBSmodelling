@@ -22,7 +22,9 @@ plotAsp(x, y, asp=1, ...)
 	limits are handled. Rather than expand the range, \code{plotAsp} expands the 
 	margins through padding to keep the aspect ratio accurate.
 }
-
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \examples{
 x <- seq(0,10,0.1)
 y <- sin(x)

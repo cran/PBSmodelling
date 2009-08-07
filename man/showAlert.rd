@@ -15,6 +15,9 @@ showAlert(message, title="Alert", icon="warning")
   \item{icon}{icon to display in alert window; options are 
     \code{"error"}, \code{"info"}, \code{"question"}, or \code{"warning"}.}
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \seealso{
 	\code{\link{getYes}}
 }

@@ -17,6 +17,9 @@ getPBSoptions(option)
 \value{
 	Value of the specified option, or \code{NULL} if the specified option is not found.
 }
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \seealso{ \code{\link{getPBSext}}, \code{\link{readPBSoptions}} }
 
 \keyword{methods}

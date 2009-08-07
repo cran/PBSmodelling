@@ -29,6 +29,9 @@ presentTalk(x, debug=FALSE)
   In addition to the automatic menu items, a user can add buttons to the GUI 
   that accomplish similar purposes.
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \note{
   The use of \code{chunk} in the R code is equivalent to the use of 
   \code{segment} in the documentation.\cr

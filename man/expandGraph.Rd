@@ -17,7 +17,9 @@ expandGraph(mar=c(4,3,1.2,0.5), mgp=c(1.6,.5,0),...)
 		specifying the margins for axis title, axis labels, and axis line}
 	\item{...}{additional graphical parameters to be passed to \code{par}}
 }
-
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \seealso{
 	\code{\link{resetGraph}}
 }

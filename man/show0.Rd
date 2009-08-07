@@ -19,6 +19,9 @@ show0(x, n, add2int = FALSE)
 \value{
 	A scalar/vector of strings representing numbers. Useful for labelling purposes.
 }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \note{
 	This function does not round or truncate numbers. It simply adds zeroes if 
 	\code{n} is greater than the available digits in the decimal part of a number.

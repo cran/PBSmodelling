@@ -27,6 +27,9 @@ sortHistory(file="", outfile=file, hisname="")
 	\item{hisname}{name of active history widget and window it is located in, given
 	               in the form \code{WINDOW.HISTORY}.}
 }
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \seealso{
 	\code{\link{importHistory}}, \code{\link{initHistory}}
 }

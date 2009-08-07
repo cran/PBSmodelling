@@ -22,7 +22,9 @@
 \value{
 	Command associated with file extension.
 }
-
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \seealso{
 	\code{\link{setPBSext}}, \code{\link{openFile}}, \code{\link{clearPBSext}}
 }

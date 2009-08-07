@@ -14,6 +14,9 @@ getGUIoptions()
   copied from the R environment into widget values. These widgets 
   should have names that match the names of their corresponding options.
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \seealso{
   \code{\link{declareGUIoptions}}, \code{\link{setGUIoptions}},
   \code{\link{promptWriteOptions}}, \code{\link{readPBSoptions}}

@@ -28,6 +28,9 @@ promptWriteOptions(fname="")
   by a call to \code{readPBSoptions} or \code{writePBSoptions} if available. 
   Otherwise, the default file name "PBSoptions.txt" is used.
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \seealso{
   \code{\link{writePBSoptions}}, \code{\link{readPBSoptions}},
   \code{\link{setPBSoptions}}

@@ -245,22 +245,28 @@ showArgs <- function(widget, width=70, showargs=FALSE) {
 	if (missing(widget)) widget=sort(names(x))
 	x=x[widget]; xnam=names(x)
 	out=character(0) # output file
-	for(i in 1:length(x)) { 
+
+	for(i in 1:length(x)) {
+		#print widget name, and underline it
 		cat(xnam[i])
 		cat(paste("\n",paste(rep("-",nchar(xnam[i])),collapse=""),"\n",sep=""))
+		
 		expr=xnam[i]
 		for(j in 2:length(x[[i]])) { 
 			argu=x[[i]][[j]]$param
-			if (x[[i]][[j]]$required==TRUE) {}
-			else if (!is.null(x[[i]][[j]]$default)) {
-				argu=c(argu,"=")
+			if (x[[i]][[j]]$required==TRUE) { }
+			else if ( any( names( x[[i]][[j]] ) == "default" ) ) {
 				if (x[[i]][[j]]$class=="character" || x[[i]][[j]]$class=="characterVector")
-					delim="\"" else delim=""
-				argu=c(argu,paste(delim,x[[i]][[j]]$default,delim,sep=""))
+					delim="\""
+				else
+					delim=""				
+				default <- ifelse( is.null( x[[i]][[j]]$default ), "NULL", paste(delim,x[[i]][[j]]$default,delim,sep="") )
+				argu=c(argu,"=")
+				argu=c(argu,default)
 			}
 			else {
 				cat("\n\n")
-				stop(paste(z[i],"::",x[[i]][[j]]$param, "is not required, but has no default."))
+				stop(paste(xnam[i],"::",x[[i]][[j]]$param, "is not required, but has no default."))
 			}
 			expr=paste(expr,paste(argu,collapse=""),sep=" ")
 		}
@@ -553,6 +559,20 @@ testWidgets <- function () {
 		return(invisible(NULL))
 	}
 }
+
+.dUpdateDesc <- function() {
+	demo.id <- getWinVal()$demo.id
+	package <- .trimWhiteSpace( getWinVal("package")$package )
+	x <- demo(package = .packages(all.available = TRUE))
+	x <- x$results[x$results[,"Package"]==package,]
+	if (is.null(dim(x))) {
+		tmp<-names(x)
+		dim(x)<-c(1,4)
+		colnames(x)<-tmp
+	}
+
+	setWinVal( list( demo_desc=x[demo.id,"Title"] ) )
+}
 #.dClose--------------------------------2006-08-28
 # Function to execute on closing runDemos().
 #----------------------------------------------ACB
@@ -578,22 +598,26 @@ runDemos <- function (package) {
 		pkgDemo <- unique(x$results[,"Package"])
 		radios <- list(list(list(type="label", text="Select a package to view available demos:",
 			sticky="W",padx=12,font="bold 10")))
-		i <- 2
+		i <- 3
+		#create droplist labels with counts
+		pkg_labels <- c()
 		for(pkg in pkgDemo) {
 			len <- length(x$results[,"Package"][x$results[,"Package"]==pkg])
 			if (len==1)
 				items <- "(1 demo)"
 			else
 				items <- paste("(",len," demos)", sep="")
-			radios[[i]] <- list(list(type="radio",
-			                    name="pkg",
-			                    value=pkg,
-			                    text=paste(pkg, items),
-			                    mode="character",
-			                    sticky="w",
-			                    padx=12))
-			i <- i+1
+			pkg_labels <- c( pkg_labels, paste( pkg, items ) )
 		}
+
+
+		radios[[ 2 ]] <- list(list(type = "droplist",
+		                           name = "pkg",
+		                           values = pkgDemo,
+								   labels = pkg_labels,
+		                           add = FALSE,
+		                           mode = "character"
+		                           ) )
 		win <- list(title = "R Demos", windowname = "pbs.demo", onclose=".dClose", 
 			.widgets = list(list(type="grid", .widgets=c( #mixing the c() and lists() become really akward - watch out!
 			#the c() requires an extra level of list() which are later stripped out
@@ -617,39 +641,49 @@ runDemos <- function (package) {
 		showAlert(mess); stop(mess) }
 	x <- x$results[x$results[,"Package"]==package,]
 	radios <- list(list(list(type="label", text="Select a Demo to view:", sticky="W", padx=12,font="bold 10")))
-	i <- 2
+
+	#i <- 3
 	if (is.null(dim(x))) {
 		tmp<-names(x)
 		dim(x)<-c(1,4)
 		colnames(x)<-tmp
 	}
+
+	droplist_data <- c()
 	for(j in 1:length(x[,1])) {
 		demoDir <- file.path(x[j,"LibPath"], package, "demo")
 		path <- tools::list_files_with_type(demoDir, "demo")
 		path <- path[x[j,"Item"]==tools::file_path_sans_ext(basename(path))]
-		if (length(path)==0)
-			stop("error - could not find the path for demo - this is most likely a bug!")
-		radios[[i]] <- list(list(type="radio",
-		                    name="demo",
-		                    value=path,
-		                    text=x[j,"Item"],
-		                    mode="character",
-		                    font="underline",
-		                    sticky="w",
-		                    padx=12))
-		i <- i+1
-		radios[[i]] <- list(list(type="label",
-		                    text=x[j,"Title"],
-		                    sticky="w",
-		                    wraplength=500,
-		                    padx=20
-		                    ))
-		i <- i+1
+		droplist_data[ j ] <- path
 	}
+	titles <- x[,"Title"]
+	title_cut_off <- 50 #cut off titles longer than this
+	labels <- paste( x[,"Item"], " ::: ", substring( titles, 1, title_cut_off ), ifelse( nchar(titles) > title_cut_off, "...", "" ), sep="" )
+
+	radios[[ 2 ]] <- list(list(type = "droplist",
+	                           name = "demo",
+	                           values = droplist_data,
+	                           labels = labels,
+	                           add = FALSE,
+	                           mode = "character",
+							   sticky = "W",
+							   padx = 20,
+							   width = 55,
+							   "function" = ".dUpdateDesc"
+	                           ) )
+	radios[[ 3 ]] <- list(list(type="label",
+	                           name="demo_desc",
+	                           text=x[1,"Title"],
+	                           sticky="w",
+	                           wraplength=500,
+	                           padx=20,
+							   pady=c(20,0)
+	                           ) )
+
 	win <- list(title = paste("R Demos:", package), windowname = "pbs.demo", onclose=".dClose",
 		.widgets = list(list(type="grid", .widgets=c(
 			list(list(
-				list(type="label",text=paste(package,paste(rep(" ",times=100),collapse="")),
+				list(type="label",name="package",text=paste(package,paste(rep(" ",times=100),collapse="")),
 					font="bold underline",fg="red3",sticky="W")
 			)),
 			radios,
@@ -940,11 +974,25 @@ openFile <- function(fname="") {
 			stop(paste("File \"", fname, "\" does not exist", sep=""))
 
 		ext <- sub("^.*\\.", "", fname)
-		if (.isReallyNull(.PBSmod$.options$openfile, ext)) {
-			if (!exists("shell.exec", mode="function")) 
-				stop(paste("There is no program associated with the extension '", ext, "'\n",
-				           "Please set an association with the setPBSext command\n"))
-			shell.exec(fname); return(fname)
+		if ( is.null( .PBSmod$.options$openfile[[ ext ]] ) ) {
+			if ( exists("shell.exec", mode="function" ) )  {
+				shell.exec(fname)
+				return(fname)
+			}
+			if( file.exists( "/usr/bin/open" ) ) {
+				system( paste( "open", fname ) )
+				return(fname)
+			}
+			if( file.exists( "/usr/bin/xdg-open" ) ) {
+				system( paste( "xdg-open", fname ) )
+				return(fname)
+			}
+			if( file.exists( "/usr/bin/gnome-open" ) ) {
+				system( paste( "gnome-open", fname ) )
+				return(fname)
+			}
+			stop(paste("There is no program associated with the extension '", ext, "'\n",
+			           "Please set an association with the setPBSext command\n"))
 		} else {
 			cmd <- getPBSext(ext)
 			cmd <- gsub("%f", fname, cmd)
@@ -999,7 +1047,7 @@ setPBSoptions <- function(option, value, sublist=FALSE) {
 	keep = l[!is.element(names(l),items)]
 	return(keep) }
 
-#.initPBSoptions------------------------2006-09-16
+#.initPBSoptions------------------------2009-07-20
 # Called from zzz.R's .First.lib() intialization function
 #-----------------------------------------------AE
 .initPBSoptions <- function() {
@@ -1010,6 +1058,7 @@ setPBSoptions <- function(option, value, sublist=FALSE) {
 	if (is.null(.PBSmod$.options$openfile))
 		packList("openfile",".PBSmod$.options",list()) #.PBSmod$.options$openfile <<- list()
 }
+
 
 #getPBSoptions--------------------------2006-09-16
 # Retrieve a user option.  Argument:
@@ -1030,7 +1079,7 @@ getPBSext <- function(ext) {
 		stop(".PBSmod was not found")
 	if (missing(ext))
 		return(.PBSmod$.options$openfile)
-	if (.isReallyNull(.PBSmod$.options$openfile, ext))
+	if ( is.null( .PBSmod$.options$openfile[[ ext ]] ) )
 		return(NULL)
 	return(.PBSmod$.options$openfile[[ext]])
 }
@@ -1135,40 +1184,22 @@ readPBSoptions=function(fname="PBSoptions.txt"){
 	options(warn=warn)
 	return(xcon) }
 
-#viewCode-------------------------------2009-02-16
-# View the package R code on the fly.
-#-----------------------------------------------RH
-viewCode=function(pkg="PBSmodelling"){
-	eval(parse(text=paste("if(!require(",pkg,",quietly=TRUE)) stop(\"",pkg," package is required\")",sep="")))
-	tdir <- tempdir(); tdir <- gsub("\\\\","/",tdir)                      # temporary directory for R
-	pkgO=ls(paste("package:",pkg,sep=""),all=TRUE)                        # package objects
-	z=sapply(pkgO,function(x){f=get(x);is.function(f)}); pkgF=names(z)[z] # package functions
-	bad=regexpr("[\\|()[{^$*+?<-]",pkgF); pkgF=pkgF[bad<0]                # get rid of weird names
-	if (length(pkgF)==0) {showAlert(paste(pkg,"has no recognizable functions")); return()}
-	dots=regexpr("^\\.",pkgF); pkgF0=pkgF[dots==1]; pkgF1=pkgF[dots!=1]
-	code=c(paste("#",pkg,"Functions"),paste("#",paste(rep("-",nchar(pkg)+10),collapse="")))
-	for (i in c(pkgF1,pkgF0)) {
-		expr=paste("fun=deparse(",pkg,"::",i,"); fun[1]=paste(\"",i,"\",fun[1],sep=\" = \",collapse=\"\"); code=c(code,fun)",sep="")
-		eval(parse(text=expr)) }
-	fname=paste(tdir,"/",pkg,".r",sep="")
-	writeLines(code, fname); openFile(convSlashes(fname))
-	invisible(code) }
-#----------------------------------------viewCode
-
 #convSlashes---------------------------2009-02-16
 # Convert unix "/" to R's "\\" if OS is windows.
 #-----------------------------------------------RH
 convSlashes=function(expr, os=.Platform$OS.type, addQuotes=FALSE){
-	if (os=="windows") expr=gsub("/","\\\\",expr)
-	else expr=gsub("\\\\","/",expr)
+	if (os=="windows") 
+		expr=gsub("/","\\\\",expr)
+	else 
+		expr=gsub("\\\\","/",expr)
 	if (addQuotes) expr=paste("\"",expr,"\"",sep="")
 	return(expr) }
 
 #showPacks------------------------------2009-02-17
 # Show packages that need to be installed.
 #-----------------------------------------------RH
-showPacks <- function(packs=c("PBSmodelling","PBSmapping","PBSddesolve","rgl","deSolve",
-         "akima","deldir","sp","maptools","KernSmooth")) {
+showPacks = function(packs=c("PBSmodelling","PBSmapping","PBSddesolve",
+            "rgl","deSolve","akima","deldir","sp","maptools","KernSmooth")) {
 	warn <- options()$warn
 	options(warn = -1)
 	Apacks = .packages(all.available = TRUE)   # all packages
@@ -1237,4 +1268,96 @@ getSuffix=function(prefix,path="."){
 .findSquare=function(nc) {
 	sqn=sqrt(nc); m=ceiling(sqn); n=ceiling(nc/m)
 	return(c(m,n)) }
+
+#viewCode-------------------------------2009-04-21
+# View package R code on the fly.
+#-----------------------------------------------RH
+viewCode=function(pkg="PBSmodelling", funs){
+	eval(parse(text=paste("if(!require(",pkg,",quietly=TRUE)) stop(\"",pkg," package is required\")",sep="")))
+	tdir <- tempdir(); tdir <- gsub("\\\\","/",tdir)                    # temporary directory for R
+	if (is.element(pkg,loadedNamespaces())){
+		penv=asNamespace(pkg); pkgOb=ls(penv,all.names=TRUE)             # objects in package including those in namespace
+		bad=regexpr(".__",pkgOb); pkgOb=pkgOb[bad<0]                     # get rid of names starting with ".__"
+		delim=":::" }
+	else {
+		pkgOb=ls(paste("package:",pkg,sep=""),all.names=TRUE)            # package objects
+		delim="::" }
+	bad=regexpr("[>=~@:/&%!\\|()[{^$*+?<-]",pkgOb); pkgOb=pkgOb[bad<0]  # get rid of weird names
+	z=sapply(pkgOb,function(x){
+		if (is.element(x,c("break","for","function","if","next","repeat","while"))) return(FALSE) # special words in pkg 'base'
+		eval(parse(text=paste("is.function(",paste(pkg,x,sep=delim),")",sep=""))) } )
+	pkgF=names(z)[z]                                                    # package functions
+	if (length(pkgF)==0) {showAlert(paste(pkg,"has no recognizable functions")); return()}
+	dots=regexpr("^\\.",pkgF); pkgF0=pkgF[dots==1]; pkgF1=pkgF[dots!=1]
+	code=c(paste("#",pkg,"Functions"),paste("#",paste(rep("-",nchar(pkg)+10),collapse="")))
+	pkgFuns=c(pkgF1,pkgF0)
+	if (missing(funs)) funs=pkgFuns
+	if (is.null(funs) || is.na(funs) || !is.character(funs) || all(funs=="")) {
+		showAlert("Your choice for 'funs' is badly specified")
+		return(invisible("Error: 'funs' badly specified")) }
+	seeFuns=pkgFuns[is.element(pkgFuns,funs)]
+	if (length(seeFuns)==0) {
+		showAlert("Your choices yield no functions")
+		return(invisible("Error: choices for 'funs' yield no functions")) }
+	for (i in c(seeFuns)) {
+		expr=paste("fun=deparse(",pkg,delim,i,"); fun[1]=paste(\"",i,"\",fun[1],sep=\" = \",collapse=\"\"); code=c(code,fun)",sep="")
+		eval(parse(text=expr)) }
+	fname=paste(tdir,"/",pkg,".r",sep="")
+	writeLines(code, fname); openFile(convSlashes(fname))
+	invisible(code) }
+#----------------------------------------viewCode
+
+#clipVector-----------------------------2007-06-09
+# Clip a vector at one or both ends of a 
+# specified value or string
+#-----------------------------------------------RH
+clipVector <- function (vec,clip,end=0) {
+	#clip=as.character(substitute(clip))
+	if (is.null(names(vec))) names(vec) <- 1:length(vec)
+	if (any(end==c(0,1))) { # clip vector from the front
+		znot = !vec%in%clip
+		zzz  = cumsum(znot)
+		z1   = match(1,zzz)
+		vec  = vec[z1:length(vec)] }
+	if (any(end==c(0,2))) { # clip vector from the end
+		vrev = rev(vec)
+		znot = !vrev%in%clip
+		zzz  = cumsum(znot)
+		z1   = match(1,zzz)
+		vrev = vrev[z1:length(vrev)]
+		vec  = rev(vrev) }
+	return(vec)
+}
+
+#focusRcon------------------------------2009-05-14
+# Give the R console focus.
+#-----------------------------------------------NO
+focusRcon <- function(os=.Platform$OS.type) {
+	if (os!="windows") {
+		err="'focusRcon' needs Windows OS to use Windows Scripting"
+		cat(err,"\n"); return(invisible(err)) }
+	tdir <- tempdir()
+	fname <- paste(tdir, "\\focusRcon.vbs", sep="")
+   cmd <- 'Set w = CreateObject("WScript.Shell"): w.AppActivate("R Console")'
+   cat(cmd, file=fname)
+	system(paste("cscript //NoLogo", fname), minimized=TRUE)
+	invisible(fname) }
+	
+#clearRcon------------------------------2009-05-14
+# Clear the R console display.
+#-----------------------------------------------NO
+clearRcon <- function(os=.Platform$OS.type) {
+	if (os!="windows") {
+		err="'clearRcon' needs Windows OS to use Windows Scripting"
+		cat(err,"\n"); return(invisible(err)) }
+	tdir <- tempdir()
+	fname <- paste(tdir, "\\clearRcon.vbs", sep="")
+	cat('Dim pShell\n', file=fname)
+	cat('Set pShell = CreateObject("WScript.Shell")\n', file=fname, append=TRUE)
+	cat('pShell.AppActivate "R Console"\n', file=fname, append=TRUE)
+	cat('pShell.SendKeys "^L"\n', file=fname, append=TRUE)
+	cat('Set pShell = Nothing\n', file=fname, append=TRUE)
+	system(paste("cscript //NoLogo", fname), minimized=TRUE)
+	invisible(fname) }
+
 

@@ -16,6 +16,9 @@ openFile(fname)
 \value{
   An invisible string vector of the file names and/or commands + file names.
 }
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \note{
   If a command is registered with \code{setPBSext}, then 
   \code{openFile} will replace all occurrences of \code{"\%f"} 

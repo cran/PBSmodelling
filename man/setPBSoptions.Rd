@@ -15,6 +15,9 @@ setPBSoptions(option, value, sublist=FALSE)
 	\item{sublist}{if \code{value} is a sublist (list component) of \code{option},
 	  this list component can be changed individually using \code{sublist=TRUE}.}
 }
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \note{
   A value \code{.PBSmod$.options$.optionsChanged} is set to \code{TRUE} when an option is changed,
   so that the user doesn't always have to be prompted to save the options file. \cr

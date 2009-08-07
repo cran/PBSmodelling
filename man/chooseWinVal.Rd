@@ -24,6 +24,9 @@ chooseWinVal(choice, varname, winname="window")
   workspace, accessible through \cr \code{getPBSoptions("getChoice")}. Also set 
   in PBS options is the window name from which the choice was activated.
 }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \note{ 
   Microsoft Windows users may experience difficulties switching focus between the 
   R console and GUI windows. The latter frequently disappear from the screen and 

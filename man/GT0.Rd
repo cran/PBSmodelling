@@ -21,6 +21,9 @@
    if (x <= 0)............GT0 = eps/2
 }
 }
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \seealso{
   \code{\link{scalePar}}, \code{\link{restorePar}}, \code{\link{calcMin}}
 }

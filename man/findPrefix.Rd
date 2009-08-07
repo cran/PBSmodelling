@@ -31,6 +31,9 @@ findPrefix(suffix)
   A character vector of all the prefixes of files in the working directory that
   matched to one of the given suffixes.
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \seealso{
   \code{\link{setwdGUI}}
 }

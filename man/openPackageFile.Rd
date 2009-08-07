@@ -23,6 +23,9 @@ openPackageFile(package, filepath)
   Furthermore, \code{package} and \code{filepath} must be 
   separated by commas (e.g., \code{action=myPackage,/doc/help.pdf}).
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \note{
   If all the required arguments are missing, it is assumed that 
   the function is being called by a GUI widget.

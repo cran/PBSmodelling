@@ -13,6 +13,9 @@ exportHistory(hisname="", fname="")
 	\item{fname}{file name where history will be saved. If it is set to \code{""}, 
 		a <Save As> window will be displayed.}
 }
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \seealso{
 	\code{\link{importHistory}}, \code{\link{initHistory}}, \code{\link{promptSaveFile}}
 }

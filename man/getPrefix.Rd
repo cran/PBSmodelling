@@ -15,6 +15,8 @@ getPrefix(suffix, path=".")
 \value{
   Vector of string prefixes that have the specified suffix.
 }
-\author{ Rowan Haigh, Pacific Biological Station, Nanaimo BC }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \seealso{ \code{\link{getSuffix}}, \code{\link{findPrefix}} }
 \keyword{ character }

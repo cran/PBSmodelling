@@ -17,5 +17,7 @@ getWinFun(winName)
 \value{
 	A vector of function names referenced by a window.
 }
-
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \keyword{methods}

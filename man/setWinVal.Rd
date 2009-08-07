@@ -29,6 +29,9 @@ setWinVal(vars, winName)
 	than the \code{matrix} widget by adding "d" after the brackets. This tweak is necessary 
 	for the internal coding (bookkeeping) of \emph{PBS Modelling}. Example: \code{"foo[1,1]d"}.
 }
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \seealso{
 	\code{\link{getWinVal}}, \code{\link{createWin}}
 }

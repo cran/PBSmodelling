@@ -16,11 +16,12 @@ addLabel(x, y, txt, ...)
   \item{txt}{ desired label at (\code{x,y}).}
   \item{...}{additional arguments passed to the function \code{text}.}
 }
-
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \seealso{
   \code{\link{addArrows}}, \code{\link{addLegend}}
 }
-
 \examples{
 resetGraph()
 addLabel(0.75,seq(from=0.9,to=0.1,by=-0.10),c('a','b','c'), col="#0033AA")

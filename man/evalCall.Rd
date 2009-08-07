@@ -31,7 +31,9 @@ evalCall(fn, argu, ..., envir = parent.frame(),
   Invisibly returns the string expression of the function call that is
   passed to \code{eval(parse(text=expr))}.
 }
-\author{ Rowan Haigh, Pacific Biological Station, Nanaimo BC }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \seealso{ \code{\link{doAction}} }
 \keyword{ programming }
 \keyword{ character }

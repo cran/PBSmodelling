@@ -41,6 +41,9 @@ openProjFiles(prefix, suffix, package=NULL, warn=NULL, alert=TRUE)
   (e.g., \code{action=,.r,.c}). When the function is called from a widget in this
   fashion, the prefix is taken from the value of a widget named \code{prefix}.
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \note{
   If all the required arguments are missing, it is assumed that the 
   function is being called by a GUI widget.

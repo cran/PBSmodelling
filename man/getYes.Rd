@@ -17,6 +17,9 @@ getYes(message, title="Choice", icon="question")
 \value{
   Returns \code{TRUE} if the "Yes" button is clicked, \code{FALSE} if the "No" button is clicked.
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \seealso{
   \code{\link{showAlert}}, \code{\link{getChoice}}, \code{\link{chooseWinVal}}
 }

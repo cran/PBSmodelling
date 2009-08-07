@@ -13,6 +13,9 @@ setFileOption(option)
 \arguments{
   \item{option}{name PBS option to change}
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \note{
   If all the required arguments are missing, it is assumed that 
   the function is being called by a GUI widget.

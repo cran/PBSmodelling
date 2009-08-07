@@ -34,6 +34,9 @@ cleanProj(prefix, suffix, files)
            \tab (ii) file name matches an expansion of a file chosen with a check box.
   }
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \examples{
 \dontrun{
 cleanProj(prefix="foo",suffix=c(".a*",".b?",".c","-old.d"),files=c("red","blue"))

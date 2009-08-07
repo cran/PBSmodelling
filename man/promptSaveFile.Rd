@@ -1,6 +1,6 @@
 \name{promptSaveFile}
 \alias{promptSaveFile}
-\title{Display a "Save File" Dialogue}
+\title{Display Dialogue: Save File}
 \description{
 	Display the default \bold{Save As} prompt provided by the Operating System.
 }
@@ -21,6 +21,9 @@ promptSaveFile(initialfile="", filetype=list(c("*", "All Files")),
 }
 \value{
 	The file name and path of the file selected by the user.
+}
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
 }
 \seealso{
 	\code{\link{promptOpenFile}}

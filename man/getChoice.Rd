@@ -39,6 +39,9 @@ getChoice(choice=c("Yes","No"), question="Make a choice: ",
   directly as a string scalar (e.g., \code{answer <- getChoice(gui=F)} ). 
   
 }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \note{ 
 	Microsoft Windows users may experience difficulties switching focus between the 
 	R console and GUI windows. The latter frequently disappear from the screen and 

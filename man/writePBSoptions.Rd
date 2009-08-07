@@ -12,6 +12,9 @@ writePBSoptions(fname="PBSoptions.txt")
 \arguments{
   \item{fname}{file name or full path of file to which the options will be saved.}
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \note{
 Options with names starting with \code{"."} will not be saved.
 }

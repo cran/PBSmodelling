@@ -21,11 +21,12 @@ addArrows(x1, y1, x2, y2, ...)
 \details{
 	Lines will be drawn from \code{(x1[i],y1[i])} to \code{(x2[i],y2[i])}
 }
-
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \seealso{
 	\code{\link{addLabel}}, \code{\link{addLegend}}
 }
-
 \examples{
 tt=seq(from=-5,to=5,by=0.01)
 plot(sin(tt), cos(tt)*(1-sin(tt)), type="l")

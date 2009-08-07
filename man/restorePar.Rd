@@ -19,6 +19,9 @@
 	Restoration algorithm:  \eqn{ P = P_{min} + (P_{max} - P_{min}) (sin(\frac{\pi S}{2}))^2 }{%
 	P = Pmin + (Pmax - Pmin) (sin(pi*S/2))^2 }
 }
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \seealso{
   \code{\link{scalePar}}, \code{\link{calcMin}}, \code{\link{GT0}}
 }

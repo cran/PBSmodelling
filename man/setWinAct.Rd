@@ -22,5 +22,7 @@ setWinAct(winName, action)
 	Sometimes it is useful to \dQuote{fake} an action. Calling \code{setWinAct} allows 
 	the recording of an action, even if a button has not been pressed.
 }
-
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \keyword{methods}

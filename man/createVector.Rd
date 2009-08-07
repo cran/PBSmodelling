@@ -21,7 +21,9 @@ createVector(vec, vectorLabels=NULL, func="",
 		in widget boxes or when "GO" is pressed.}
 	\item{windowname}{unique window name, required if multiple vector windows are created.}
 }
-
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \seealso{
   \code{\link{createWin}}
 }

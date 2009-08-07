@@ -29,6 +29,9 @@ setwdGUI(suffix)
   the working directory that match one of the given suffixes is returned; 
   otherwise, the function returns \code{invisible()}.
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \note{
   If all the required arguments are missing, it is assumed that the function
   is being called by a GUI widget.

@@ -15,7 +15,9 @@
 }
 
 \value{ A hexidecimal colour value. }
-
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \seealso{ \code{\link{testCol}} }
 
 \examples{

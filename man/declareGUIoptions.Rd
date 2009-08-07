@@ -19,6 +19,9 @@ declareGUIoptions(newOptions)
   The option names are remembered and used for the functions 
   \code{getGUIoptions}, \code{setGUIoptions}, and \code{promptSave}.
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \seealso{
   \code{\link{getGUIoptions}}, \code{\link{setGUIoptions}},
   \code{\link{promptWriteOptions}}

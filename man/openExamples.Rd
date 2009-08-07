@@ -29,7 +29,9 @@ openExamples(package, prefix, suffix)
   files. If the function was called by a widget, a widget named 
   \code{prefix} will be set to the specified prefix.
 }
-
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \note{
   If all the required arguments are missing, it is assumed 
   that the function is being called by a GUI widget.

@@ -27,6 +27,9 @@ showHelp(pat="methods")
   \item{URLs}{path and file name of HTML Help Page}
   Help pages are displayed in a separate browser window.
 }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \note{
   The connection time for browsers (at least in Windows OS)
   is slow. If the HTML browser program is not already running,

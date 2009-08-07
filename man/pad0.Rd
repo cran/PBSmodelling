@@ -19,7 +19,9 @@ pad0(x, n, f = 0)
 \value{
 	A character vector representing \code{x} with leading zeroes.
 }
-
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \examples{
 resetGraph(); x <- pad0(x=123,n=10,f=0:7);
 addLabel(.5,.5,paste(x,collapse="\n"),cex=1.5);

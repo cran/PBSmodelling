@@ -16,4 +16,7 @@ isWhat(x)
   No value is returned. The function prints the object's 
   characteristics on the command line.
 }
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \keyword{utilities}

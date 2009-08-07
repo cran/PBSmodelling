@@ -17,6 +17,9 @@ showRes(x, cr=TRUE, pau=TRUE)
 \value{
   The results of the expression are return invisibly.
 }
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \examples{
 showRes("x=rnorm(100)",pau=FALSE)
 }

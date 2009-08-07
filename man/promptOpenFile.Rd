@@ -1,6 +1,6 @@
 \name{promptOpenFile}
 \alias{promptOpenFile}
-\title{Display an "Open File" Dialogue}
+\title{Display Dialogue: Open File}
 \description{
 	Display the default \bold{Open} prompt provided by the Operating System.
 }
@@ -21,6 +21,9 @@ promptOpenFile(initialfile="", filetype=list(c("*","All Files")),
 }
 \value{
 	The file name and path of the file selected by the user.
+}
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
 }
 \seealso{
 	\code{\link{promptSaveFile}}

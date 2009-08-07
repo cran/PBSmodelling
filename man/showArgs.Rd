@@ -21,5 +21,8 @@ showArgs(widget, width=70, showargs=FALSE)
 \value{
 	A text stream to the R console. Invisibly returns the widget usage lines.
 }
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \keyword{utilities}
 \keyword{character}

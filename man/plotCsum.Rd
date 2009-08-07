@@ -20,7 +20,9 @@ ylab = "Cumulative Proportion", ...)
 	\item{ylab}{label for the y-axis.}
 	\item{...}{additional arguments for the \code{plot} function.}
 }
-
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \examples{
 x <- rgamma(n=1000,shape=2)
 plotCsum(x)

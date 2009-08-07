@@ -20,6 +20,9 @@
 \value{
 	Parameter vector scaled between 0 and 1.
 }
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \seealso{
   \code{\link{restorePar}}, \code{\link{calcMin}}, \code{\link{GT0}}
 }

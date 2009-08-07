@@ -22,5 +22,7 @@
 \value{
 	String vector of recorded actions (latest first).
 }
-
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \keyword{methods}

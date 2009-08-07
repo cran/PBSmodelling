@@ -6,7 +6,7 @@
 }
 \usage{
 packList(stuff, target="PBSlist", value, 
-    lenv=parent.frame(), tenv=.GlobalEnv)
+         lenv=parent.frame(), tenv=.GlobalEnv)
 }
 \arguments{
   \item{stuff}{ string vector of object names }
@@ -28,8 +28,12 @@ packList(stuff, target="PBSlist", value,
 \value{
   No value is returned
 }
-\author{ Rowan Haigh, Pacific Biological Station, Nanaimo BC }
-\seealso{ \code{\link{unpackList}}, \code{\link{writeList}}, \code{\link{readList}} }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
+\seealso{
+  \code{\link{unpackList}}, \code{\link{readList}}, \code{\link{writeList}}
+}
 \examples{
 fn = function() {
 	alpha=rnorm(10)

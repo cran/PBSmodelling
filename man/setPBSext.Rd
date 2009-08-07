@@ -20,7 +20,9 @@ setPBSext(ext, cmd)
 	\item{ext}{string specifying the extension suffix.}
 	\item{cmd}{command string to associate with the extension.}
 }
-
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \seealso{
 	\code{\link{getPBSext}}, \code{\link{openFile}}, \code{\link{clearPBSext}}
 }

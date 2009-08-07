@@ -1,3 +1,5 @@
+rem : This version creates and runs a new bash file Rd2dvi4pbs.sh from Rd2dvi.sh.
+rem : Note, only effective starting with R-2.8.0.
 @ECHO OFF
 if not defined PBS_SETLOCAL (
 	SETLOCAL
@@ -5,7 +7,7 @@ if not defined PBS_SETLOCAL (
 
 if "%1"=="" (
 	echo ERROR - you must specify a package name
-	echo example: %0 PBSmodelling
+	echo example: %0 PBSmodelling 79
 	goto end )
 
 if "%2"=="" (
@@ -23,13 +25,18 @@ if not defined PBSERROR (
 		if exist "%1.%%a" (
 			rm -f "%1.%%a" ) )
 	if exist %dviP% (rm -rf %dviP%)
-	R CMD Rd2dvi --pdf --no-clean %1 
-	sed 's/a4paper/letter/g' %dviP%\Rd2.tex > %dviP%\temp.txt
-	sed 's/begin{document}/begin{document}\n\\\setcounter{page}{%page%}/g' %dviP%\temp.txt > %1.tex
-	latex %1
-	latex %1
-	makeindex %1
-	pdflatex %1
+	sed 's/\${\$}\"/\$\"\nR_PAPERSIZE=%R_PAPERSIZE%\nR_OSTYPE=%R_OSTYPE%/g' %R_PATH%\Rd2dvi.sh > %R_PATH%\Rd2dvi4pbs.sh
+	R CMD Rd2dvi4pbs.sh --pdf --no-clean --no-preview %1
+	sed 's/makeindex{}/makeindex{}\n\\\topmargin -0.25in \\\oddsidemargin 0in \\\evensidemargin 0in\n\\\textheight 9in \\\textwidth 6.5in/g' %dviP%\Rd2.tex > %dviP%\temp01.tex
+	sed 's/begin{document}/begin{document}\n\\\setcounter{page}{%page%}/g' %dviP%\temp01.tex > %dviP%\%1.tex
+	
+	latex %dviP%\%1 -output-directory=%dviP%
+	latex %dviP%\%1 -output-directory=%dviP%
+	makeindex %dviP%\%1
+	pdflatex %dviP%\%1 -output-directory=%dviP%
+
+	rem %wzzip% %1-Manual.zip %dviP%\%1.*
+	cp -f %dviP%\%1.pdf %1.pdf
 )
 
 :end

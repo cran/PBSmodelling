@@ -11,15 +11,17 @@
 	For information about the \code{PBSmodelling} format, see \code{writeList}.
 }
 
-\usage{readList(fname)}
-
+\usage{
+readList(fname)
+}
 \arguments{
-	\item{fname}{file name of the text file containing the list.}
+  \item{fname}{file name of the text file containing the list.}
 }
-
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \seealso{
-	\code{\link{writeList}}, \code{\link{unpackList}}, \code{\link{packList}}
+  \code{\link{packList}}, \code{\link{unpackList}}, \code{\link{writeList}}
 }
-
 \keyword{list}
 \keyword{file}

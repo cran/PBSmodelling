@@ -26,6 +26,8 @@ doAction(act, envir=.GlobalEnv)
 \value{
   Invisibly returns the string expression \code{act}.
 }
-\author{ Rowan Haigh, Pacific Biological Station, Nanaimo, BC }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \keyword{ utilities }
 \keyword{ character }

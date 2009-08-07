@@ -20,6 +20,9 @@ plotDens(file, clrs=c("blue","red","green","magenta","navy"), ...)
 	\code{samplesHistory("*",beg=0,plot=FALSE)} rather than \code{samplesDensity} 
 	which calls \code{plotDensity}.
 }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \examples{
 z <- data.frame(y1=rnorm(50,sd=2),y2=rnorm(50,sd=1),y3=rnorm(50,sd=.5))
 plotDens(z,lwd=3)

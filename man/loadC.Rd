@@ -47,6 +47,9 @@
   \bold{Ratio}         \tab Ratio of R/C run times.\cr
   }
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \seealso{
   \code{\link{compileC}}
 }

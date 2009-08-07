@@ -16,6 +16,9 @@
 	If the argument \code{package} is not specified, the function will look for 
 	demos in all packages installed on the user's system.
 }
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \note{
 	The \code{runDemos} GUI attempts to retain the user's objects and restore
 	the working directory. However, pre-existing objects will be overwritten 

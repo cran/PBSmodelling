@@ -26,6 +26,9 @@ showVignettes(package)
   function \code{setPBSext} can temporarily set a command to associate 
   with an extension.
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \seealso{ 
   \code{\link{showHelp}}, \code{\link{openFile}}, \code{\link{setPBSext}}, \code{\link{getPBSext}}
 }

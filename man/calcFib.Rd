@@ -23,5 +23,7 @@ calcFib(n, len=1, method="C")
 \value{Vector of the last \code{len} Fibonacci numbers 
   calculated.
 }
-
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \keyword{arith}

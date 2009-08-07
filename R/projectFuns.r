@@ -594,8 +594,10 @@ showAlert=function(message, title="Alert", icon="warning"){
    return(Sys.getenv("HOME")[[1]])
 }
 
-#This used used for setPathOption and setFileOption-- see these functions for
-#a description. The type is "dir" or "file" for each of those functions.
+#.setOption-----------------------------2008-08-25
+# This used used for setPathOption and setFileOption-- see these functions for
+# a description. The type is "dir" or "file" for each of those functions.
+#-----------------------------------------------AE
 .setOption=function(option, type){
   if(missing(option))
     option=getWinAct()[1]
@@ -623,8 +625,10 @@ showAlert=function(message, title="Alert", icon="warning"){
   return(FALSE)
 }
 
-#This is used by cleanProj. It is the function for selecting or deselecting
-#all of the checkboxes.
+#.selectCleanBoxes----------------------2008-08-25
+# This is used by cleanProj. It is the function for selecting or deselecting
+# all of the checkboxes.
+#-----------------------------------------------AE
 .selectCleanBoxes=function(){
 	action=getWinAct()[1]
 	vecList=.removeFromList(getWinVal(), "cleanPrefix")
@@ -634,8 +638,10 @@ showAlert=function(message, title="Alert", icon="warning"){
 	setWinVal(vecList)
 }
 
-#This is used by cleanProj. It is the function that is called when the Clean
-#button is pressed.
+#.old.doClean---------------------------2008-08-25
+# This is used by cleanProj. It is the function that is called when the Clean button is pressed.
+# Note: this function has been rewritten (see '.doClean').
+#-----------------------------------------------AE
 .old.doClean=function(){
 	prefix=getWinVal("cleanPrefix")[[1]]
 	vecList=.removeFromList(getWinVal(), "cleanPrefix")

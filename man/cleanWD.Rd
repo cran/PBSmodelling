@@ -26,6 +26,9 @@ cleanWD(files)
            \tab matching file name expansion of files chosen with a check box.
   }
 }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \examples{
 \dontrun{
 cleanWD(c("*.bak","*.tmp","junk*"))

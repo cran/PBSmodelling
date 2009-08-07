@@ -18,7 +18,9 @@
 	\item{winVal}{if \code{TRUE}, associate \code{winName} with the default window 
 		for \code{setWinVal} and \code{getWinVal}}
 }
-
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \examples{
 \dontrun{
 focus <- function() {

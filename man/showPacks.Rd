@@ -17,6 +17,8 @@ showPacks(packs=c("PBSmodelling","PBSmapping","PBSddesolve",
   \code{Ipacks} (packages in \code{packs} that are installed), and
   \code{Mpacks} (packages that are missing).
 }
-\author{ Rowan Haigh, Pacific Biological Station, Nanaimo BC }
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \keyword{ package }
 \keyword{ character }

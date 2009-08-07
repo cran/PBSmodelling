@@ -13,7 +13,9 @@
 		names appear in the \emph{window description file}(s) on the line(s) defining WINDOW widgets.
 		If \code{name} is ommitted, all active windows will be closed.}
 }
-
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \seealso{
 	\code{\link{createWin}}
 }

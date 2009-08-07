@@ -10,4 +10,7 @@ pause(s = "Press <Enter> to continue")
 \arguments{
 	\item{s}{text issued on the command line when \code{pause} is invoked.}
 }
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \keyword{utilities}

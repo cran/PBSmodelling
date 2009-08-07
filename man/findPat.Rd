@@ -19,7 +19,9 @@ findPat(pat, vec)
 \value{
 	A character vector of all matched strings.
 }
-
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \examples{
 #find all strings with a vowel, or that start with a number
 findPat(c("[aeoiy]", "^[0-9]"), c("hello", "WRLD", "11b"))

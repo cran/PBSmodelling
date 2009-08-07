@@ -19,7 +19,9 @@ importHistory(hisname="", fname="", updateHis=TRUE)
   \item{updateHis}{logical: if \code{TRUE}, update the history widget to reflect the change
     in size and index.}
 }
-
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \seealso{
 \code{\link{exportHistory}}, \code{\link{initHistory}}, \code{\link{promptOpenFile}}
 }

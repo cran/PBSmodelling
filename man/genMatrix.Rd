@@ -19,7 +19,9 @@ genMatrix(m,n,mu=0,sigma=1)
 }
 
 \value{An \code{m} by \code{n} matrix with normally distributed random values.}
-
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \seealso{ \code{\link{plotBubbles}} }
 
 \examples{ plotBubbles(genMatrix(20,6)) }

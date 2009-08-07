@@ -16,11 +16,12 @@ addLegend(x, y, ...)
 	\item{...}{ arguments used by the function \code{legend}, 
 		such as \code{lines}, \code{text}, or \code{rectangle}.}
 }
-
+\author{
+  Jon Schnute, Pacific Biological Station, Nanaimo BC
+}
 \seealso{
   \code{\link{addArrows}}, \code{\link{addLabel}}
 }
-
 \examples{
 resetGraph(); n <- sample(1:length(colors()),15); clrs <- colors()[n]
 addLegend(.2,1,fill=clrs,leg=clrs,cex=1.5)

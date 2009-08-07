@@ -9,6 +9,10 @@
 
 \usage{clearWinVal()}
 
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
+
 \seealso{
 	\code{\link{getWinVal}}
 }

@@ -20,6 +20,9 @@ parseWinFile(fname, astext=FALSE)
 	A list representing a parsed \emph{window description file} that can be directly 
 	passed to \code{createWin}.
 }
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \seealso{
 	\code{\link{createWin}}, \code{\link{compileDescription}}
 }

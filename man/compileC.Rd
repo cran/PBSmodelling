@@ -25,6 +25,9 @@ compileC(file, lib="", options="", logWindow=TRUE, logFile=TRUE)
   The name of the log file, if created, uses the string value from \code{lib} 
   concatenated with \code{".log"}.
 }
+\author{
+  Anisa Egeli, Vancouver Island University, Nanaimo BC
+}
 \seealso{
   \code{\link{loadC}}
 }

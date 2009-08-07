@@ -15,6 +15,9 @@ testLwd(lwd=1:20, col=c("black","blue"), newframe=TRUE)
 		\code{length(lwd) > length(col)}}.
 	\item{newframe}{if \code{TRUE}, create a new blank frame, otherwise overlay current frame.}
 }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \examples{
 testLwd(3:15,col=c("salmon","aquamarine","gold"))
 }

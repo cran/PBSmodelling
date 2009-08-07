@@ -14,6 +14,9 @@ testCol(cnam=colors()[sample(length(colors()),15)])
 	\item{cnam}{vector of colour names to display. Defaults to 15 random names 
 		from the \code{color} palette.}
 }
+\author{
+  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+}
 \seealso{
 	\code{\link{pickCol}}
 }

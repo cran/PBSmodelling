@@ -32,7 +32,9 @@
 	\code{astext=T}. This vector represents the file contents where each element 
 	is equivalent to a new line in the \emph{window description file}.
 }
-
+\author{
+  Alex Couture-Beil, Malaspina University-College, Nanaimo BC
+}
 \note{
 	Microsoft Windows users may experience difficulties switching focus between the 
 	R console and GUI windows. The latter frequently disappear from the screen and 
