@@ -908,6 +908,7 @@ runExamples <- function () {
 			createWin(winDesc, astext = TRUE)
 			return()
 		} else if (act=="swissTalk") {
+			#TODO refactor this - should be more generic
 			closeWin(name=setdiff(allWin,"runE"))
 			tnam=paste(act,".txt",sep="") # talk description file
 			wtxt <- paste(readLines(tnam), collapse = "\n")
@@ -915,7 +916,10 @@ runExamples <- function () {
 		} else {
 			if (act!="TestFuns")
 				closeWin(name=setdiff(allWin,c("runE","window")))
-			source(paste(act, ".r", sep = ""))
+			f <- paste(act, ".r", sep = "" )
+			#assert that files match case
+			stopifnot( any( dir() == f ) == TRUE )
+			source( f )
 			wnam <- paste(act, "Win.txt", sep = "") # window description file
 			wtxt <- paste(readLines(wnam), collapse = "\n")
 		}
