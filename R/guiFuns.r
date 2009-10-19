@@ -412,10 +412,14 @@
 			selected_i <- as.integer( tcl( tk_widget, "getvalue" ) ) + 1
 			retData[[wid_name]] <- selected_i
 
+			#extract values directly from widget (won't work if labels are used)
+			#values <- tclvalue( tcl( tk_widget, "cget", "-values" ) )
+			#values <- .tclArrayToVector( values )
+
 			#get stored values (useful if labels were applied)
 			wid_name <- paste( wid$name, ".values", sep="" )
-			values <- data[[ wid$name ]]$droplist_values
-			retData[[wid_name]] <- data[[ wid$name ]]$droplist_values
+			values <- .PBSmod[[winName]]$widgets[[ wid_name ]]$labels
+			retData[[wid_name]] <- values 
 
 			#overwrite label values with real values (except when the user input their own choice)
 			if( selected_i > 0 )
@@ -651,7 +655,7 @@ focusWin <- function(winName, winVal=TRUE)
 # createWin:
 #   creates a GUI window from a given file, or GUI description list
 # -----------------------------------------------------------
-createWin <- function(fname, astext=FALSE)
+createWin <- function( fname, astext=FALSE, env=parent.frame() ) #globalenv() )
 {
 	#must be called here for examples in rd to pass check
 	.initPBSoptions()
@@ -735,6 +739,9 @@ createWin <- function(fname, astext=FALSE)
 
 		#store the TK handle (so we can destroy it at a later time via closeWin)
 		.PBSmod[[winName]]$tkwindow <<- tt
+
+		#store environment to look for functions under
+		.PBSmod[[winName]]$env <<- env
 
 		#set window title
 		tkwm.title(tt,guiDesc[[i]]$title)
@@ -2034,6 +2041,7 @@ parseWinFile <- function(fname, astext=FALSE)
 	tkWidget<-do.call("tklabel", argList)
 	if( !is.null(widget[["name"]]) && widget$name != "" ) {
 		tkconfigure( tkWidget,textvariable= .map.get(winName, widget$name )$tclvar )
+		.PBSmod[[ winName ]]$widgetPtrs[[ widget$name ]]$tclwidget <<- tkWidget
 	}
 
 	return(tkWidget)
@@ -2857,7 +2865,7 @@ parseWinFile <- function(fname, astext=FALSE)
 		return(.createWidget(tk, wid, winName))
 	}
 
-	if (!exists(widget$name, env = .GlobalEnv)) {
+	if (!exists(widget$name, env = .PBSmod[[ winName ]]$env )) {
 		return(.dispError(paste("Error: variable \"", widget$name, "\" could not be found.", sep="")))
 	}
 	return( NULL )
@@ -3034,7 +3042,7 @@ parseWinFile <- function(fname, astext=FALSE)
 		return( .createWidget.object.scrolling( tk, widget, winName ) )
 
 	if( is.null( userObject ) )
-		userObject <- get(widget$name, pos=find(widget$name))
+		userObject <- get( widget$name, env = .PBSmod[[ winName ]]$env )
 
 	#matrix
 	if (is.matrix(userObject)) {
@@ -3306,10 +3314,9 @@ parseWinFile <- function(fname, astext=FALSE)
 # winName: name of window being created
 .getValueForWidgetSetup <- function( varname, widget, winName )
 {
-	if( !exists( varname, env = .GlobalEnv ) )
+	if( !exists( varname, env = .PBSmod[[ winName ]]$env ) )
 		.stopWidget( paste( "unable to find variable \"", varname, "\" in global memory - this search happend since value=NULL", sep="" ), widget$.debug, winName )
-
-	var <- get( varname, env = .GlobalEnv )
+	var <- get( varname, env = .PBSmod[[ winName ]]$env )
 	if( is.factor( var ) )
 		var <- as.character( var )
 	else if( is.data.frame( var ) ) {
@@ -3351,12 +3358,12 @@ parseWinFile <- function(fname, astext=FALSE)
 		#see http://tcltk.free.fr/Bwidget/ComboBox.html for possible options
 		argList$foreground=widget$fg
 		#argList$entryfg=widget$fg
-		argList$selectforeground=widget$fg
+		#argList$selectforeground=widget$fg
 	}
 	if (!is.null(widget[["bg"]]) && widget$bg!="") {
 		#argList$background=widget$bg #this affects the colour of the drop down arrow
-		argList$selectbackground=widget$bg #covers what's selected - but stays after the item is selected
-		argList$insertbackground=widget$bg
+		#argList$selectbackground=widget$bg #covers what's selected - but stays after the item is selected
+		#argList$insertbackground=widget$bg #color of insert cursor - leave as default
 		argList$highlightbackground=widget$bg
 		argList$entrybg=widget$bg
 	}
@@ -3379,6 +3386,7 @@ parseWinFile <- function(fname, astext=FALSE)
 
 	.map.set( winName, paste( widget$name, ".values", sep="" ), droplist_widget=drop_widget )
 	.map.set( winName, paste( widget$name, ".id", sep="" ), droplist_widget=FALSE )
+	.PBSmod[[winName]]$widgets[[ paste( widget$name, ".values", sep="" ) ]]$labels <<- values
 
 	if( widget$edit == FALSE )
 		tkconfigure( drop_widget, state="disabled" )
@@ -3611,7 +3619,7 @@ parseWinFile <- function(fname, astext=FALSE)
 	if (widget[["function"]]!="")
 		param$command=function(...) { .extractData(widget[["function"]], widget$action, winName) }
 	button <- do.call(tkbutton, param)
-	if( !is.null( widget[[ "name" ]] ) )
+	if( !is.null( widget[[ "name" ]] ) ) 
 		.map.add(winName, widget$name, tclwidget=button)
 	return( button )
 }
@@ -4383,8 +4391,8 @@ sortHistory <- function(file="",outfile=file,hisname="")
 	if (command=="")
 		return()
 
-	if (exists(command,mode="function"))
-		do.call(command, list())
+	if (exists(command,mode="function", env=.PBSmod[[ winName ]]$env))
+		do.call(command, list(), envir=.PBSmod[[ winName ]]$env )
 	else
 		cat(paste("Warning: cannot find function '", command, "'.\n", sep=""))
 }
@@ -4554,12 +4562,13 @@ setWinVal <- function(vars, winName="")
 	}
 	
 	#special case for superobject
-	if( wid$type == "superobject" ) {
+	if( wid$type == "superobject" || wid$type == "object" ) {
 		.PBSmod[[ winName ]]$widgets[[ wid$name ]]$.data <<- value
 		.superobject.redraw( winName, wid$name )
 		return( value )
 	}
 
+	print( wid )
 	stop(paste("unable to update \"", varname, "\" - no widget found.", sep=""))
 }
 
@@ -4631,6 +4640,88 @@ clearWinVal <- function()
 	rmlist <- intersect(objs,globs)
 	rm(list=rmlist,pos=".GlobalEnv")
 	invisible(rmlist)
+}
+
+# ***********************************************************
+# TODO might want to rename this
+# colours can be set (fg, bg) for and droplist, check widgets, (entryfg, entrybg) for entry widget
+# these are passed as ...
+
+setWidgetColor <- function( name, winName = .PBSmod$.activeWin, ... )
+{
+	configure.entry <- function( ptr, entryfg, entrybg )
+	{
+		if( !missing( entryfg ) )
+			tkconfigure( ptr, fg = entryfg )
+		if( !missing( entrybg ) )
+			tkconfigure( ptr, bg = entrybg )
+	}
+
+	configure.droplist <- function( ptr, fg, bg )
+	{
+		if( !missing( fg ) )
+			tkconfigure( ptr, foreground = fg, selectforeground = fg )
+		if( !missing( bg ) )
+			tkconfigure( ptr, selectbackground = bg, insertbackground = bg, highlightbackground = bg, entrybg = bg )
+	}
+
+	configure.check <- function( ptr, fg, bg )
+	{
+		if( !missing( fg ) )
+			tkconfigure( ptr, fg = fg )
+		if( !missing( bg ) )
+			tkconfigure( ptr, bg = bg )
+	}
+	
+	configure.label <- function( ptr, fg, bg )
+	{
+		if( !missing( fg ) )
+			tkconfigure( ptr, fg = fg )
+		if( !missing( bg ) )
+			tkconfigure( ptr, bg = bg )
+	}
+	
+	configure.button <- function( ptr, fg, bg )
+	{
+		if( !missing( fg ) )
+			tkconfigure( ptr, fg = fg )
+		if( !missing( bg ) )
+			tkconfigure( ptr, bg = bg )
+	}
+
+	#TODO need support for groups of radios or a single radio value
+	#	configure.radio <- function( ptr, fg, bg )
+	#	{
+	#		if( !missing( fg ) )
+	#			tkconfigure( ptr, fg = fg )
+	#		if( !missing( bg ) )
+	#			tkconfigure( ptr, bg = bg )
+	#	}
+
+
+	#### function starts here ####
+	
+	#get window
+	widget <- .PBSmod[[ winName ]]
+	if( is.null( widget ) ) 
+		stop( paste( "unable to find window:", winName ) )
+	
+	#get widget
+	widget <- widget$widgets[[ name ]]
+	if( is.null( widget ) )
+		stop( paste( "unable to find widget: ", name ) )
+
+	#get tcl ptr to tk widget
+	widget_ptr <- .PBSmod[[ winName ]]$widgetPtrs[[ name ]]$tclwidget
+
+	#call specific config method based on widget type
+	func <- paste( "configure.", widget$type, sep="" )
+	if( exists( func ) == FALSE )
+		stop( paste( "not supported for widget type:", widget$type ) )
+
+	do.call( func, list( ptr=widget_ptr, ... ) )
+
+	return(invisible())
 }
 
 
@@ -4894,11 +4985,19 @@ chooseWinVal <- function(choice,varname,winname="window") {
 #doAction-------------------------------2009-02-03
 # Executes the action created by a widget.
 #-----------------------------------------------RH
-doAction=function(act,envir=.GlobalEnv){
+doAction=function(act){
 	if (missing(act)) {
 		if(is.null(.PBSmod$.activeWin)) return()
 		act=getWinAct()[1] }
 	if(is.null(act) || act=="") return()
+	
+	#get win's environment
+	winName <- .PBSmod$.activeWin
+	if( !is.null( winName ) )
+		envir <- .PBSmod[[ winName ]]$env
+	else
+		envir <- globalenv() #maybe parent.frame() is better
+
 	expr=gsub("`","\"",act)
 	eval(parse(text=expr),envir=envir)
 	invisible(act) }

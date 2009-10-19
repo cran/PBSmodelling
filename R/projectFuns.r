@@ -24,12 +24,13 @@
 #  filepath - filepath of file, relative from package root
 # -----------------------------------------------------------
 openPackageFile=function(package, filepath){
+	warning( "this function is deprecated - use openFile" )
   if(missing(package) && missing(filepath)){
     action=strsplit(getWinAct()[1], ",")
     package=action[[1]][1]
     filepath=action[[1]][2]
   }
-  openFile(system.file(filepath, package=package))
+  openFile( filepath, package=package )
 }
 
 # ***********************************************************
@@ -186,54 +187,55 @@ setFileOption=function(option){
 
 # ***********************************************************
 # findPrefix:
-#  tries to set the project prefix in the GUI entry box by
-#  looking for a file in the working directory with a given
-#  extension
 # Input:
 #  suffix - character vector of suffixes to match to a file.
 # Output: character vector of files with matching extensions
 # -----------------------------------------------------------
-findPrefix=function(suffix){
-  tryRes=try(getWinVal("prefix"), silent=TRUE)
-  if(class(tryRes)=="try-error")
-		prefix=NULL
-	else
-		prefix=getWinVal("prefix")$prefix
 
-  matchingFiles=Sys.glob(paste("*", suffix, sep=""))
-  matchingPrefixes=.stripExt(matchingFiles)
-  if(length(matchingPrefixes) && !any(matchingPrefixes==prefix))
-    prefix=matchingPrefixes[1]
-  try(setWinVal(list("prefix"=prefix)), silent=TRUE)
-  return(matchingPrefixes)
+findPrefix=function(suffix, path = "." ) {
+	if( length( suffix ) > 1 ) {
+		ret <- c()
+		for( s in suffix )
+			ret <- c( ret, findPrefix( s, path ) )
+		return( ret )
+	}
+	spat=gsub("\\.","\\\\\\.",suffix)
+	sfiles=list.files( path, pattern=paste(spat,"$",sep=""),ignore.case=TRUE)
+	pref=substring(sfiles,1,nchar(sfiles)-nchar(suffix))
+	return(pref)
 }
+
+findSuffix=function( prefix, path = "." ) {
+	if( length( prefix ) > 1 ) {
+		ret <- c()
+		for( p in prefix )
+			ret <- c( ret, findSuffix( p, path ) )
+		return( ret )
+	}
+	spat=gsub("\\.","\\\\\\.",prefix)
+	sfiles=list.files(path,pattern=paste("^", spat,sep=""),ignore.case=TRUE)
+	pref=substring(sfiles,nchar(prefix) + 1)
+	return(pref)
+}
+
+#one big fucking hack to allow GUIs from outside PBSmodelling to call PBSmodelling's internal hidden functions
+#Do not rely on this to remain here - functions begining with a . should ONLY be called from PBSmodelling
+#TODO REMOVE THIS - after PBSadmb is refactored
+.getHiddenEnv <- function()
+{
+	return( environment() )
+}
+
 
 # ***********************************************************
 # setwdGUI:
-#  Allows user to browse a directory tree to set the working
-#  directory. The suffix argument is passed to call to
-#  findPrefix after the working directory is changed.
-# Input:
-#  suffix: suffixes to pass to findPrefix after the directory
-#          is changed, or "" to not call findPrefix
+#  change the working directory via a GUI
 # -----------------------------------------------------------
-setwdGUI=function(suffix){
+setwdGUI=function(){
   wd=as.character(tkchooseDirectory())
   if(!length(wd))
     return()
   setwd(wd)
-  if(missing(suffix)){
-    suffix=try(getWinAct(), silent=TRUE)
-    if(class(suffix)!="try-error")
-      suffix=suffix[[1]]
-    else
-      suffix=","
-		suffix=strsplit(suffix, ",")[[1]]
-  }
-  
-  if(length(suffix)>1 || suffix!="")
-    return(findPrefix(suffix))
-	return(invisible())
 }
 
 # ***********************************************************
@@ -249,7 +251,8 @@ promptWriteOptions=function(fname=""){
   if(.optionsNotUpdated() && getYes("Set declared options to widget values?"))
   	setGUIoptions("*")
 
-  if(!is.null(.PBSmod$.options$.optionsChanged)){
+#doesn't save if nothing's changed but we changed the fname - or if we modify .PBSmod directly	
+#  if(!is.null(.PBSmod$.options$.optionsChanged) ){
     if(fname=="" && !is.null(.PBSmod$.options$.optionsFile)){
       if (getYes(paste("Save settings to", .PBSmod$.options$.optionsFile, "?")))
         writePBSoptions(.PBSmod$.options$.optionsFile)
@@ -258,7 +261,7 @@ promptWriteOptions=function(fname=""){
 			fname="PBSoptions.txt"
     if (getYes(paste("Save settings to", fname, "in working directory?")))
       writePBSoptions(fname)
-  }
+#  }
 }
 
 #declareGUIoptions----------------------2009-03-03
@@ -311,44 +314,6 @@ setGUIoptions=function(option){
   }
 }
 
-# ***********************************************************
-# cleanProj
-#  Launches a new window which contains an interface for
-#  deleting "junk" files from the working directory. The
-#  prefix, suffix, and files may contain wildcard characters.
-# Input:
-#  prefix - prefix to prepend to suffixes
-#  suffix - character vector of suffixes that may be chosen
-#           for deletion. Each will have a corresponding
-#           checkbox.
-#  files - character vector of whole filenames that may be
-#          chosen for deletion. Each will have a
-#          corresponding checkbox.
-# -----------------------------------------------------------
-.old.cleanProj=function(prefix, suffix, files){ #deprecated
-	if(missing(suffix))
-		suffix=character(0)
-	if(missing(files))
-		files=character(0)
-
-	rowLen=ceiling(sqrt(max(length(suffix),length(files))))
-	if(rowLen==0)
-		stop("No suffixes or files specified for clean options.")
-
-	winDesc=c("window name=cleanWindow title=Clean",
-		paste('entry name=cleanPrefix value="', prefix, '" label=Prefix mode=character font="bold 9"',
-				sep=""),
-		'label text="\n\nSuffixes to Clean" font="bold 9"',
-		.makeCleanVec("suff", suffix, rowLen),
-		'label text="\n\nFiles to Clean" font="bold 9"',
-		.makeCleanVec("file", files, rowLen),
-		"grid 1 3 relief=groove padx=4 pady=4",
-		'button function=.selectCleanBoxes action=1 text="Select All" font="bold 9" padx=4 pady=4',
-		'button function=.selectCleanBoxes action=0 text="Deselect All" font="bold 9" padx=4 pady=4',
-		'button function=.doClean text=Clean font="bold 9" padx=4 pady=4')
-
-	createWin(winDesc, astext=TRUE)
-}
 
 # ***********************************************************
 # getYes:
@@ -636,33 +601,6 @@ showAlert=function(message, title="Alert", icon="warning"){
 		vecList[[i]]=rep(action, length(vecList[[i]]))
 	}
 	setWinVal(vecList)
-}
-
-#.old.doClean---------------------------2008-08-25
-# This is used by cleanProj. It is the function that is called when the Clean button is pressed.
-# Note: this function has been rewritten (see '.doClean').
-#-----------------------------------------------AE
-.old.doClean=function(){
-	prefix=getWinVal("cleanPrefix")[[1]]
-	vecList=.removeFromList(getWinVal(), "cleanPrefix")
-	filenames=character(0)
-	for(i in names(vecList)){
-		type=sub("[[:digit:]]*$", "", i)
-		if(type=="suff")
-			filenames=c(filenames, Sys.glob(paste(prefix,
-					names(vecList[[i]])[vecList[[i]]], sep="")))
-		else
-			filenames=c(filenames, Sys.glob(names(vecList[[i]])[vecList[[i]]]))
-	}
-	if(!length(filenames))
-		showAlert("No files to delete.")
-	else if(getYes(paste("Delete ", paste(filenames, collapse=", "), "?",
-			sep="")))
-		file.remove(filenames)
-	remaining=file.exists(filenames)
-	if(sum(remaining))
-		showAlert(paste("Failed to delete", paste(filenames[remaining],
-				collapse=", ")))
 }
 
 #.makeCleanVec--------------------------2009-03-03

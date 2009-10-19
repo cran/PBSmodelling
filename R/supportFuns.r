@@ -209,6 +209,7 @@ createVector <- function (vec, vectorLabels=NULL, func="", windowname="vectorwin
 #                 c(".r", "R files"), c("*", "All Files")))
 #----------------------------------------------ACB
 promptOpenFile <- function(initialfile="", filetype=list(c("*", "All Files")), open=TRUE) {
+	warning( "promptOpenFile is deprecated - use selectFile instead" )
 	filetypes <- ""
 	for(i in 1:length(filetype)) {
 		filetype[[i]]
@@ -218,8 +219,8 @@ promptOpenFile <- function(initialfile="", filetype=list(c("*", "All Files")), o
 			filetype[[i]][1] <- paste(".", filetype[[i]][1], sep="")
 		filetypes <- paste(filetypes, " {{", filetype[[i]][2], "} {", filetype[[i]][1], "}}", sep="")
 	}
-
 	filetypes <- .trimWhiteSpace(filetypes)
+	
 	if (open)
 		return(tclvalue(tkgetOpenFile(initialfile=initialfile, filetypes=filetypes)))
 	else
@@ -232,7 +233,135 @@ promptOpenFile <- function(initialfile="", filetype=list(c("*", "All Files")), o
 #----------------------------------------------ACB
 promptSaveFile <- function(initialfile="", filetype=list(c("*", "All Files")), save=TRUE)
 {
+	warning( "promptSaveFile is deprecated - use selectFile instead" )
 	return(promptOpenFile(initialfile, filetype, !save))
+}
+
+#prompts a user to open/save a file(s) #ACB
+selectFile <- function(
+	initialfile="", 
+	initialdir=getwd(), 
+	filetype=list(c("*", "All Files")), 
+	mode="open", 
+	multiple = FALSE, 
+	title="",
+	defaultextension="",
+	usewidget = NULL
+	)
+{
+	mode <- tolower( mode )
+	stopifnot( mode == "open" || mode == "save" )
+
+	if( is.null( usewidget ) == FALSE ) {
+		#value in widget should be used as file
+		initialfile <- getWinVal()[[ usewidget ]]
+		if( multiple == TRUE )
+			stop( "multiple and usewidget can not be used together" )
+	}
+	
+	#prepare filetypes to correct format for tk
+	filetypes <- ""
+	for(i in 1:length(filetype)) {
+		filetype[[i]]
+		if (is.na(filetype[[i]][2]))
+			filetype[[i]][2] <- filetype[[i]][1]
+		if (filetype[[i]][1] != "*" && substr(filetype[[i]][1],1,1)!=".")
+			filetype[[i]][1] <- paste(".", filetype[[i]][1], sep="")
+		filetypes <- paste(filetypes, " {{", filetype[[i]][2], "} {", filetype[[i]][1], "}}", sep="")
+	}
+	filetypes <- .trimWhiteSpace(filetypes)
+	
+	#prepare common args
+	args <- list(
+		initialdir=initialdir,
+		initialfile=initialfile,
+		filetypes=filetypes,
+		title=title,
+		defaultextension=defaultextension
+	)
+	
+	if( mode == "open" ) {
+		args[[ "multiple" ]] <- multiple
+		files <- tclvalue(do.call( tkgetOpenFile, args ))
+	} else if( mode == "save" ) {
+		if( multiple == TRUE ) stop( "multiple=TRUE is not supported by \"save\" mode" )
+		files <- tclvalue(tkgetSaveFile( initialdir=initialdir, initialfile=initialfile, filetypes=filetypes ))
+	} else {
+		stop("mode not supported")
+	}
+	
+	#split up string
+	if( files == "" )
+		return( c() )
+
+	if( is.null( usewidget ) == FALSE ) {
+		#store value in widget
+		stopifnot( multiple == FALSE )
+		val <- list()
+		val[[ usewidget ]] <- files
+		setWinVal( val )
+		return( files )
+	}
+	return( .tclArrayToVector( files ) )
+}
+
+.tclArrayToVector <- function( str )
+{
+	#strings (when multiple) are encoded as "{c:/program files/somefile.txt} c:/nospaces/isok.txt"
+	file_vector <- c()
+	quoted <- FALSE
+	start <- -1 #negative means no current start
+	chars <- strsplit( str, "" )[[ 1 ]]
+	for( i in 1:nchar( str ) ) {
+		if( quoted == TRUE ) {
+			if( chars[ i ] == "}" ) {
+				end <- i - 1
+				s <- substr( str, start, end )
+				file_vector <- c( file_vector, s )
+				quoted <- FALSE
+				start <- -1
+			}
+			#do nothing otherwise - just accecpt the input
+		} else {
+			#not quoted
+			if( chars[ i ] == " " && start != -1 ) {
+				end <- i - 1
+				s <- substr( str, start, end )
+				file_vector <- c( file_vector, s )
+				start <- -1
+			} else if( chars[ i ] == "{" ) {
+				quoted <- TRUE
+				start <- i + 1
+			} else if( start < 0 ) {
+				start <- i
+			}
+		}
+	}
+	if( start > 0 ) {
+		end <- nchar( str )
+		s <- substr( str, start, end )
+		file_vector <- c( file_vector, s )
+	}
+	return( file_vector )
+}
+
+#prompts user to select a directory - and returns it    #ACB
+selectDir <- function( initialdir = getwd(), mustexist = TRUE, title = "", usewidget = NULL )
+{
+	#get val from widget
+	if( is.null( usewidget ) == FALSE )
+		initialdir <- getWinVal()[[ usewidget ]]
+
+	d <- tclvalue( tkchooseDirectory( initialdir = initialdir, mustexist = mustexist, title = title ) )
+
+	#set val to widget
+	if( is.null( usewidget ) == FALSE && d != "" ) {
+		val <- list()
+		val[[ usewidget ]] <- d
+		setWinVal( val )
+	}
+		
+	return( d )
 }
 
 #showArgs-------------------------------2009-02-23
@@ -631,7 +760,7 @@ runDemos <- function (package) {
 			))
 			))))
 		assign("xxy",win,envir=.GlobalEnv)
-		createWin(list(win))
+		createWin(list(win), env = parent.env( environment() ) )
 		return(invisible(NULL))
 	}
 	#display demos from a certain package
@@ -702,7 +831,7 @@ runDemos <- function (package) {
 			)
 		)))
 	assign("xx",win,envir=.GlobalEnv)
-	createWin(list(win))
+	createWin(list(win), env=parent.env( environment() ) )
 	return(invisible(NULL))
 }
 #-----------------------------------------runDemos
@@ -910,9 +1039,7 @@ runExamples <- function () {
 		} else if (act=="swissTalk") {
 			#TODO refactor this - should be more generic
 			closeWin(name=setdiff(allWin,"runE"))
-			tnam=paste(act,".txt",sep="") # talk description file
-			wtxt <- paste(readLines(tnam), collapse = "\n")
-			presentTalk(tnam)
+			presentTalk( "swisstalk.xml" )
 		} else {
 			if (act!="TestFuns")
 				closeWin(name=setdiff(allWin,c("runE","window")))
@@ -962,15 +1089,52 @@ isWhat <- function(x) {
   if (!is.null(att)) print(att)
   invisible() }
 
+#given string name of a program - return the complete path to program
+#equivalent to "which" but works for windows too
+findProgram <- function( name, includename = FALSE )
+{
+	if( .Platform$OS.type=="windows" ) {
+		name <- paste( name, ".exe", sep="" ) #TODO could iterate over .exe, .bat, ...
+		path <- Sys.getenv("PATH")
+		paths <- unlist( strsplit( path, ";" ) )
+		for( p in paths ) {
+			f <- paste( p, "\\", name, sep="" )
+			if( file.exists( f ) ) {
+				if( includename == FALSE )
+					return( dirname( f ) )
+				return( gsub("\\\\", "/", f ) )
+			}
+		}
+		return( NULL )
+	}
+	cmd <- system( paste( "which ", name, sep="" ), intern = TRUE )
+	if( length( cmd ) == 0 )
+		return( NULL )
+	if( includename == TRUE )
+		return( cmd )
+	#remove filename
+	tmp <- strsplit( cmd, "/" )[[ 1 ]]
+	tmp[ length(tmp) ] <- "" #last item is filename
+	cmd <- paste( tmp, collapse="/" ) #put back together
+	return( cmd )
+}
+
 #openFile-------------------------------2008-09-22
 # Opens a file for viewing based on System file
 # extension association or .PBSmod$.options$openfile
 #----------------------------------------------ACB
-openFile <- function(fname="") {
-	.openFile=function(fname) {
+openFile <- function(fname="", package=NULL)
+{
+	.openFile=function(fname, package)
+	{
 		if (!exists(".PBSmod"))  .initPBSoptions()
 		if (fname=="")  fname=getWinAct()[1]
-		if (any(grep("^~", fname)))
+		if( is.null( package ) == FALSE ) {
+			pkg_file <- system.file( fname, package=package)
+			if( pkg_file == "" )
+				stop(paste("File \"", fname, "\" does not exist in package \"", package, "\"", sep=""))
+			fname <- pkg_file
+		} else if (any(grep("^~", fname)))
 			fname <- path.expand(fname)
 		else if (!any(grep("^([a-z]:(\\\\|/)|\\\\\\\\|/)", fname, ignore.case = TRUE)))
 			fname <- paste(getwd(), "/", fname, sep="")
@@ -1007,7 +1171,7 @@ openFile <- function(fname="") {
 			return(cmd)
 		}
 	}
-	ops=sapply(fname,.openFile)
+	ops=sapply(fname,.openFile, package=package)
 	invisible(ops) }
 #-----------------------------------------openFile
 
@@ -1251,32 +1415,15 @@ evalCall=function(fn,argu,...,envir=parent.frame(),checkdef=FALSE,checkpar=FALSE
 	invisible(expr) }
 #-----------------------------------------evalCall
 
-#getPrefix------------------------------2009-02-23
-# Search for and gather all prefixes with the specified suffix.
-#-----------------------------------------------RH
-getPrefix=function(suffix,path="."){
-	spat=gsub("\\.","\\\\\\.",suffix)
-	sfiles=list.files(path,pattern=paste(spat,"$",sep=""),ignore.case=TRUE)
-	pref=substring(sfiles,1,nchar(sfiles)-nchar(suffix))
-	return(pref) }
-
-#getSuffix------------------------------2009-02-23
-# Search for and gather all suffixes with the specified prefix.
-#-----------------------------------------------RH
-getSuffix=function(prefix,path="."){
-	ppat=gsub("\\.","\\\\\\.",prefix)
-	pfiles=list.files(path,pattern=paste("^",ppat,sep=""),ignore.case=TRUE)
-	pref=substring(pfiles,nchar(prefix)+1)
-	return(pref) }
 
 .findSquare=function(nc) {
 	sqn=sqrt(nc); m=ceiling(sqn); n=ceiling(nc/m)
 	return(c(m,n)) }
 
-#viewCode-------------------------------2009-04-21
+#viewCode-------------------------------2009-10-09
 # View package R code on the fly.
 #-----------------------------------------------RH
-viewCode=function(pkg="PBSmodelling", funs){
+viewCode=function(pkg="PBSmodelling", funs, output=4){
 	eval(parse(text=paste("if(!require(",pkg,",quietly=TRUE)) stop(\"",pkg," package is required\")",sep="")))
 	tdir <- tempdir(); tdir <- gsub("\\\\","/",tdir)                    # temporary directory for R
 	if (is.element(pkg,loadedNamespaces())){
@@ -1304,9 +1451,27 @@ viewCode=function(pkg="PBSmodelling", funs){
 		showAlert("Your choices yield no functions")
 		return(invisible("Error: choices for 'funs' yield no functions")) }
 	for (i in c(seeFuns)) {
-		expr=paste("fun=deparse(",pkg,delim,i,"); fun[1]=paste(\"",i,"\",fun[1],sep=\" = \",collapse=\"\"); code=c(code,fun)",sep="")
+		if (output %in% c(1,2)) {
+			expr=paste("fun=\"",i,"\"; ",sep="")
+			if (output==2) {
+				expr=c(expr,paste("helploc=utils::help(\"",i,"\",package=\"",pkg,"\",htmlhelp=TRUE,chmhelp=FALSE); ",sep=""))
+				expr=c(expr,"if (length(helploc)!=0) {")
+				expr=c(expr,"helpdoc=readLines(helploc); ")
+				expr=c(expr,"helptit=helpdoc[grep(\"<title>\",helpdoc)[1]]; ")
+				expr=c(expr,"fun=paste(fun,substring(helptit,23,nchar(helptit)-8),sep=\"\\t\") }; ") }
+		}
+		else if (output %in% c(3)) {
+			expr=paste("fun=deparse(args(",pkg,delim,i,")); fun=fun[!fun%in%\"NULL\"]; ",sep="")
+			expr=c(expr,"fun=paste(fun,collapse=\"\"); ")
+			expr=c(expr,"fun=gsub(\" \",\"\",x=fun); ")
+			expr=c(expr,paste("fun=gsub(\"function\",\"",i," \",x=fun); ",sep="")) }
+		else if (output %in% c(4)) {
+			expr=paste("fun=deparse(",pkg,delim,i,"); ",sep="")
+			expr=c(expr,paste("fun[1]=paste(\"",i,"\",fun[1],sep=\" = \",collapse=\"\"); ",sep="")) }
+		else expr="fun=\"\"; "
+		expr=paste(c(expr,"code=c(code,fun)") ,collapse="")
 		eval(parse(text=expr)) }
-	fname=paste(tdir,"/",pkg,".r",sep="")
+	fname=paste(tdir,"/",pkg,ifelse(output %in% 1:2,".txt",".r"),sep="")
 	writeLines(code, fname); openFile(convSlashes(fname))
 	invisible(code) }
 #----------------------------------------viewCode
