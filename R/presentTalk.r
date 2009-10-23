@@ -472,6 +472,9 @@ setClass( "talk", representation( name = "character", sections = "list", files =
 
 presentTalk <- function( talk )
 {
+	if( require( "XML" ) == FALSE ) {
+		stop( "the XML R package is required to use presentTalk - please install it first. Linux users might have to install libxml-dev (via apt) before installing the R XML package." )
+	}
 	PBSmodelling:::.initPBSoptions()
 	#setup .PBSmod$.talk (should be seperate package)
 	if( !is.null( .PBSmod[[ ".presentTalk" ]] ) )
@@ -507,7 +510,7 @@ presentTalk <- function( talk )
 		"label \"/ n\" name=slidecount font=\"8\" sticky=W",
 		"grid 1 2",
 		paste( "button name=back text=\"< Back\" bg=greenyellow sticky=S function=.prevSlide action=\"",name,"\" width=10", sep="" ),
-		paste( "button name=go text=\"> Go\" bg=greenyellow sticky=S function=.nextSlide action=\"",name,"\" width=10", sep="" ),
+		paste( "button name=go text=\"Go >\" bg=greenyellow sticky=S function=.nextSlide action=\"",name,"\" width=10", sep="" ),
 	
 	.getButtons( talk ),
 	""

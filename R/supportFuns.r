@@ -302,6 +302,8 @@ selectFile <- function(
 		setWinVal( val )
 		return( files )
 	}
+	if( multiple == FALSE )
+		return( files )
 	return( .tclArrayToVector( files ) )
 }
 
@@ -836,22 +838,32 @@ runDemos <- function (package) {
 }
 #-----------------------------------------runDemos
 
-#showHelp-------------------------------2008-05-29
-# Show help files for package contents as HTML in browser window
+#showHelp-------------------------------2009-11-16
+# Show HTML help files for package contents.
 #-----------------------------------------------RH
-showHelp <- function(pat="methods") {
+showHelp <- function(pattern="methods", ...) {
 	warn <- options()$warn
 	options(warn = -1)
 	Apacks = .packages(all.available = TRUE) # all packages
-	Spacks = findPat(pat,Apacks)             # show packages that match the pattern
+	Spacks = findPat(pattern,Apacks)         # show packages that match the pattern
 	npacks = length(Spacks)
 	if (npacks==0) { print("No such package"); return() }
+	unpackList(list(...))
+	# 'home' code from 'help.start'
+	home <- if (!is.element("remote",ls(envir=sys.frame(sys.nframe()))) || is.null(remote)) {
+		if (tools:::httpdPort == 0L) tools::startDynamicHelp()
+		if (tools:::httpdPort > 0L) {
+			if ("update" %in% ls(envir=sys.frame(sys.nframe())) && update)
+				make.packages.html(temp = TRUE)
+			paste("http://127.0.0.1:", tools:::httpdPort, sep = "") }
+		else stop("showHelp() requires the HTTP server to be running", call. = FALSE)
+	}
+	else remote
 	getURL = function(x) {
-		path=system.file(package=x)
-		url=paste(path,"/html/00Index.html",sep="")
+		url=paste(home,"/library/",x,"/html/00Index.html",sep="")
+		browseURL(url)
 		return(url) }
 	URLs=sapply(Spacks,getURL)
-	openFile(URLs)
 	options(warn = warn)
 	invisible(list(Apacks=Apacks,Spacks=Spacks,URLs=URLs))
 }
@@ -1036,7 +1048,7 @@ runExamples <- function () {
 			winDesc <- strsplit(wtxt, "\n")[[1]]
 			createWin(winDesc, astext = TRUE)
 			return()
-		} else if (act=="swissTalk") {
+		} else if (act=="swisstalk") {
 			#TODO refactor this - should be more generic
 			closeWin(name=setdiff(allWin,"runE"))
 			presentTalk( "swisstalk.xml" )
@@ -1420,10 +1432,10 @@ evalCall=function(fn,argu,...,envir=parent.frame(),checkdef=FALSE,checkpar=FALSE
 	sqn=sqrt(nc); m=ceiling(sqn); n=ceiling(nc/m)
 	return(c(m,n)) }
 
-#viewCode-------------------------------2009-10-09
+#viewCode-------------------------------2009-11-16
 # View package R code on the fly.
 #-----------------------------------------------RH
-viewCode=function(pkg="PBSmodelling", funs, output=4){
+viewCode=function(pkg="PBSmodelling", funs, output=4, ...){
 	eval(parse(text=paste("if(!require(",pkg,",quietly=TRUE)) stop(\"",pkg," package is required\")",sep="")))
 	tdir <- tempdir(); tdir <- gsub("\\\\","/",tdir)                    # temporary directory for R
 	if (is.element(pkg,loadedNamespaces())){
@@ -1450,15 +1462,29 @@ viewCode=function(pkg="PBSmodelling", funs, output=4){
 	if (length(seeFuns)==0) {
 		showAlert("Your choices yield no functions")
 		return(invisible("Error: choices for 'funs' yield no functions")) }
+	if (output==2) {
+		unpackList(list(...))
+		# 'home' code from 'help.start'
+		home <- if (!is.element("remote",ls(envir=sys.frame(sys.nframe()))) || is.null(remote)) {
+			if (tools:::httpdPort == 0L) tools::startDynamicHelp()
+			if (tools:::httpdPort > 0L) {
+				if ("update" %in% ls(envir=sys.frame(sys.nframe())) && update)
+					make.packages.html(temp = TRUE)
+				paste("http://127.0.0.1:", tools:::httpdPort, sep = "") }
+			else stop("showHelp() requires the HTTP server to be running", call. = FALSE)
+		}
+		else remote
+		expr=paste("iloc=paste(\"",home,"/library/",pkg,"/html/00Index.html\"); ",sep="")
+		expr=paste(expr,"index=readLines(iloc);",sep="")
+		eval(parse(text=expr))
+	}
 	for (i in c(seeFuns)) {
 		if (output %in% c(1,2)) {
 			expr=paste("fun=\"",i,"\"; ",sep="")
 			if (output==2) {
-				expr=c(expr,paste("helploc=utils::help(\"",i,"\",package=\"",pkg,"\",htmlhelp=TRUE,chmhelp=FALSE); ",sep=""))
-				expr=c(expr,"if (length(helploc)!=0) {")
-				expr=c(expr,"helpdoc=readLines(helploc); ")
-				expr=c(expr,"helptit=helpdoc[grep(\"<title>\",helpdoc)[1]]; ")
-				expr=c(expr,"fun=paste(fun,substring(helptit,23,nchar(helptit)-8),sep=\"\\t\") }; ") }
+				expr=c(expr,paste("helptit=index[grep(\">",i,"<\",index)+1][1]; ",sep=""))
+				expr=c(expr,"if (!is.na(helptit)) {")
+				expr=c(expr,"fun=paste(fun,substring(helptit,5,nchar(helptit)-10),sep=\"\\t\") }; ") }
 		}
 		else if (output %in% c(3)) {
 			expr=paste("fun=deparse(args(",pkg,delim,i,")); fun=fun[!fun%in%\"NULL\"]; ",sep="")
