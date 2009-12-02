@@ -1,6 +1,6 @@
 Package: PBSmodelling
-Version: 2.51.168
-Date: 2009-10-23
+Version: 2.55.175
+Date: 2009-12-02
 Title: GUI Tools Made Easy: Interact with Models, Explore Data, Give
         Dynamic Presentations
 Author: Jon T. Schnute <Jon.Schnute@dfo-mpo.gc.ca>, Alex Couture-Beil
@@ -23,6 +23,6 @@ Description: PBS Modelling provides software to facilitate the design,
         user guide PBSmodelling-UG.pdf. To use this package
         effectively, please consult the guide.
 License: GPL (>= 2)
-Packaged: 2009-11-21 01:09:26 UTC; Fish
+Packaged: 2009-12-08 06:05:08 UTC; Fish
 Repository: CRAN
-Date/Publication: 2009-11-25 08:29:24
+Date/Publication: 2009-12-09 08:52:38

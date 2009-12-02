@@ -7,6 +7,17 @@ setClass( "break", representation( "NULL" ) ) #this prints a message - wtf R?!!!
 setClass( "section", representation( name = "character", items = "list", button = "logical", col = "integer", section_id = "integer" ) ) #items should be a list of the above 4 s4 classes
 setClass( "talk", representation( name = "character", sections = "list", files = "list" ) )
 
+
+setValidity ("code", function( object )
+{
+	valid_breaks <- c( "show", "print", "all", "none" )
+	if( any( object@"break" == valid_breaks ) == FALSE )
+		return( paste( "code's break arugment must be one of: ", paste( valid_breaks, collapse=" " ), sep="" ) )
+	return( TRUE )
+}
+)
+
+
 #returns a talk s4 class - given a filename to an xml talk
 .parseTalkFile <- function( talk_fname )
 {
@@ -25,9 +36,13 @@ setClass( "talk", representation( name = "character", sections = "list", files =
 			else if( xmlName( i ) == "code" ) item <- .processCode( i )
 			#else if( xmlName( i ) == "break" ) item <- processBreak( i )
 			else if( xmlName( i ) == "comment" ) { next } #do nothing
-			else stop( paste( "not implmented:", xmlName(i) ) )
+			else stop( paste( "Error unhandled xml tag found:", xmlName(i) ) )
 			
 			x@items[[ length( x@items ) + 1 ]] <- item
+		}
+
+		if( length( x@items ) == 0 ) {
+			stop( paste( "Error parsing ", talk_fname, ": section \"", x@name, "\" does not contain any children (text,file,code) items", sep="" ) )
 		}
 	
 		#scan through items, and place breaks accordingly (it would be easier to just have a <break/>)
@@ -96,7 +111,7 @@ setClass( "talk", representation( name = "character", sections = "list", files =
 				show = as.logical( xmlGetAttr( node, "show", TRUE ) ), 
 				print = as.logical( xmlGetAttr( node, "print", TRUE ) ), 
 				code = xmlValue( node ), 
-				"break" = xmlGetAttr( node, "break", "print" )
+				"break" = tolower( xmlGetAttr( node, "break", "print" ) )
 				) )
 	}
 
@@ -282,23 +297,27 @@ setClass( "talk", representation( name = "character", sections = "list", files =
 	for( s in talk@sections ) {
 		#save section under menu
 		i <- length( sections ) + 1
-		sections[ i ] <- paste( "menuitem label=", s@name, " function=.setsection action=", talk@name, ":", sect_id, sep="" )
+		sections[ i ] <- paste( "menuitem label=\"", s@name, "\" function=.setsection action=\"", talk@name, ":", sect_id, "\"", sep="" )
 
 		#look for files
 		for( item in s@items ) {
 			if( inherits( item, "file" ) ) {
 				i <- length( files ) + 1
-				files[ i ] <- paste( "menuitem label=", item@name, " function=.presentTalkOpenFile action=", item@filename, sep="" )
+				files[ i ] <- paste( "menuitem label=\"", item@name, "\" function=.presentTalkOpenFile action=\"", item@filename, "\"", sep="" )
 			}
 		}
 		sect_id <- sect_id + 1
 	}
 
-	w <- paste( "menu nitems=", length( sections ), " label=Sections", sep="" )
-	w <- append( w, sections )
+	if( length( sections ) > 0 ) {
+		w <- paste( "menu nitems=", length( sections ), " label=Sections", sep="" )
+		w <- append( w, sections )
+	}
 
-	w <- append( w, paste( "menu nitems=", length( files ), " label=Files", sep="" ) )
-	w <- append( w, files )
+	if( length( files ) > 0 ) {
+		w <- append( w, paste( "menu nitems=", length( files ), " label=Files", sep="" ) )
+		w <- append( w, files )
+	}
 
 	return( w )
 }
@@ -488,7 +507,7 @@ presentTalk <- function( talk )
 	.PBSmod[[ ".presentTalk" ]][[ name ]] <<- list( index = 0, talk = talk )
 
 	#create a GUI for it
-	createWin( c(
+	win_desc <- c(
 	paste( "window name=presentwin title=\"", .addslashes( name ), "\"", sep="" ),
 	.getMenus( talk ),
 	"grid 1 2 pady=\"0 5\"",
@@ -514,7 +533,8 @@ presentTalk <- function( talk )
 	
 	.getButtons( talk ),
 	""
-	), astext = TRUE )
+	)
+	createWin( win_desc, astext = TRUE )
 	
 	#initialize section droplist
 	section_names <- .getSectionNames( talk )
