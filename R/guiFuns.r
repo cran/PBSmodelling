@@ -12,6 +12,34 @@
 ############################################################
 
 
+#This is use to convert old style (where grid has a grid$.widgets[[i]][[j]] data structure)
+#to the new format which is list( grid, child, child, ..., child )
+#this should *never* be used by new code -- hopefuly it will be removed one day
+.convertOldGridToNewGrid <- function( grid )
+{
+	widgets <- list( grid )
+	widgets[[ 1 ]]$.widgets <- NULL #remove old widgets
+
+	if( is.null( widgets[[1]][[ "nrow" ]] ) )
+		widgets[[1]][[ "nrow" ]] = length( grid$.widgets )
+	if( is.null( widgets[[1]][[ "ncol" ]] ) )
+		widgets[[1]][[ "ncol" ]] = length( grid$.widgets[[ 1 ]] )
+
+	for( row in grid$.widgets ) {
+		if( length( row ) != widgets[[1]][["ncol"]] ) stop( "missmatching ncol vs data in .widgets during old to new conversion" )
+		for( item in row ) {
+			if( item$type == "grid" ) {
+				tmp <- .convertOldGridToNewGrid( item )
+				widgets <- c( widgets, tmp )
+			} else {
+				widgets[[ length( widgets ) + 1 ]] <- item
+			}
+		}
+	}
+
+	return( widgets )
+}
+
 # ***********************************************************
 # .trimWhiteSpace:
 #  remove leading and trailing whitespace
@@ -228,13 +256,14 @@
 
 	values <- list()
 	keys <- names(data)
-	if (length(data)<1)
-		return(NULL)
+#	if (length(data)<1)
+#		return(NULL)
 
 	superobjects_to_process <- list() #superobjects (which scroll) which are stored elsewhere
 	tables_to_process <- list() #tktable matrix objects - stored in tclarray
 
 	#extract values from tcl into an R list whose index corresponds to the data list
+	if( length(data) > 0 )
 	for(i in 1:length(data)) {
 		skip <- FALSE
 		for( ignore_pattern in keys_to_skip ) {
@@ -273,6 +302,9 @@
 		}
 		else if( !is.null( data[[i]][[ "droplist_widget" ]] ) ) {
 			#nothing to extract for this one - only here for setting vars
+			next
+		} else if( !is.null( data[[i]][[ "tclwidget" ]] ) ) {
+			#this isn't extracted, but rather set from a bind function whenever a tab is raised (see createwidget.notebook - and a few lines down in this func)
 			next
 		} else {
 			stop(paste("unknown type:", data[[i]]))
@@ -388,8 +420,11 @@
 		}
 	}
 
+	#look for special widgets (which don't use a tclvar)
 	#assign vecnames to any vectors
+	#droplist widget - get position of selected item (and possibly the complete set of possible choices)
 	for(wid in .PBSmod[[winName]]$widgets) {
+		if( !is.list( wid ) ) next
 		if( is.null( wid[["type"]] ) ) next
 		if (wid$type=="vector") {
 			if (!is.null(retData[[ wid$names ]])) {
@@ -397,12 +432,7 @@
 					names(retData[[wid$names]]) <- wid$vecnames
 			}
 		}
-	}
-	
-	#droplist widget - get position of selected item (and possibly the complete set of possible choices)
-	for(wid in .PBSmod[[winName]]$widgets) {
-		if( is.null( wid[["type"]] ) ) next
-		if (wid$type=="droplist") {
+		else if (wid$type=="droplist") {
 			wid_name <- paste( wid$name, ".id", sep="" )
 			
 			#get widget ptr (not widget's variable ptr)
@@ -424,6 +454,9 @@
 			#overwrite label values with real values (except when the user input their own choice)
 			if( selected_i > 0 )
 				retData[[ wid$name ]] <- values[ selected_i ]
+		} else if( wid$type == "notebook" ) {
+			if( !is.null( wid[["name"]] ) )
+				retData[[ wid$name ]] <- .PBSmod[[winName]]$widgets[[ paste( wid$name, ".raised", sep="" ) ]]
 		}
 	}
 	
@@ -442,6 +475,7 @@
 	}
 
 	#convert factors to characters
+	if( length( retData ) > 0 )
 	for( i in 1:length( retData ) ) {
 		if( is.factor( retData[[ i ]] ) )
 			retData[[ i ]] <- as.character( retData[[ i ]] )
@@ -813,22 +847,42 @@ createWin <- function( fname, astext=FALSE, env=parent.frame() ) #globalenv() )
 		}
 
 		#create the widgets
-		if (length(guiDesc[[i]]$.widgets)>0) {
-			gridWidget <- .packWidgetsIntoGrid( guiDesc[[i]]$.widgets, guiDesc[[i]]$vertical )
-			#pack all widgets into a grid with ncol=1 nrow=<number of widgets>
+		widgetList <- guiDesc[[i]]$.widgets
+		grid_i <- 1 #used for placing widgets into the grid
+		while( length(widgetList) > 0 ) {
+			tmp <- .createWidget( tt, widgetList, guiDesc[[i]]$windowname )
+			sticky = ""
+			if( is.null( widgetList[[ 1 ]][[ "sticky" ]] ) == FALSE )
+				sticky = widgetList[[ 1 ]][[ "sticky" ]]
 
-			#create the newly created gridWidget - which will result in recursive
-			#calls to .createWidget which will create all the children of the grid
-			wid <- .createWidget( tt, gridWidget, guiDesc[[i]]$windowname )
-			tkgrid(wid)
+			if( is.null( widgetList[[ 1 ]][[ "padx" ]] ) )
+				padx = 0
+			else
+				padx = widgetList[[ 1 ]][[ "padx" ]]
+
+			if( is.null( widgetList[[ 1 ]][[ "pady" ]] ) )
+				pady = 0
+			else
+				pady = widgetList[[ 1 ]][[ "pady" ]]
 			
-			#finish setup to any history widgets which have default imports
-			if (exists("PBS.history")) {
-				j<-grep(paste("^", winName, "\\.", sep=""), names(PBS.history))
-				for(n in names(PBS.history)[j]) {
-					if (length(PBS.history[[n]]) > 1)
-						jumpHistory(n, 1)
-				}
+			vert <- guiDesc[[i]]$vertical
+			tkgrid( 
+					tmp[[ "widget" ]], 
+					sticky = sticky, 
+					row=ifelse(vert, grid_i, 0), 
+					column=ifelse(vert, 0, grid_i ),
+				 	pady = pady, 
+				 	padx = padx )
+			widgetList <- tmp[[ "widgetList" ]]
+			grid_i <- grid_i + 1
+		}
+
+		#finish setup to any history widgets which have default imports
+		if (exists("PBS.history")) {
+			j<-grep(paste("^", winName, "\\.", sep=""), names(PBS.history))
+			for(n in names(PBS.history)[j]) {
+				if (length(PBS.history[[n]]) > 1)
+					jumpHistory(n, 1)
 			}
 		}
 	}
@@ -849,13 +903,14 @@ createWin <- function( fname, astext=FALSE, env=parent.frame() ) #globalenv() )
 	             ncol = 1,
 	             byrow = vertical
 	)
+	return( c( list( gridWidget ), widgets ) )
 
-	#add all widgets to this grid, each in a new row [[j]] and 1st column [[1]]
-	for(j in 1:length(widgets)) {
-		gridWidget$.widgets[[j]] <- list()
-		gridWidget$.widgets[[j]][[1]] <- widgets[[j]]
-	}
-	return( gridWidget )
+#	#add all widgets to this grid, each in a new row [[j]] and 1st column [[1]]
+#	for(j in 1:length(widgets)) {
+#		gridWidget$.widgets[[j]] <- list()
+#		gridWidget$.widgets[[j]][[1]] <- widgets[[j]]
+#	}
+#	return( gridWidget )
 }
 
 
@@ -999,7 +1054,7 @@ parseWinFile <- function(fname, astext=FALSE)
 		fname <- "read as text"
 	}
 	else {
-		#read in file, and strip out any comments. (comments start with #)
+		#read in file
 		if (fname=="")
 			stop("No filename given")
 		srcfile <- orgfile <- scan(fname, what=character(), sep="\n", quiet=TRUE, blank.lines.skip=FALSE)
@@ -1118,19 +1173,26 @@ parseWinFile <- function(fname, astext=FALSE)
 
 				#save widget
 				parsedData[[i]]$.widgets[[j]] <- data[[1]]
+				data <- data[-1] #remove widget from to parse list
 
-				#associate child widgets if grid
-				if (data[[1]]$type=="grid") {
-
-					tmp <- .parsegrid(data[-1], data[[1]]$nrow, data[[1]]$ncol)
-					parsedData[[i]]$.widgets[[j]]$.widgets <- tmp$gridData
-
-					#.parsegrid returns all left over widgets
-					data <- tmp$unparsedData
-				}
-				else {
-					data <- data[-1] #remove widget from to parse list
-				}
+#				#associate child widgets if grid
+#				if (data[[1]]$type=="grid") {
+#					tmp <- .parsegrid(data[-1], data[[1]]$nrow, data[[1]]$ncol)
+#					parsedData[[i]]$.widgets[[j]]$.widgets <- tmp$gridData
+#
+#					#.parsegrid returns all left over widgets
+#					data <- tmp$unparsedData
+#				}
+#				else if (data[[1]]$type=="notebook") {
+#					tmp <- .parsegrid(data[-1], data[[1]]$nrow, data[[1]]$ncol)
+#					parsedData[[i]]$.widgets[[j]]$.widgets <- tmp$gridData
+#
+#					#.parsegrid returns all left over widgets
+#					data <- tmp$unparsedData
+#				}
+#				else {
+#					data <- data[-1] #remove widget from to parse list
+#				}
 			}
 		}
 
@@ -1733,7 +1795,7 @@ parseWinFile <- function(fname, astext=FALSE)
 #   grid    - widget list describing the grid
 #   winName - active window name
 # -----------------------------------------------------------
-.buildgrid <- function(tk, grid, winName)
+.buildgrid <- function(tk, grid, winName, childWidgets)
 {
 	toptitle <- grid$toptitle
 	sidetitle <- grid$sidetitle
@@ -1745,10 +1807,12 @@ parseWinFile <- function(fname, astext=FALSE)
 		sidetitle <- ""
 
 	if (is.null(grid[["ncol"]])) {
+		stop( "ncol not given to grid" )
 		grid$ncol=length(grid$.widgets[[1]])
 	}
 
 	if (is.null(grid[["nrow"]])) {
+		stop( "nrow not given to grid" )
 		grid$nrow=length(grid$.widgets)
 	}
 
@@ -1765,8 +1829,14 @@ parseWinFile <- function(fname, astext=FALSE)
 	}
 
 	#set font options
-	topfont <- ifelse( is.null(grid[["topfont"]]), "", grid$topfont )
-	sidefont <- ifelse( is.null(grid[["sidefont"]]), "", grid$sidefont )
+	if( is.null(grid[["topfont"]]) )
+		topfont = ""
+	else
+		topfont = grid$topfont
+	if( is.null(grid[["sidefont"]]) )
+		sidefont = ""
+	else
+		sidefont = grid$sidefont
 	
 	#set fg
 	if( is.null(grid[["topfg"]]) ) grid$topfg <- grid$fg
@@ -1807,43 +1877,48 @@ parseWinFile <- function(fname, astext=FALSE)
 
 	#loop over all children widget of the grid.
 	#these are stored as grid$.widgets[[row_id]][[col_id]]
-	for(i in 1:length(grid$.widgets)) {
-		for(j in 1:length(grid$.widgets[[i]])) {
-			#create Widget (here's the recursive widget creation call)
-			widget <- .createWidget(tk, grid$.widgets[[i]][[j]], winName)
+#	for(i in 1:grid$nrow) {
+#		for(j in 1:grid$ncol) {
+	for( i in 0:(grid$nrow * grid$ncol - 1) ) {
+		#create Widget (here's the recursive widget creation call)
+		if( length( childWidgets ) == 0 )
+			.stopWidget( "not enough children widgets to build grid", grid$.debug, winName )
+		widget_def <- childWidgets[[ 1 ]]
+		tmp <- .createWidget(tk, childWidgets, winName)
+		widget <- tmp[[ "widget" ]]
+		childWidgets <- tmp[[ "widgetList" ]]
 
-			#set row and column position
-			if (grid$byrow==TRUE) {
-				row=i
-				column=j
-			} else {
-				row=j
-				column=i
-			}
-
-			#y padding
-			if (is.null(grid$.widgets[[i]][[j]]$pady))
-				pady <- 0
-			else
-				pady <- grid$.widgets[[i]][[j]]$pady
-
-			#x padding
-			if (is.null(grid$.widgets[[i]][[j]]$padx))
-				padx <- 0
-			else
-				padx <- grid$.widgets[[i]][[j]]$padx
-
-			#build begining of argument list for tkgrid() function
-			argList <- list(widget, row=row, column=column, padx=padx, pady=pady)
-
-			#append sticky flag argument if set
-			if (is.character(grid$.widgets[[i]][[j]]$sticky)) {
-				argList$sticky <- grid$.widgets[[i]][[j]]$sticky
-			}
-			do.call("tkgrid", argList)
+		#set row and column position
+		if (grid$byrow==TRUE) {
+			row = floor( i / grid$ncol ) + 1
+			column = i %% grid$ncol + 1
+		} else {
+			column = floor( i / grid$nrow ) + 1
+			row = i %% grid$nrow + 1
 		}
+
+		#y padding
+		if (is.null(widget_def$pady))
+			pady <- 0
+		else
+			pady <- widget_def$pady
+
+		#x padding
+		if (is.null(widget_def$padx))
+			padx <- 0
+		else
+			padx <- widget_def$padx
+
+		#build begining of argument list for tkgrid() function
+		argList <- list(widget, row=row, column=column, padx=padx, pady=pady)
+
+		#append sticky flag argument if set
+		if (is.character(widget_def$sticky)) {
+			argList$sticky <- widget_def$sticky
+		}
+		do.call("tkgrid", argList)
 	}
-	return(tk)
+	return( list( widget = tk, widgetList = childWidgets ) )
 }
 
 
@@ -1897,8 +1972,9 @@ parseWinFile <- function(fname, astext=FALSE)
 #   widget  - widget list
 #   winName - active window name
 # -----------------------------------------------------------
-.createWidget <- function(tk, widget, winName)
+.createWidget <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	#save functions
 	if (!is.null(widget[["function"]])) {
 		if (widget[["function"]]!="") {
@@ -1929,20 +2005,23 @@ parseWinFile <- function(fname, astext=FALSE)
 	#all of these functions have the same parameters: (tk, widget, winName)
 	func <- paste(".createWidget.", widget$type, sep="")
 	if (exists(func,mode="function")) {
-		return(do.call(func, list(tk, widget, winName)))
+		ret <- do.call(func, list(tk, widgetList, winName))
+		if( is.list( ret ) == FALSE )
+			stop( paste( func, "didn't return a list( widget = <tkpointer>, widgetList = <uncreated remaining widgets> )" ) )
+		return( ret )
 	}
-	else {
-		stop(paste("Don't know how to create '", widget$type, "' widget\n", sep=""))
-		return()
-	}
-	return(tkWidget)
+
+	stop(paste("Don't know how to create '", widget$type, "' widget\n", sep=""))
+	return()
 }
 
-.createWidget.grid <- function(tk, widget, winName)
+.createWidget.grid <- function(tk, widgetList, winName)
 {
 	#these "defaults" only apply to the first layer grid
 	#because it is added as padding, and not parsed.
 	#all other defaults are set in paramOrder list
+
+	widget <- widgetList[[ 1 ]]
 
 	if (is.null(widget[["borderwidth"]]))
 		widget$borderwidth <- 5
@@ -1959,13 +2038,90 @@ parseWinFile <- function(fname, astext=FALSE)
 	tkWidget<-do.call("tkframe", argList)
 
 	#call buildgrid to attach all children widgets to grid
-	.buildgrid(tkWidget, widget, winName)
+	tmp <- .buildgrid(tkWidget, widget, winName, widgetList[ - 1 ])
 
-	return(tkWidget)
+	return( tmp )
 }
 
+.createWidget.notebook <- function(tk, widgetList, winName)
+{
+	widget <- widgetList[[ 1 ]]
+
+	#create the notebook
+	argList <- list( tk, "NoteBook" )
+
+	if (!is.null(widget[["fg"]]) && widget$fg!="")
+		argList$foreground=widget$fg
+	if (!is.null(widget[["bg"]]) && widget$bg!="")
+		argList$bg=widget$bg
+	if (!is.null(widget[["arcradius"]]) && widget$arcradius!="")
+		argList$arcradius=widget$arcradius
+	if (!is.null(widget[["tabbevelsize"]]) && widget$tabbevelsize!="")
+		argList$tabbevelsize=widget$tabbevelsize
+	if (!is.null(widget[["homogeneous"]]) && widget$homogeneous!="")
+		argList$homogeneous=widget$homogeneous
+	if (!is.null(widget[["tabpos"]]) && widget$tabpos!="")
+		argList$side=widget$tabpos
+	if (!is.null(widget[["font"]]) && any(widget$font!=""))
+		argList$font <- .createTkFont(widget$font)
+
+	notebook <- do.call( "tkwidget", argList )
+	if( !is.null( widget[["name"]] ) )
+	.map.set( winName, widget$name, tclwidget=notebook )
+
+
+	#create tabs
+	childWidgets <- widgetList[ -1 ]
+	tab_i <- 1
+	for( tab in widget$tabs ) {
+
+		.makeRaiseCmd <- function( tab )
+		{
+			tab <- tab #If tab isn't assigned here, the value isn't correctly copied - WTF - stupid R enviornments?
+			#save most recently raised tab
+			return( 
+			function() { 
+				if( !is.null( widget[["name"]] ) )
+					.PBSmod[[winName]]$widgets[[ paste( widget$name, ".raised", sep="" ) ]] <<- tab
+
+				#callback
+				.extractData(widget[["function"]], widget$action, winName)
+			} )
+		}
+
+		tab.button <- tclvalue(tkinsert(notebook, "end", tab_i, "-text", tab, "-raisecmd", .makeRaiseCmd( tab_i ) ))
+		tab.win <- .Tk.newwin(tab.button)
+		tab.frame <- tkframe(tab.win)
+
+		#embed the next widget from the list as the *only* object in the frame (users should use a grid for multi items)
+		embedded <- .createWidget( tab.frame, childWidgets, winName )
+		tkpack( embedded[[ "widget" ]], padx = childWidgets[[1]]$padx, pady = childWidgets[[1]]$pady )
+		tkpack( tab.frame )
+
+		childWidgets <- embedded[[ "widgetList" ]]
+		tab_i <- tab_i + 1
+	}
+
+	if( widget$selected > length( widget$tabs ) )
+		.stopWidget( "given selected index is greater than the number of tabs", widget$.debug, winName )
+
+
+	#raise selected tab
+	tcl( notebook, "raise", widget$selected )
+
+	#set height
+	if( any( c( widget$width, widget$height ) != 0 ) && any( c( widget$width, widget$height ) == 0 ) )
+    	.stopWidget( "both width and height must be non-zero (to manually set the size) or both zero to automatically set the size", widget$.debug, winName)
+	tcl( notebook, "configure", width = widget$width, height = widget$height )
+	
+	return( list( widget = notebook, widgetList = childWidgets ) )
+}
+
+
+#TODO FIXME
 .createWidget.include <- function(tk, widget, winName)
 {
+	stop( "NEEDS WORK" )
 	if( !is.null( widget[[ "file" ]] ) && !is.null( widget[[ "name" ]] ) )
     		.stopWidget( "both file and name can not be set at the same time", widget$.debug, winName)
 	if( is.null( widget[[ "file" ]] ) && is.null( widget[[ "name" ]] ) )
@@ -1989,8 +2145,9 @@ parseWinFile <- function(fname, astext=FALSE)
 	return( .createWidget( tk, grid, winName ) )
 }
 
-.createWidget.check <- function(tk, widget, winName)
+.createWidget.check <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	widget$mode = "logical"
 
 	if (widget$checked==TRUE)
@@ -2005,6 +2162,8 @@ parseWinFile <- function(fname, astext=FALSE)
 		argList$background=widget$bg
 	if (!is.null(widget[["font"]]) && any( widget$font!=""))
 		argList$font <- .createTkFont(widget$font)
+	if (!is.null(widget[["disablefg"]]) && widget$disablefg!="")
+		argList$disabledforeground = widget$disablefg
 
 	argList$variable <- .map.add(winName, widget$name, tclvar=tclVar(val))$tclvar
 	argList$command=function(...) { .extractData(widget[["function"]], widget$action, winName)}
@@ -2014,11 +2173,102 @@ parseWinFile <- function(fname, astext=FALSE)
 	if( widget$edit == FALSE )
 		tkconfigure( tkWidget, state="disabled" )
 
-	return(tkWidget)
+	return(list( widget = tkWidget, widgetList = widgetList[ -1 ] ) )
 }
 
-.createWidget.label <- function(tk, widget, winName)
+.createWidget.image <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
+	argList <- list(parent=tk)
+
+	#one must be given, the other must be null
+	if( is.null( widget[["file"]] ) == is.null( widget[["varname"]] ) )
+    	.stopWidget("a value must be specified for one of either `file' or `varname'", widget$.debug, winName)
+	
+	if( is.null( widget[["varname"]] ) == FALSE ) {
+		#get image from variable
+		if( !exists( widget$varname, envir=.PBSmod[[ winName ]]$env ) ) {
+			msg <- paste( "unable to load image from variable \"", widget[["varname"]], "\" - variable not found", sep="" )
+			#R is crashing here.... wtf? .stopWidget( msg, widget$.debug, winName ) #maybe its crashing when the window is closed by tkclose
+			stop( msg )
+		}
+		image <- get( widget$varname, env = .PBSmod[[ winName ]]$env )
+	} else {
+		image = widget$file
+	}
+
+	#check file exists
+	if( file.exists( image ) == FALSE ) {
+		msg <- paste( "unable to open image \"", image, "\" - file does not exist", sep="" )
+		stop( msg )
+	}
+
+	image.id = paste( "PBSmodelling::", image, sep="" )
+
+	x = try(tcl("image","create","photo", image.id, file=image ),silent=TRUE)
+	if( inherits( x, "try-error" ) ) {
+    	.stopWidget(paste("unable to open file", widget$file, " - only gif is supported"), widget$.debug, winName)
+	}
+	if( !is.null( widget[["subsample"]] ) && widget$subsample > 1 ) {
+		#subsample the image (not a true resize, but the closest we'll get without using any fancy img libs
+		image.sized = paste( image.id, "::subsample", sep="" )
+		sized_img <- tcl("image","create","photo", image.sized )
+		tcl( sized_img, "copy", x, subsample=widget$subsample )
+		argList$image = image.sized #use subsampled image
+	} else {
+		argList$image = image.id #use original image
+	}
+
+	tkWidget<-do.call("tklabel", argList)
+	return( list( widget = tkWidget, widgetList = widgetList[ -1 ] ) )
+}
+
+.createWidget.progressbar <- function(tk, widgetList, winName)
+{
+	#example using ttk instead of bwidget
+	#widget <- widgetList[[ 1 ]]
+	#variable <- .map.add(winName, widget$name, tclvar=tclVar(widget$value))$tclvar
+	#tkwidget <- tkwidget(tk, "ttk::progressbar", variable = variable )
+	#return( list( widget = tkwidget, widgetList = widgetList[ -1 ] ) )
+
+	widget <- widgetList[[ 1 ]]
+	#usualy I would use tkwidget(.....), but we need to pass `type' to the widget creation (unfortuantly type is used by tkwidget too)
+	win <- .Tk.subwin( tk )
+	argList <- list( "ProgressBar", win )
+
+	#used to change progress value
+	if( widget$style == "incremental" )
+		widget$value = widget$value / 2 #there's a but in the bwidgets/tk that doubles this value
+	argList$variable <- .map.add(winName, widget$name, tclvar=tclVar( widget$value ))$tclvar
+
+	if (!is.null(widget[["fg"]]) && widget$fg!="")
+		argList$foreground=widget$fg
+	if (!is.null(widget[["bg"]]) && widget$bg!="")
+		argList$troughcolor=widget$bg
+	if (!is.null(widget[["maximum"]]) && widget$maximum > 0)
+		argList$maximum <- widget$maximum
+	if (!is.null(widget[["height"]]) && widget$height > 0)
+		argList$height <- widget$height 
+	if (!is.null(widget[["width"]]) && widget$width > 0)
+		argList$width <- widget$width 
+	if (!is.null(widget[["borderwidth"]]))
+		argList$borderwidth <- widget$borderwidth 
+	if (!is.null(widget[["relief"]]) && widget$relief != "")
+		argList$relief <- widget$relief 
+	if (!is.null(widget[["vertical"]]) && widget$vertical == TRUE)
+		argList$orient <- "vertical"
+	if (!is.null(widget[["style"]]) && widget$style!="")
+		argList$type <- widget$style
+
+	tmp <- do.call( "tcl", argList )
+	.map.set( winName, widget$name, tclwidget=tmp )
+
+	return( list( widget = win, widgetList = widgetList[ -1 ] ) )
+}
+
+.createWidget.label <- function(tk, widgetList, winName)
+{
+	widget <- widgetList[[ 1 ]]
 	argList <- list(parent=tk)
 	if( !is.null(widget[["name"]]) && widget$name != "" ) {
 		argList$text<-tclvalue( .map.add(winName, widget$name, tclvar=tclVar(widget$text))$tclvar )
@@ -2031,6 +2281,8 @@ parseWinFile <- function(fname, astext=FALSE)
 		argList$background=widget$bg
 	if (!is.null(widget[["font"]]) && any(widget$font!=""))
 		argList$font <- .createTkFont(widget$font)
+	if (!is.null(widget[["anchor"]]) && widget$anchor!="")
+		argList$anchor <- tolower( widget$anchor )
 	if (!is.null(widget[["justify"]]) && widget$justify!="")
 		argList$justify <- widget$justify
 	if (!is.null(widget[["wraplength"]]) && widget$wraplength > 0)
@@ -2044,20 +2296,23 @@ parseWinFile <- function(fname, astext=FALSE)
 		.PBSmod[[ winName ]]$widgetPtrs[[ widget$name ]]$tclwidget <<- tkWidget
 	}
 
-	return(tkWidget)
+	return( list( widget = tkWidget, widgetList = widgetList[ -1 ] ) )
 }
 
-.createWidget.null <- function(tk, widget, winName)
+.createWidget.null <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	argList <- list( parent = tk, text="" )
 	if( !is.null(widget[["bg"]]) && widget$bg != "" )
 		argList$bg <- widget$bg
 	tkWidget <- do.call( "tklabel", argList )
-	return(tkWidget)
+
+	return(list( widget = tkWidget, widgetList = widgetList[ -1 ] ) )
 }
 
-.createWidget.matrix <- function(tk, widget, winName)
+.createWidget.matrix <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	nrow <- widget$nrow
 	ncol <- widget$ncol
 
@@ -2257,12 +2512,14 @@ parseWinFile <- function(fname, astext=FALSE)
 		wid$sidetitle.offset <- NULL
 	}
 
-	tkWidget <- .createWidget.grid(tk, wid, winName)
-	return(tkWidget)
+	widgets <- .convertOldGridToNewGrid( wid )
+	tmp <- .createWidget.grid(tk, widgets, winName)
+	return(list( widget = tmp$widget, widgetList = widgetList[ -1 ] ) )
 }
 
-.createWidget.vector <- function(tk, widget, winName)
+.createWidget.vector <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	names <- widget$names
 	labels <- widget$labels
 
@@ -2274,9 +2531,6 @@ parseWinFile <- function(fname, astext=FALSE)
 	if( is.null( widget[["vecnames"]] ) ) widget$vecnames <- ""
 
 	n <- widget$length
-	wid <- list(type="grid", bg=widget$bg, fg=widget$fg, borderwidth=widget$borderwidth ) #new grid widget to create
-	wid$byrow = widget$vertical #pass byrow param to grid
-
 	nNames <- length(names)
 	nLabels <- length(labels)
 	nVecnames <- length(widget$vecnames)
@@ -2289,17 +2543,6 @@ parseWinFile <- function(fname, astext=FALSE)
 			n<-nNames
 		else
 			.stopWidget('missing "length" argument', widget$.debug, winName)
-	}
-
-	if (widget$vertical) {
-		wid$nrow <- n
-		wid$ncol <- 2
-		wid$toptitle.offset=1
-		wid$toptitle=""
-	}
-	else {
-		wid$nrow <- 2
-		wid$ncol <- n
 	}
 
 	#count names
@@ -2320,22 +2563,35 @@ parseWinFile <- function(fname, astext=FALSE)
 			labels <- 1:n
 	}
 
+	#build grid
+	wid <- list(type="grid", bg=widget$bg, fg=widget$fg, borderwidth=widget$borderwidth ) #new grid widget to create
+	if (widget$vertical) {
+		wid$nrow <- n
+		wid$ncol <- ifelse( is.null( labels ), 1, 2 )
+		wid$toptitle.offset=1
+		wid$toptitle=""
+		wid$byrow = TRUE
+	}
+	else {
+		wid$nrow <- ifelse( is.null( labels ), 1, 2 )
+		wid$ncol <- n
+		wid$byrow = FALSE
+	}
+
 	nValues <- length(values)
 	if (nValues!=1 && nValues!=n)
 		.stopWidget(paste('values argument should contain 1 or',n,'values seperated by whitespace.'), widget$.debug, winName)
 
-	#create children to be placed in the grid
-	wid$.widgets <- list()
+	#create list for grid, and children
+	widgets <- list( wid )
 	for(i in 1:n) {
-		wid$.widgets[[i]] <- list()
-		
 		#create label
 		if( is.null( labels ) ) {
 			entryIndex <- 1
 		} else {
 			entryIndex <- 2
 			text <- labels[i]
-			wid$.widgets[[i]][[1]] <- list(type='label', text=text, font=widget$font, fg=widget$fg, bg=widget$bg)
+			widgets[[ length(widgets)+1]] <- list(type='label', text=text, font=widget$font, fg=widget$fg, bg=widget$bg)
 		}
 
 		#create entry
@@ -2362,7 +2618,7 @@ parseWinFile <- function(fname, astext=FALSE)
 				checked=TRUE
 			else
 				checked=FALSE
-			wid$.widgets[[i]][[entryIndex]] <- list(
+			widgets[[ length(widgets)+1 ]] <- list(
 				  type='check',
 				  mode="logical",
 				  name=name,
@@ -2380,7 +2636,7 @@ parseWinFile <- function(fname, astext=FALSE)
 		}
 		else {
 			#display a entry box
-			wid$.widgets[[i]][[entryIndex]] <- list(
+			widgets[[ length(widgets)+1 ]] <- list(
 				  type='entry', 
 				  name=name,
 				  "function"=widget[["function"]],
@@ -2401,13 +2657,20 @@ parseWinFile <- function(fname, astext=FALSE)
 		}
 
 	}
+	tmp <- .createWidget.grid(tk, widgets, winName)
+	return(list( widget = tmp$widget, widgetList = widgetList[ -1 ] ) )
 
-	tkWidget <- .createWidget.grid(tk, wid, winName)
-	return(tkWidget)
+#	wid$ncol <- NULL
+#	wid$nrow <- NULL
+#	widgets <- .convertOldGridToNewGrid( wid )
+#	tmp <- .createWidget.grid(tk, widgets, winName)
+#	return(list( widget = tmp$widget, widgetList = widgetList[ -1 ] ) )
 }
 
-.createWidget.data <- function(tk, widget, winName)
+.createWidget.data <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
+
 	nrow <- widget$nrow
 	ncol <- widget$ncol
 
@@ -2627,8 +2890,9 @@ parseWinFile <- function(fname, astext=FALSE)
 		wid$sidetitle.offset <- NULL
 	}
 
-	tkWidget <- .createWidget.grid(tk, wid, winName)
-	return(tkWidget)
+	widgets <- .convertOldGridToNewGrid( wid )
+	tmp <- .createWidget.grid(tk, widgets, winName)
+	return(list( widget = tmp$widget, widgetList = widgetList[ -1 ] ) )
 }
 
 #must be outside of .createwidget.superobject since getWinVal must be able to call this
@@ -2673,12 +2937,13 @@ parseWinFile <- function(fname, astext=FALSE)
 	}
 }
 
-.createWidget.object.scrolling <- function(tk, widget, winName)
+.createWidget.object.scrolling <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	#check for existance
 	tmp <- .check.object.exists( tk, widget, winName )
 	if( !is.null( tmp ) )
-		return( tmp )
+		return( list( widget = tmp$widget, widgetList = widgetList[ -1 ] ) )
 
 	widget_name <- widget$name	
 	userObject <- .getValueForWidgetSetup( widget$name, widget, winName )
@@ -2800,7 +3065,7 @@ parseWinFile <- function(fname, astext=FALSE)
 	}
 	widget$.pageup_func <- function(...) { scroll_callback( "scroll", as.character( -rowshow ), "units" ) }
 	widget$.pagedown_func <- function(...) { scroll_callback( "scroll", as.character( rowshow ), "units" ) }
-	obj_tk <- .createWidget.object( frame, widget, winName, userObject = sub_object_value )
+	obj_tk <- .createWidget.object( frame, list(widget), winName, userObject = sub_object_value )$widget
 	
 	#TODO make scroll grow to size of object
 	#scroll <- tkscrollbar( frame, repeatinterval=5, command=function(...)scroll_callback(...))
@@ -2846,7 +3111,7 @@ parseWinFile <- function(fname, astext=FALSE)
 		tkgrid( obj_tk )
 	}
 	
-	return( frame )
+	return(list( widget = frame, widgetList = widgetList[ -1 ] ) )
 }
 
 #call to test for existance of dynamically loaded object for "object", "table"
@@ -2862,7 +3127,7 @@ parseWinFile <- function(fname, astext=FALSE)
 		            fg="red",
 		            font="bold"
 		            )
-		return(.createWidget(tk, wid, winName))
+		return(.createWidget(tk, list(wid), winName))
 	}
 
 	if (!exists(widget$name, env = .PBSmod[[ winName ]]$env )) {
@@ -2919,11 +3184,13 @@ parseWinFile <- function(fname, astext=FALSE)
 	return( value )
 }
 
-.createWidget.table <- function(tk, widget, winName)
+.createWidget.table <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
+
 	tmp <- .check.object.exists( tk, widget, winName )
 	if( !is.null( tmp ) )
-		return( tmp )
+		return( list( widget = tmp$widget, widgetList = widgetList[ -1 ] ) )
 	
 	userObject <- .getValueForWidgetSetup( widget$name, widget, winName )
 	if( !is.matrix( userObject ) && !is.data.frame( userObject ) )
@@ -3027,19 +3294,20 @@ parseWinFile <- function(fname, astext=FALSE)
 		tkconfigure( table1, state="disabled" )
 	
 	
-	return( frame )
+	return(list( widget = frame, widgetList = widgetList[ -1 ] ) )
 }
 
-.createWidget.object <- function(tk, widget, winName, userObject = NULL )
+.createWidget.object <- function(tk, widgetList, winName, userObject = NULL )
 {
+	widget <- widgetList[[ 1 ]]
 	if( is.null( userObject ) ) {
 		tmp <- .check.object.exists( tk, widget, winName )
 		if( !is.null( tmp ) )
 			return( tmp )
 	}
 	
-	if( widget$rowshow > 0 )
-		return( .createWidget.object.scrolling( tk, widget, winName ) )
+	if( !is.null( widget[["rowshow"]] ) && widget$rowshow > 0 )
+		return( .createWidget.object.scrolling( tk, widgetList, winName ) )
 
 	if( is.null( userObject ) )
 		userObject <- get( widget$name, env = .PBSmod[[ winName ]]$env )
@@ -3078,7 +3346,8 @@ parseWinFile <- function(fname, astext=FALSE)
 		if( widget$rowlabels == FALSE ) wid$rowlabels <- NULL
 		if( widget$collabels == FALSE ) wid$collabels <- NULL
 		.PBSmod[[winName]]$widgets[[widget$name]] <<- wid
-		return(.createWidget(tk, wid, winName))
+		tmp <- .createWidget(tk, list(wid), winName)
+		return( list( widget = tmp$widget, widgetList = widgetList[ -1 ] ) )
 	}
 
 	#data.frame
@@ -3128,7 +3397,8 @@ parseWinFile <- function(fname, astext=FALSE)
 		if( widget$rowlabels == FALSE ) wid$rowlabels <- NULL
 		if( widget$collabels == FALSE ) wid$collabels <- NULL
 		.PBSmod[[winName]]$widgets[[widget$name]] <<- wid
-		return(.createWidget(tk, wid, winName))
+		tmp <- .createWidget(tk, list(wid), winName)
+		return( list( widget = tmp$widget, widgetList = widgetList[ -1 ] ) )
 	}
 
 	#vector
@@ -3161,29 +3431,28 @@ parseWinFile <- function(fname, astext=FALSE)
 		            );
 		if( widget$collabels == FALSE ) wid$labels <- NULL
 		.PBSmod[[winName]]$widgets[[widget$name]] <<- wid
-		return(.createWidget(tk, wid, winName))
+		tmp <- .createWidget(tk, list(wid), winName)
+		return( list( widget = tmp$widget, widgetList = widgetList[ -1 ] ) )
 	}
 
-	return(.dispError(paste("Error: variable \"", widget$name, "\" is an incompatible mode.", sep="")))
+	stop(paste("Error: variable \"", widget$name, "\" is an incompatible mode.", sep=""))
 }
 
 
-.createWidget.entry <- function(tk, widget, winName)
+.createWidget.entry <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	if (!is.null(widget[["label"]]) && widget$label!="") {
 		#if label is set, then create a 2x1 grid
 		label <- widget$label
 		widget$label <- "" #blank it out, inf loop if not.
-		newgridwidget <-
-		list(type="grid", nrow=1, ncol=2, font="", byrow=TRUE, borderwidth=1, relief="flat", padx=0, pady=0, fg=widget$fg, bg=widget$bg, .widgets=
-			list(
-				list(
-					list(type="label", text=label, padx=0, pady=0, font=widget$font, fg=widget$fg, bg=widget$bg),
-					widget
-				)
-			)
+		widgets <- list( 
+			list(type="grid", nrow=1, ncol=2, font="", byrow=TRUE, borderwidth=1, relief="flat", padx=0, pady=0, fg=widget$fg, bg=widget$bg ),
+			list(type="label", text=label, padx=0, pady=0, font=widget$font, fg=widget$fg, bg=widget$bg),
+			widget
 		)
-		return(.createWidget.grid(tk, newgridwidget, winName))
+		tmp <- .createWidget.grid(tk, widgets, winName)
+		return(list( widget = tmp$widget, widgetList = widgetList[ -1 ] ) )
 	}
 	#create real tk widget below
 	argList <- list(parent=tk)
@@ -3236,26 +3505,24 @@ parseWinFile <- function(fname, astext=FALSE)
 		tkbind(tkWidget,"<Down>",function(...) { do.call( widget[[".down_func"]], list( selected_widget_name = widget$name, ... ) ) } )
 		tkbind(tkWidget,"<Next>",function(...) { do.call( widget[[".pagedown_func"]], list( selected_widget_name = widget$name, ... ) ) } )
 	}
-	return(tkWidget)
+	return(list( widget = tkWidget, widgetList = widgetList[ -1 ] ) )
 }
 
-.createWidget.spinbox <- function(tk, widget, winName)
+.createWidget.spinbox <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	if (!is.null(widget[["label"]]))
 	if (widget$label!="") {
 		#if label is set, then create a 2x1 grid
 		label <- widget$label
 		widget$label <- "" #blank it out, inf loop if not.
-		newgridwidget <-
-		list(type="grid", nrow=1, ncol=2, font="", byrow=TRUE, borderwidth=1, relief="flat", padx=0, pady=0, fg=widget$fg, bg=widget$bg, .widgets=
-			list(
-				list(
-					list(type="label", text=label, padx=0, pady=0, font=widget$font, fg=widget$fg, bg=widget$bg),
-					widget
-				)
+		widgets <- list(
+			list(type="grid", nrow=1, ncol=2, font="", byrow=TRUE, borderwidth=1, relief="flat", padx=0, pady=0, fg=widget$fg, bg=widget$bg ),
+			list(type="label", text=label, padx=0, pady=0, font=widget$font, fg=widget$fg, bg=widget$bg),
+			widget
 			)
-		)
-		return(.createWidget.grid(tk, newgridwidget, winName))
+		tmp <- .createWidget.grid(tk, widgets, winName)
+		return(list( widget = tmp$widget, widgetList = widgetList[ -1 ] ) )
 	}
 	
 	#create real tk widget spinbox below
@@ -3304,7 +3571,7 @@ parseWinFile <- function(fname, astext=FALSE)
 	}
 	else
 		tkbind(tkWidget,"<KeyRelease>",function(...) { .extractData(widget[["function"]], widget$action, winName)});
-	return(tkWidget)
+	return(list( widget = tkWidget, widgetList = widgetList[ -1 ] ) )
 }
 
 # Returns the value(s) to use for initializing a widget
@@ -3328,8 +3595,9 @@ parseWinFile <- function(fname, astext=FALSE)
 	return( var )
 }
 
-.createWidget.droplist <- function(tk, widget, winName)
+.createWidget.droplist <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	#assert( choices != NULL xor values != NULL )
 	if( is.null( widget[[ "choices" ]] ) && is.null( widget[[ "values" ]] ) )
 		.stopWidget( paste( "either choices or values must be specified", sep="" ), widget$.debug, winName )
@@ -3402,11 +3670,12 @@ parseWinFile <- function(fname, astext=FALSE)
 	tkconfigure( drop_widget, command=function(...) { .extractData(widget[["function"]], widget$action, winName) } )
 
 
-	return(drop_widget)
+	return(list( widget = drop_widget, widgetList = widgetList[ -1 ] ) )
 }
 
-.createWidget.radio <- function(tk, widget, winName)
+.createWidget.radio <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	argList <- list(parent=tk, text=widget$text, value=widget$value)
 	if (!is.null(widget[["fg"]]) && widget$fg!="")
 		argList$foreground=widget$fg
@@ -3431,11 +3700,12 @@ parseWinFile <- function(fname, astext=FALSE)
 	if( widget$edit == FALSE )
 		tkconfigure( tkWidget, state="disabled" )
 
-	return(tkWidget)
+	return(list( widget = tkWidget, widgetList = widgetList[ -1 ] ) )
 }
 
-.createWidget.slide <- function(tk, widget, winName)
+.createWidget.slide <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	if (is.null(widget[["value"]]))
 		widget$value <- widget$to
 	argList <- list(parent=tk, from=widget$from, to=widget$to, orient=widget$orientation, showvalue=widget$showvalue)
@@ -3448,11 +3718,13 @@ parseWinFile <- function(fname, astext=FALSE)
 	argList$variable<-.map.add(winName, widget$name, tclvar=tclVar(widget$value))$tclvar
 	argList$command<-function(...) { .extractData(widget[["function"]], widget$action, winName)}
 	tkWidget<-do.call("tkscale", argList)
-	return(tkWidget)
+	.map.set( winName, widget$name, tclwidget=tkWidget )
+	return(list( widget = tkWidget, widgetList = widgetList[ -1 ] ) )
 }
 
-.createWidget.slideplus <- function(tk, widget, winName)
+.createWidget.slideplus <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	#initial widget$value defaults to <from> argument
 	if (is.na(widget$value))
 		widget$value <- widget$from
@@ -3602,11 +3874,12 @@ parseWinFile <- function(fname, astext=FALSE)
 	tkgrid(maxWid, row=2, column=4)
 	tkgrid(getColourfulWidget( tkWidget, "tklabel", widget, text="<-Max"), row=2, column=5)
 
-	return(tkWidget)
+	return(list( widget = tkWidget, widgetList = widgetList[ -1 ] ) )
 }
 
-.createWidget.button <- function(tk, widget, winName)
+.createWidget.button <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	param <- list(parent=tk, text=widget$text)
 	if ( any( widget$font != "" ) )
 		param$font=.createTkFont(widget$font)
@@ -3618,14 +3891,18 @@ parseWinFile <- function(fname, astext=FALSE)
 		param$width=widget$width
 	if (widget[["function"]]!="")
 		param$command=function(...) { .extractData(widget[["function"]], widget$action, winName) }
+	if (!is.null(widget[["disablefg"]]) && widget$disablefg!="")
+		param$disabledforeground = widget$disablefg
+
 	button <- do.call(tkbutton, param)
 	if( !is.null( widget[[ "name" ]] ) ) 
 		.map.add(winName, widget$name, tclwidget=button)
-	return( button )
+	return(list( widget = button, widgetList = widgetList[ -1 ] ) )
 }
 
-.createWidget.text <- function(tk, widget, winName)
+.createWidget.text <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	tk <- tkframe(tk)
 
 	param <- list(
@@ -3655,13 +3932,14 @@ parseWinFile <- function(fname, astext=FALSE)
 	} else {
 		tkgrid(txtBox) }
 
-	return(tk)
+	return(list( widget = tk, widgetList = widgetList[ -1 ] ) )
 }
 
 #history widget creates a bunch of standard PBS widgets, which call the appropriate functions
 #as if a power-user created history
-.createWidget.history <- function(tk, widget, winName)
+.createWidget.history <- function(tk, widgetList, winName)
 {
+	widget <- widgetList[[ 1 ]]
 	#FIXME TODO figure out a better naming convension for what vars should be returned, or hidden by getWinVal
 	#currently, anything with "PBS." is NOT returned. maybe we want PBS.hidden.XXXXX
 	indexname=paste("PBS.history.", widget$name, ".index", sep="") #widget name that stores/displays the index number
@@ -3709,7 +3987,7 @@ parseWinFile <- function(fname, astext=FALSE)
 				)
 			),
 			list(
-				list(type="grid", nrow=2, ncol=2, font="", fg=widget$fg, bg=widget$bg, byrow=TRUE, borderwidth=1, relief="raised", padx=0, pady=0, sticky="we", .widgets=
+				list(type="grid", nrow=1, ncol=3, font="", fg=widget$fg, bg=widget$bg, byrow=TRUE, borderwidth=1, relief="raised", padx=0, pady=0, sticky="we", .widgets=
 					list(
 						list(
 							list(type="radio", name=modename, value="b", text="before", font="7", fg=widget$fg, bg=widget$bg, "function"="", action=widget$name, mode="character", sticky="w", padx=0, pady=0, edit=T),
@@ -3761,11 +4039,12 @@ parseWinFile <- function(fname, astext=FALSE)
 	}
 		
 		
-	tmp <- .createWidget.grid(tk, historyGrid, winName)
+	widgets <- .convertOldGridToNewGrid( historyGrid )
+	tmp <- .createWidget.grid(tk, widgets, winName)
 	if (widget$import!="")
 		importHistory(widget$name, widget$import, FALSE)
 	.updateHistoryButtons( widget$name )
-	return(tmp)
+	return(list( widget = tmp$widget, widgetList = widgetList[ -1 ] ) )
 }
 
 .updateHistoryButtons <- function( hisname )
@@ -4508,6 +4787,9 @@ setWinVal <- function(vars, winName="")
 			if (wid$edit==FALSE)
 				tkconfigure(x$tclwidget, state="disabled")
 			return(value)
+		} else if( wid$type == "notebook" ) {
+			tcl( x$tclwidget, "raise", value )
+			return(value)
 		}
 		stop(paste("unhandled widget type", x$tclwidget))
 	}
@@ -4647,14 +4929,20 @@ clearWinVal <- function()
 # colours can be set (fg, bg) for and droplist, check widgets, (entryfg, entrybg) for entry widget
 # these are passed as ...
 
-setWidgetColor <- function( name, winName = .PBSmod$.activeWin, ... )
+setWidgetColor <- function( name, radioValue, winName = .PBSmod$.activeWin, ... )
 {
-	configure.entry <- function( ptr, entryfg, entrybg )
+	configure.entry <- function( ptr, entryfg, entrybg, noeditfg, noeditbg )
 	{
 		if( !missing( entryfg ) )
 			tkconfigure( ptr, fg = entryfg )
 		if( !missing( entrybg ) )
 			tkconfigure( ptr, bg = entrybg )
+		if( !missing( noeditfg ) )
+			tkconfigure( ptr, disabledforeground=noeditfg )
+		if( !missing( noeditbg ) ) {
+			tkconfigure( ptr, disabledbackground=noeditbg )
+			tkconfigure( ptr, readonlybackground=noeditbg )
+		}
 	}
 
 	configure.droplist <- function( ptr, fg, bg )
@@ -4665,7 +4953,21 @@ setWidgetColor <- function( name, winName = .PBSmod$.activeWin, ... )
 			tkconfigure( ptr, selectbackground = bg, insertbackground = bg, highlightbackground = bg, entrybg = bg )
 	}
 
-	configure.check <- function( ptr, fg, bg )
+	configure.check <- function( ptr, fg, bg, disablefg, entryfg, entrybg )
+	{
+		if( !missing( entryfg ) )
+			fg <- entryfg
+		if( !missing( entrybg ) )
+			bg <- entrybg
+		if( !missing( fg ) )
+			tkconfigure( ptr, fg = fg )
+		if( !missing( bg ) )
+			tkconfigure( ptr, bg = bg )
+		if( !missing( disablefg ) )
+			tkconfigure( ptr, disabledforeground = disablefg )
+	}
+
+	configure.slide <- function( ptr, fg, bg )
 	{
 		if( !missing( fg ) )
 			tkconfigure( ptr, fg = fg )
@@ -4681,7 +4983,25 @@ setWidgetColor <- function( name, winName = .PBSmod$.activeWin, ... )
 			tkconfigure( ptr, bg = bg )
 	}
 	
-	configure.button <- function( ptr, fg, bg )
+	configure.button <- function( ptr, fg, bg, disablefg )
+	{
+		if( !missing( fg ) )
+			tkconfigure( ptr, fg = fg )
+		if( !missing( bg ) )
+			tkconfigure( ptr, bg = bg )
+		if( !missing( disablefg ) )
+			tkconfigure( ptr, disabledforeground = disablefg )
+	}
+
+	configure.progressbar <- function( ptr, fg, bg )
+	{
+		if( !missing( fg ) )
+			tcl( ptr, "configure", fg = fg )
+		if( !missing( bg ) )
+			tcl( ptr, "configure", troughcolor = bg )
+	}
+
+	configure.text <- function( ptr, fg, bg )
 	{
 		if( !missing( fg ) )
 			tkconfigure( ptr, fg = fg )
@@ -4689,30 +5009,143 @@ setWidgetColor <- function( name, winName = .PBSmod$.activeWin, ... )
 			tkconfigure( ptr, bg = bg )
 	}
 
-	#TODO need support for groups of radios or a single radio value
-	#	configure.radio <- function( ptr, fg, bg )
-	#	{
-	#		if( !missing( fg ) )
-	#			tkconfigure( ptr, fg = fg )
-	#		if( !missing( bg ) )
-	#			tkconfigure( ptr, bg = bg )
-	#	}
+	configure.spinbox <- function( ptr, entryfg, entrybg )
+	{
+		if( !missing( entryfg ) )
+			tkconfigure( ptr, foreground = entryfg, selectforeground = entryfg, entryfg = entryfg )
+		if( !missing( entrybg ) )
+			tkconfigure( ptr, bg = entrybg, insertbackground = entrybg, selectbackground = entrybg, entrybg = entrybg )
+	}
 
+	configure.radio <- function( name, radioValue, winName, fg, bg )
+	{
+		widget_list <- .map.get( winName, name )$tclwidgetlist
+		if( missing( radioValue ) )
+			radioValue <- names( widget_list ) #use all values (change state for every matching var name)
+		else
+			radioValue <- as.character( radioValue )
+		for( key in radioValue ) {
+			ptr = widget_list[[ key ]]
+			if( !missing( fg ) )
+				tkconfigure( ptr, fg = fg )
+			if( !missing( bg ) )
+				tkconfigure( ptr, bg = bg )
+		}
+	}
 
 	#### function starts here ####
 	
 	#get window
-	widget <- .PBSmod[[ winName ]]
-	if( is.null( widget ) ) 
+	winwidget <- .PBSmod[[ winName ]]
+	if( is.null( winwidget ) ) 
 		stop( paste( "unable to find window:", winName ) )
 	
 	#get widget
-	widget <- widget$widgets[[ name ]]
+	widget <- winwidget$widgets[[ name ]]
 	if( is.null( widget ) )
 		stop( paste( "unable to find widget: ", name ) )
 
+	#HACK to change initial values (as set in window desc file)
+	myargs = list( ... )
+	if( !is.null( myargs[[ "noeditfg" ]] ) ) {
+		widget$noeditfg = myargs[[ "noeditfg" ]]
+		.PBSmod[[ winName ]]$widgets[[ name ]] <<- widget
+	}
+	if( !is.null( myargs[[ "fg" ]] ) ) {
+		widget$fg = myargs[[ "fg" ]]
+		.PBSmod[[ winName ]]$widgets[[ name ]] <<- widget
+	}
+	if( !is.null( myargs[[ "entryfg" ]] ) ) {
+		widget$entryfg = myargs[[ "entryfg" ]]
+		.PBSmod[[ winName ]]$widgets[[ name ]] <<- widget
+	}
+
 	#get tcl ptr to tk widget
 	widget_ptr <- .PBSmod[[ winName ]]$widgetPtrs[[ name ]]$tclwidget
+
+	#special case for radio widgets
+	if( widget$type == "radio" ) {
+		configure.radio( name = name, radioValue = radioValue, winName = winName, ... )
+		return(invisible())
+	}
+
+	#special case for matrix
+	if (widget$type=="matrix") {
+		if (length(widget$names)==1) {
+			for(i in 1:widget$nrow)
+				for(j in 1:widget$ncol) {
+					argList <- list(paste(name,"[",i,",",j,"]",sep=""), winName = winName, ... ) 
+					if( widget$mode == "logical" ) {
+						argList[[ "entrybg" ]] <- NULL
+						argList[[ "noeditbg" ]] <- NULL
+						if( is.null( argList[[ "entryfg" ]] ) == FALSE ) {
+							argList[[ "fg" ]] <- argList[[ "entryfg" ]]
+							argList[[ "entryfg" ]] <- NULL
+						}
+						if( is.null( argList[[ "noeditfg" ]] ) == FALSE ) {
+							argList[[ "disablefg" ]] <- argList[[ "noeditfg" ]]
+							argList[[ "noeditfg" ]] <- NULL
+						}
+					}
+					do.call( setWidgetColor, argList )
+				}
+			return(NULL)
+		}
+	}
+
+	#special case for data
+	if (widget$type=="data") {
+		if (length(widget$names)==1) {
+			for(i in 1:widget$nrow)
+				for(j in 1:widget$ncol) {
+					argList <- list(paste(name,"[",i,",",j,"]d",sep=""), winName = winName, ... ) 
+					if( widget$modes[ j ] == "logical" ) {
+						argList[[ "entrybg" ]] <- NULL
+						argList[[ "noeditbg" ]] <- NULL
+						if( is.null( argList[[ "entryfg" ]] ) == FALSE ) {
+							argList[[ "fg" ]] <- argList[[ "entryfg" ]]
+							argList[[ "entryfg" ]] <- NULL
+						}
+						if( is.null( argList[[ "noeditfg" ]] ) == FALSE ) {
+							argList[[ "disablefg" ]] <- argList[[ "noeditfg" ]]
+							argList[[ "noeditfg" ]] <- NULL
+						}
+					}
+					do.call( setWidgetColor, argList )
+				}
+			return(NULL)
+		}
+	}
+
+	#special case for vector
+	if (widget$type=="vector") {
+		if (length(widget$names)==1) {
+			for(i in 1:widget$length) {
+				argList <- list(paste(name,"[",i,"]",sep=""), winName = winName, ... ) 
+				if( widget$mode == "logical" ) {
+					argList[[ "entrybg" ]] <- NULL
+					argList[[ "noeditbg" ]] <- NULL
+					if( is.null( argList[[ "entryfg" ]] ) == FALSE ) {
+						argList[[ "fg" ]] <- argList[[ "entryfg" ]]
+						argList[[ "entryfg" ]] <- NULL
+					}
+					if( is.null( argList[[ "noeditfg" ]] ) == FALSE ) {
+						argList[[ "disablefg" ]] <- argList[[ "noeditfg" ]]
+						argList[[ "noeditfg" ]] <- NULL
+					}
+				}
+				do.call( setWidgetColor, argList )
+			}
+			return(NULL)
+		}
+	}
+
+	#scrolling object
+	if (widget$type=="object") {
+		return( setWidgetColor(paste("[superobject]", name,sep=""), winName = winName, ... ) )
+	}
+
+
 
 	#call specific config method based on widget type
 	func <- paste( "configure.", widget$type, sep="" )
@@ -4720,14 +5153,13 @@ setWidgetColor <- function( name, winName = .PBSmod$.activeWin, ... )
 		stop( paste( "not supported for widget type:", widget$type ) )
 
 	do.call( func, list( ptr=widget_ptr, ... ) )
-
 	return(invisible())
 }
 
 
 # ***********************************************************
 # 
-setWidgetState <- function( varname, state, radiovalue, winname )
+setWidgetState <- function( varname, state, radiovalue, winname, warn = TRUE )
 {
 	if (!exists(".PBSmod"))
 		stop(".PBSmod was not found")
@@ -4743,12 +5175,15 @@ setWidgetState <- function( varname, state, radiovalue, winname )
 	wid<-.PBSmod[[winname]]$widgets[[varname]]
 	if( is.null( wid ) ) stop(paste("supplied widget \"",varname,"\" name not found", sep=""))
 
-	if( any( wid$type == c( "table" ) ) )
-		stop( "table widget is not supported" )
+	if( any( wid$type == c( "notebook" ) ) )
+		stop( paste( wid$type, "widget is not supported" ) )
 
 	#change readonly -> disabled for widgets which dont support readonly
-	if( any( wid$type == c( "check", "radio", "droplist", "spinbox" ) ) && state == "readonly" )
+	if( any( wid$type == c( "check", "radio", "droplist", "spinbox", "table", "text" ) ) && state == "readonly" ) {
 		state <- "disabled"
+		if( warn )
+			warning( paste( "setting readonly to disabled (readonly not supported by ", wid$type, " widgets)", sep="" ) )
+	}
 	
 	#special case since radio has several widgets with the same name
 	if( wid$type == "radio" ) {
@@ -4786,7 +5221,7 @@ setWidgetState <- function( varname, state, radiovalue, winname )
 		if (length(wid$names)==1) {
 			for(i in 1:wid$nrow)
 				for(j in 1:wid$ncol)
-					setWidgetState(paste(varname,"[",i,",",j,"]",sep=""), state, winname)
+					setWidgetState(paste(varname,"[",i,",",j,"]",sep=""), state, winname, warn=FALSE)
 			return(NULL)
 		}
 	}
@@ -4796,7 +5231,7 @@ setWidgetState <- function( varname, state, radiovalue, winname )
 		if (length(wid$names)==1) {
 			for(i in 1:wid$nrow)
 				for(j in 1:wid$ncol)
-					setWidgetState(paste(varname,"[",i,",",j,"]d",sep=""), state, winname)
+					setWidgetState(paste(varname,"[",i,",",j,"]d",sep=""), state, winname, warn=FALSE)
 			return(NULL)
 		}
 	}
@@ -4805,17 +5240,17 @@ setWidgetState <- function( varname, state, radiovalue, winname )
 	if (wid$type=="vector") {
 		if (length(wid$names)==1) {
 			for(i in 1:wid$length)
-				setWidgetState(paste(varname,"[",i,"]",sep=""), state, winname)
+				setWidgetState(paste(varname,"[",i,"]",sep=""), state, winname, warn=FALSE)
 			return(NULL)
 		}
 	}
 
 	#scrolling object
 	if (wid$type=="object") {
-		return( setWidgetState(paste("[superobject]", varname,sep=""), state, winname) )
+		return( setWidgetState(paste("[superobject]", varname,sep=""), state, winname, warn=FALSE) )
 	}
 
-	stop(paste("unable to update \"", varname, "\" - no widget found.", sep=""))
+	stop(paste("unable to update \"", varname, "\" - unable to handle type:", wid$type, sep=""))
 }
 
 

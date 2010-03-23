@@ -41,6 +41,57 @@
 	list(param='pady', required=FALSE, class="integerVector", default=0, grep="^[0-9]+([ \\t]+[0-9]+)?$")
 	)
 
+.widgetDefs$notebook <- list(
+	list(param='type', required=TRUE, class="character"),
+	list(param='tabs', required=TRUE, class="characterVector"),
+	list(param='name', required=FALSE, class="character", default=NULL),
+	list(param='selected', required=FALSE, class="integer", default=1),
+	list(param='tabpos', required=FALSE, class="character", default="top", grep="^(top|bottom)$"),
+	list(param='font', required=FALSE, class="character", default=""),
+#fg/bg don't change tab colours
+	list(param='fg', required=FALSE, class="character", default=NULL),
+	list(param='bg', required=FALSE, class="character", default=NULL),
+	list(param='width', required=FALSE, class="integer", default=0),
+	list(param='height', required=FALSE, class="integer", default=0),
+	list(param='homogeneous', required=FALSE, class="logical", default=FALSE),
+	list(param='arcradius', required=FALSE, class="integer", default=2, grep="^[0-8]$"),
+	list(param='tabbevelsize', required=FALSE, class="integer", default=0, grep="^[0-8]$"),
+	list(param='function', required=FALSE, class="character", default=NULL),
+	list(param='action', required=FALSE, class="character", default="notebook"),
+	list(param='sticky', required=FALSE, class="character", default="we", grep="^(n|s|N|S|e|w|E|W)*$"),
+	list(param='padx', required=FALSE, class="integerVector", default=0, grep="^[0-9]+([ \\t]+[0-9]+)?$"),
+	list(param='pady', required=FALSE, class="integerVector", default=0, grep="^[0-9]+([ \\t]+[0-9]+)?$")
+	)
+
+.widgetDefs$image <- list(
+	list(param='type', required=TRUE, class="character"),
+	list(param='file', required=FALSE, class="character", default=NULL),
+	list(param='varname', required=FALSE, class="character", default=NULL),
+	list(param='subsample', required=FALSE, class="integer", default=NULL),
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),
+	list(param='padx', required=FALSE, class="integerVector", default=0, grep="^[0-9]+([ \\t]+[0-9]+)?$"),
+	list(param='pady', required=FALSE, class="integerVector", default=0, grep="^[0-9]+([ \\t]+[0-9]+)?$")
+	)
+
+.widgetDefs$progressbar <- list(
+	list(param='type', required=TRUE, class="character"),
+	list(param='name', required=TRUE, class="character"),
+	list(param='value', required=FALSE, class="numeric", default=0),
+	list(param='maximum', required=FALSE, class="numeric", default=100),
+	list(param='style', required=FALSE, class="character", default="normal", grep="^(normal|incremental|infinite|nonincremental_infinite)$"),
+	list(param='width', required=FALSE, class="integer", default=NULL ),
+	list(param='height', required=FALSE, class="integer", default=NULL ),
+	list(param='vertical', required=FALSE, class="logical", default=FALSE ),
+	list(param='fg', required=FALSE, class="character", default=NULL),
+	list(param='bg', required=FALSE, class="character", default=NULL),
+	list(param='relief', required=FALSE, class="character", default="sunken", grep="^(raised|sunken|flat|ridge|groove|solid)$"),
+	list(param='borderwidth', required=FALSE, class="integer", default=2),
+	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),
+	list(param='padx', required=FALSE, class="integerVector", default=0, grep="^[0-9]+([ \\t]+[0-9]+)?$"),
+	list(param='pady', required=FALSE, class="integerVector", default=0, grep="^[0-9]+([ \\t]+[0-9]+)?$")
+	)
+
+
 .widgetDefs$menu <- list(
 	list(param='type', required=TRUE, class="character"),
 	list(param='nitems', required=FALSE, class="integer", default=1),
@@ -70,6 +121,7 @@
 	list(param='bg', required=FALSE, class="character", default=""),
 	list(param='sticky', required=FALSE, class="character", default="", grep="^(n|s|N|S|e|w|E|W)*$"),	#choices: N,NE,E,SE,S,SW,W,NW
 	list(param='justify', required=FALSE, class="character", default="left", grep="^(l|r|c|left|right|center)?$"),
+	list(param='anchor', required=FALSE, class="character", default="center", grep="^(N|NE|E|SE|S|SW|W|NW|CENTER|n|ne|e|se|s|sw|w|nw|center)$"),
 	list(param='wraplength', required=FALSE, class="integer", default=0, grep="^[0-9]+$"),
 	list(param='width', required=FALSE, class="integerVector", default=0, grep="^[0-9]+$"),
 	list(param='padx', required=FALSE, class="integerVector", default=0, grep="^[0-9]+([ \\t]+[0-9]+)?$"),
@@ -184,6 +236,7 @@
 	list(param='font', required=FALSE, class="characterVector", default=""),
 	list(param='fg', required=FALSE, class="character", default="black"),
 	list(param='bg', required=FALSE, class="character", default=""),
+	list(param='disablefg', required=FALSE, class="character", default=NULL, allow_null=TRUE),
 	list(param='width', required=FALSE, class="integer", default=0),
 	list(param='name', required=FALSE, class="character", default=NULL, allow_null=TRUE),
 	list(param='function', required=FALSE, class="character", default=""),
@@ -202,6 +255,7 @@
 	list(param='font', required=FALSE, class="characterVector", default=""),
 	list(param='fg', required=FALSE, class="character", default="black"),
 	list(param='bg', required=FALSE, class="character", default=""),
+	list(param='disablefg', required=FALSE, class="character", default=NULL, allow_null=TRUE),
 	list(param='function', required=FALSE, class="character", default=""),
 	list(param='action', required=FALSE, class="character", default="check"),
 	list(param='edit', required=FALSE, class="logical", default=TRUE),
