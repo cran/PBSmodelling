@@ -1068,33 +1068,13 @@ isWhat <- function(x) {
   invisible() }
 
 #given string name of a program - return the complete path to program
-#equivalent to "which" but works for windows too
+#This was made without knowing Sys.which() existed - we may want to depricate this at some point.
 findProgram <- function( name, includename = FALSE )
 {
-	if( .Platform$OS.type=="windows" ) {
-		name <- paste( name, ".exe", sep="" ) #TODO could iterate over .exe, .bat, ...
-		path <- Sys.getenv("PATH")
-		paths <- unlist( strsplit( path, ";" ) )
-		for( p in paths ) {
-			f <- paste( p, "\\", name, sep="" )
-			if( file.exists( f ) ) {
-				if( includename == FALSE )
-					return( dirname( f ) )
-				return( gsub("\\\\", "/", f ) )
-			}
-		}
-		return( NULL )
-	}
-	cmd <- system( paste( "which ", name, sep="" ), intern = TRUE )
-	if( length( cmd ) == 0 )
-		return( NULL )
-	if( includename == TRUE )
-		return( cmd )
-	#remove filename
-	tmp <- strsplit( cmd, "/" )[[ 1 ]]
-	tmp[ length(tmp) ] <- "" #last item is filename
-	cmd <- paste( tmp, collapse="/" ) #put back together
-	return( cmd )
+	tmp <- Sys.which( name )
+	if( includename == FALSE )
+		tmp <- dirname( tmp )
+	return( tmp )
 }
 
 #openFile-------------------------------2008-09-22
@@ -1397,7 +1377,7 @@ evalCall=function(fn,argu,...,envir=parent.frame(),checkdef=FALSE,checkpar=FALSE
 	sqn=sqrt(nc); m=ceiling(sqn); n=ceiling(nc/m)
 	return(c(m,n)) }
 
-#viewCode-------------------------------2009-11-16
+#viewCode-------------------------------2010-10-19
 # View package R code on the fly.
 #-----------------------------------------------RH
 viewCode=function(pkg="PBSmodelling", funs, output=4, ...){
@@ -1420,10 +1400,14 @@ viewCode=function(pkg="PBSmodelling", funs, output=4, ...){
 	code=c(paste("#",pkg,"Functions"),paste("#",paste(rep("-",nchar(pkg)+10),collapse="")))
 	pkgFuns=c(pkgF1,pkgF0)
 	if (missing(funs)) funs=pkgFuns
+	else {
+		if (!is.null(list(...)$pat) && is.logical(list(...)$pat) && list(...)$pat)
+			funs = findPat(funs,pkgFuns) }
 	if (is.null(funs) || is.na(funs) || !is.character(funs) || all(funs=="")) {
 		showAlert("Your choice for 'funs' is badly specified")
 		return(invisible("Error: 'funs' badly specified")) }
 	seeFuns=pkgFuns[is.element(pkgFuns,funs)]
+#browser();return()
 	if (length(seeFuns)==0) {
 		showAlert("Your choices yield no functions")
 		return(invisible("Error: choices for 'funs' yield no functions")) }

@@ -2774,11 +2774,13 @@ parseWinFile <- function(fname, astext=FALSE)
 						text <- rowlabels[rowCount]
 
 					tmp_i <- i
-					if (is.null( collabels ))
-						tmp_i <- tmp_i - 1
 					#define a row label (per each row)
 					row_number = tmp_i - 1 #for renaming row labels
 					label_name <- paste( widget$name, "[rowlabel][", row_number, "]", sep="" )
+
+					if (is.null( collabels ))
+						tmp_i <- tmp_i - 1
+
 					if( nNames != 1 ) label_name <- ""
 					wid$.widgets[[tmp_i]][[j]] <- list(type='label', text=text, name=label_name, mode="character", font=widget$font, bg=widget$bg, fg=widget$fg )
 					if( !is.null( widget[[ ".rowlabelwidth" ]] ) )
@@ -3970,7 +3972,7 @@ parseWinFile <- function(fname, astext=FALSE)
 						),
 						list(
 							#list(type="label", text="Index", font="", fg=widget$fg, bg=widget$bg, sticky="", padx=0, pady=0),
-							list(type="button", text="Sort", font="", fg=widget$fg, bg=widget$bg, width=5, "function"=".sortActHistory", action=widget$name, sticky="", padx=0, pady=0),
+							list(type="button", text="Sort", font="", fg=widget$fg, bg=widget$bg, width=5, "function"="doAction", action=paste("sortHistory(hisname=\"",widget$name,"\")",sep=""), sticky="", padx=0, pady=0),
 							list(type="entry", name=indexname, value="0", width=5, label="", font="", entryfg=widget$entryfg, entrybg=widget$entrybg, "function"="jumpHistory", action=widget$name, enter=TRUE, mode="numeric", padx=0, pady=0, entrybg="white", edit=T),
 							list(type="entry", name=sizename, value="0", width=5, label="", font="", action="", enter=TRUE, mode="numeric", padx=0, pady=0, edit=F),
 							list(type="button", text="Empty", font="", fg=widget$fg, bg=widget$bg, width=5, "function"="clearHistory", action=widget$name, sticky="", padx=0, pady=0)
@@ -4433,7 +4435,7 @@ exportHistory <- function(hisname="", fname="")
 		stop("unable to export history. Incorect history name given.")
 
 	if (fname=="")
-		fname <- promptSaveFile(initialfile=paste(hisname,".History.r", sep=""))
+		fname <- selectFile( initialfile=paste(hisname,".History.r", sep=""), mode="save" )
 	if (fname=="")
 		stop("no filename given.")
 
@@ -4459,8 +4461,8 @@ importHistory <- function(hisname="", fname="", updateHis=TRUE)
 		stop("unable to import history. Incorect history name given.")
 
 	if (fname=="")
-		fname <- promptOpenFile()
-	if (fname=="")
+		fname <- selectFile( mode="open" )
+	if ( is.null( fname ) || fname=="" )
 		stop("no filename given.")
 
 	newHist <- readList(fname)
@@ -4504,33 +4506,72 @@ importHistory <- function(hisname="", fname="", updateHis=TRUE)
 {
 	act <- getWinAct()[1]
 	if (act=="open") {
-		f <- promptOpenFile()
+		f <- selectFile( mode="open" )
 		s <- getWinVal("savefile")$savefile
 		if (s=="")
 			setWinVal(list(savefile=f))
 		setWinVal(list(openfile=f))
 	} else if (act=="save") {
-		f <- promptSaveFile()
+		f <- selectFile( mode="save" )
 		setWinVal(list(savefile=f))
 	}
 }
 .sortHelperActive <- function(hisname)
 {
-	len <- length(PBS.history[[hisname]]) - 1
-	if (len < 1) stop("unable to sort empty history")
-	x <- data.frame(new = 1:len)
-	x <- fix(x); xnew <- order(x$new, na.last=NA);
-	tmp <- PBS.history[[hisname]]
-	j <- 2
-	PBS.history[[hisname]] <<- list(PBS.history[[hisname]][[1]])
-		for (i in xnew) {
-		if (!is.na(i)) {
-			PBS.history[[hisname]][[j]] <<- tmp[[i + 1]]
-			j <- j + 1
+	#convert history into a data.frame (which is used for sorting)
+	x <- PBS.history[[hisname]]
+	if( length( x ) < 2 )
+		stop( "History does not contain any items - unable to sort" )
+	i <- 1
+	hist <- NULL
+	for( h in x[-1] ) {
+		if( is.null(hist) ) {
+			hist <- list() #matrix( nrow=length(x[-1]), ncol=length(h) )
+			if( length( h ) )
+				for( j in 1:length( h ) )
+					hist[ j ] <- list(c())
+		}
+		if( length( h ) )
+			for( j in 1:length( h ) )
+				hist[[j]][i] <- as.vector( h[[j]] )[ 1 ]
+		i <- i + 1
+	}
+	names( hist ) <- names( x[[2]] )
+	#display sort widget, .done_sorting() takes care of saving the data
+	hist <- as.data.frame( hist, stringsAsFactors=F )
+
+	#trim down long strings (if multiple lines take first non empty line)
+	MAX_STRING_LEN <- 15
+	.shortenStrings <- function(x)
+	{
+		x <- strsplit(x,"\n")[[1]]
+
+		needs_dots <- FALSE
+		#grab first non empty element
+		x <- x[x!=""]
+		if( length( x ) == 0 )
+			return( "" )
+		if( length( x ) > 1 ) {
+			needs_dots <- TRUE
+			x <- x[1]
+		}
+		if( nchar( x ) > MAX_STRING_LEN ) {
+			needs_dots <- TRUE
+			x <- strtrim( x, MAX_STRING_LEN - 3 )
+		}
+		if( needs_dots == TRUE )
+			x <- paste( x, "...", sep="" )
+		return( x )
+	}
+	tmp.before <<- hist
+	if( ncol( hist ) > 0 ) {
+		for( i in 1:ncol( hist ) ) {
+			if( is.character( hist[,i] ) )
+				hist[,i] <- unlist( lapply( hist[,i], .shortenStrings ) )
 		}
 	}
-	PBS.history[[hisname]][[1]]$index <<- min(PBS.history[[hisname]][[1]]$index, length(PBS.history[[hisname]])-1)
-	.updateHistory(hisname)
+
+	.sortWidget( hist, hisname )
 }
 .sortHelperFile <- function(openfile, savefile)
 {
@@ -4562,11 +4603,6 @@ importHistory <- function(hisname="", fname="", updateHis=TRUE)
 		.sortHelperFile(openfile, savefile)
 	}
 	sortHistory()
-}
-#use window action as history name
-.sortActHistory <- function()
-{
-	sortHistory(hisname=getWinAct()[1])
 }
 sortHistory <- function(file="",outfile=file,hisname="")
 {
@@ -4867,11 +4903,14 @@ getWinVal <- function(v=NULL, scope="", asvector=FALSE, winName="")
 	if (!exists(".PBSmod")) {
 		stop(".PBSmod was not found")
 	}
-	if (winName=="")
+	if (winName=="") {
 		winName <- .PBSmod$.activeWin
+		if( is.null( winName ) )
+			return( list() )
+	}
 
 	if( is.null( .PBSmod[[ winName ]] ) )
-		stop(paste("supplied window \"",winName,"\" name not found"))
+		stop(paste("supplied window \"",winName,"\" name not found", sep=""))
 
 	#extract all variables regardless if asked for by user
 	vars <- .extractVar(winName)
@@ -5546,6 +5585,4 @@ updateGUI <- function(scope="L") {
 		setWinVal( vals ) }
 	invisible(isMatch)
 }
-
-
 
