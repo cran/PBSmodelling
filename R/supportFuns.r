@@ -127,7 +127,7 @@ clearPBSext=function(ext){
     packList("openfile",".PBSmod$.options",list()) #.PBSmod$.options$openfile<<-list()
   else{
     oldLen=length(.PBSmod$.options$openfile)
-    .PBSmod$.options$openfile<<-.removeFromList(.PBSmod$.options$openfile, ext)
+    eval(parse(text=".PBSmod$.options$openfile <<- .removeFromList(.PBSmod$.options$openfile, ext)"))
     if(oldLen!=length(.PBSmod$.options$openfile))
       packList(".optionsChanged",".PBSmod$.options",TRUE) #.PBSmod$.options$.optionsChanged<<-TRUE
   }
@@ -322,19 +322,22 @@ findProgram <- function( name, includename = FALSE )
 	return( tmp )
 }
 
-#focusRcon------------------------------2009-05-14
-# Give the R console focus.
-#-----------------------------------------------NO
-focusRcon <- function(os=.Platform$OS.type) {
-	if (os!="windows") {
-		err="'focusRcon' needs Windows OS to use Windows Scripting"
-		cat(err,"\n"); return(invisible(err)) }
+#focusRgui------------------------------2011-09-09
+# Set focus to the RGui window.
+#--------------------------------------------NO/RH
+focusRgui = function (os = .Platform$OS.type) {
+	if (os != "windows") {
+		err = "'focusRgui' needs Windows OS to use Windows Scripting"
+		cat(err, "\n")
+		return(invisible(err))
+	}
 	tdir <- tempdir()
-	fname <- paste(tdir, "\\focusRcon.vbs", sep="")
-   cmd <- 'Set w = CreateObject("WScript.Shell"): w.AppActivate("R Console")'
-   cat(cmd, file=fname)
-	system(paste("cscript //NoLogo", fname), minimized=TRUE)
-	invisible(fname) }
+	fname <- paste(tdir, "\\focusRgui.vbs", sep = "")
+	cmd <- "Set w = CreateObject(\"WScript.Shell\"): w.AppActivate(\"RGui\") : w.SendKeys(\"% x\") "
+	cat(cmd, file = fname)
+	system(paste("cscript //NoLogo", fname), minimized = TRUE)
+	invisible(fname) 
+}
 
 #genMatrix------------------------------2006-08-28
 #  Generate a test matrix for use in plotBubbles
@@ -450,9 +453,10 @@ openUG = function(pkg="PBSmodelling"){
 	openFile(paste("/doc/",pkgnam,"-UG.pdf",sep=""),pkgnam)
 }
 
-#pad0-----------------------------------2006-08-28
-# Takes numbers, converts them to integers then text,
-#   and pads them with leading zeroes.
+#pad0-----------------------------------2011-12-12
+# Takes numbers (or text coerced to numeric), 
+#  converts them to integers then text, and 
+#  pads them with leading zeroes.
 # Arguments:
 #    x - Vector of numbers
 #    n - Length of padded integer
@@ -461,18 +465,41 @@ openUG = function(pkg="PBSmodelling"){
 #       large as the order of factored x (x * 10^f).
 #-----------------------------------------------RH
 pad0 <- function (x, n, f = 0) {
-	xin <- x; xord <- max(ceiling(log10(abs(x * 10^f))), na.rm = TRUE);
-	if (any(max(abs(x * 10^f)) == 10^(-10:10))) xord <- xord + 1;
-	if (n < xord) n <- xord; # No padding occurs if n<=xord
-	x <- round(x, f) * 10^f; xneg <- x < 0;
-	x <- abs(x);  x <- format(x, scientific=FALSE);
-	x <- gsub(" ", "", x); nx <- length(x);
-	base0 <- rep(paste(rep(0, n), collapse = ""), nx);
-	nchr <- nchar(x); ndiff <- n - nchr;
-	add0 <- substring(base0, 1, ndiff);
-	xnew <- paste(add0, x, sep = "");
-	xnew[xneg] <- paste("-", xnew[xneg], sep = "");
-	attr(xnew, "input") <- xin; return(xnew); };
+	xin <- x
+	fin <- f
+	flist <- as.list(f); names(flist) = f
+	xnum <- suppressWarnings(as.numeric(xin))
+	zstr <- is.na(xnum); znum = !zstr
+	for (f in fin) {
+		xout <- xin
+		if (any(znum)) {
+			x <- xnum[znum]
+			xord <- max(ceiling(log10(abs(x * 10^f))), na.rm = TRUE);
+			if (any(max(abs(x * 10^f)) == 10^(-10:10))) xord <- xord + 1;
+			if (n < xord) n <- xord  # No padding occurs if n<=xord
+			x <- round(x, f) * 10^f
+			xneg <- x < 0;
+			x <- abs(x);  x <- format(x, scientific=FALSE)
+			xout[znum] = x }
+		if (any(zstr)) 
+			xout[zstr] <- paste(xout[zstr],paste(rep(0,f),collapse=""),sep="")
+		xout <- gsub(" ", "", xout); nx <- length(xout);
+		base0 <- rep(paste(rep(0, n), collapse = ""), nx);
+		nchr <- nchar(xout); ndiff <- n - nchr;
+		add0 <- substring(base0, 1, ndiff);
+		xout <- paste(add0, xout, sep = "");
+		if (any(znum))
+			xout[znum][xneg] <- paste("-", xout[znum][xneg], sep = "");
+		attr(xout, "input") <- xin
+		flist[[as.character(f)]] <- xout
+	}
+	if (length(fin)==1)
+		padout = flist[[as.character(fin)]]
+	else if (length(xin)==1) {
+		padout = sapply(flist,function(x){x[1]})
+		attr(padout, "input") <- xin }
+	else padout <- flist
+	return(padout) }
 #---------------------------------------------pad0
 
 #pause----------------------------------2006-08-28
@@ -544,7 +571,7 @@ readPBSoptions=function(fname="PBSoptions.txt"){
   if(class(optList)=="try-error")
     return(FALSE)
     
-  .PBSmod$.options<<-.mergeLists(.PBSmod$.options, optList)
+  eval(parse(text=".PBSmod$.options <<- .mergeLists(.PBSmod$.options, optList)"))
   if(fname!="PBSoptions.txt")
     packList(".optionsFile",".PBSmod$.options",fname) #.PBSmod$.options$.optionsFile<<-fname
   packList(".optionsChanged",".PBSmod$.options",NULL) #.PBSmod$.options$.optionsChanged<<-NULL
@@ -555,7 +582,7 @@ readPBSoptions=function(fname="PBSoptions.txt"){
 #-------------------------------------------ACB/RH
 runDemos <- function (package) {
 	if (!exists(".dwd",where=1)) assign(".dwd",getwd(),envir=.GlobalEnv)
-	if (!exists(".dls",where=1)) assign(".dls",c(".dls",ls(pos = 1, all = TRUE)),envir=.GlobalEnv)
+	if (!exists(".dls",where=1)) assign(".dls",c(".dls",ls(pos = 1, all.names=TRUE)),envir=.GlobalEnv)
 	try(closeWin(),silent=TRUE)
 	x <- demo(package = .packages(all.available = TRUE))
 	if (missing(package)) {
@@ -636,7 +663,7 @@ runExample <- function (ex, pkg="PBSmodelling") {
 		setwd(.cwd)
 		remove(list = setdiff(ls(pos = 1), .cls), pos = 1)
 		return() }
-	assign(".cls",ls(pos = 1, all = TRUE),envir=.GlobalEnv)
+	assign(".cls",ls(pos = 1, all.names=TRUE),envir=.GlobalEnv)
 	assign(".cwd",getwd(),envir=.GlobalEnv)
 	assign(".runExHelperQuit",.runExHelperQuit,envir=.GlobalEnv)
 
@@ -705,7 +732,7 @@ runExamples <- function () {
 	}
 	assign(".runExHelper",.runExHelper,envir=.GlobalEnv)
 	assign(".runExHelperQuit",.runExHelperQuit,envir=.GlobalEnv)
-	assign(".cls",ls(pos = 1, all = TRUE),envir=.GlobalEnv)
+	assign(".cls",ls(pos = 1, all.names=TRUE),envir=.GlobalEnv)
 	assign(".cwd",getwd(),envir=.GlobalEnv)
 	pckg <- "PBSmodelling"
 	pdir <- system.file(package = pckg)               # package directory
@@ -835,7 +862,7 @@ setPBSext <- function(ext, cmd) {
 			.PBSmod$.options$openfile[[ext]]!=cmd)
 		packList(".optionsChanged",".PBSmod$.options",TRUE) #.PBSmod$.options.optionsChanged<<-TRUE
 		
-	.PBSmod$.options$openfile[[ext]] <<- cmd
+	eval(parse(text=".PBSmod$.options$openfile[[ext]] <<- cmd"))
 }
 #----------------------------------------setPBSext
 
@@ -856,7 +883,7 @@ setPBSoptions <- function(option, value, sublist=FALSE) {
  	if(substr(option, 1, 1)!="." && !identical(.PBSmod$.options[[option]], value))
 		packList(".optionsChanged",".PBSmod$.options",TRUE) #.PBSmod$.options$.optionsChanged<<-TRUE
 	if(is.null(value) && !sublist)
-		.PBSmod$.options <<- .removeFromList(.PBSmod$.options, option)
+		eval(parse(text=".PBSmod$.options <<- .removeFromList(.PBSmod$.options, option)"))
 	else{
 		if(is.list(value) && sublist){
 			for (i in 1:length(value)){
@@ -866,7 +893,7 @@ setPBSoptions <- function(option, value, sublist=FALSE) {
 				eval(parse(text=txt))
 			}
 		}
-		else .PBSmod$.options[[option]] <<- value
+		else eval(parse(text=".PBSmod$.options[[option]] <<- value"))
 	}
 }
 #------------------------------------setPBSoptions
@@ -1022,7 +1049,7 @@ showRes <- function(x, cr=TRUE, pau=TRUE) {
 #-----------------------------------------------AE
 showVignettes <- function (package) {
 	if (!exists(".dwd",where=1)) assign(".dwd",getwd(),envir=.GlobalEnv)
-	if (!exists(".dls",where=1)) assign(".dls",c(".dls",ls(pos = 1, all = TRUE)),envir=.GlobalEnv)
+	if (!exists(".dls",where=1)) assign(".dls",c(".dls",ls(pos = 1, all.names=TRUE)),envir=.GlobalEnv)
 	closeWin();
 	x <- vignette()
 	if (missing(package)) {
@@ -1165,50 +1192,47 @@ testWidgets <- function () {
 }
 #--------------------------------------testWidgets
 
-#view-----------------------------------2008-05-22
+#view-----------------------------------2011-10-31
 # View first/last/random n element/rows of an object.
 #-----------------------------------------------RH
-view <- function (obj, n=5, last=FALSE, random=FALSE, ...) {
-	getn=function(n,N,last=FALSE,random=FALSE,...) {
+view <- function (obj, n=5, last=FALSE, random=FALSE, print.console=TRUE, ...) {
+	getn=function(n,N,last,random,...) {
 		n=min(n,N)
 		if (random) return(sample(1:N,n,...)) 
 		n1=ifelse(last,N-n+1,1); n2=ifelse(last,N,n)
 		return(n1:n2) }
-	showVec=function(obj,n,last=FALSE,random=FALSE,...){
+	showVec=function(obj,n,last,random,...){
 		N=length(obj); if (N==0) return("empty vector")
 		v.vec=obj[getn(n,N,last,random,...)]
 		return(v.vec) }
-	showTab=function(obj,n,last=FALSE,random=FALSE,...){
+	showTab=function(obj,n,last,random,...){
 		N=nrow(obj); if (N==0) return("empty table")
-		v.tab=obj[getn(n,N,last,random,...),]
+		mess = paste(c("v.tab=obj[getn(n,N,last,random,...)",rep(",",length(dim(obj))-1),"]"),collapse="")
+		eval(parse(text=mess))
 		return(v.tab) }
-	showLis=function(obj,n,last=FALSE,random=FALSE,...){
+	showLis=function(obj,n,last,random,print.console,...){
 		nL=length(obj); if (nL==0) return("empty list")
 		v.lis=list()
 		if (is.null(names(obj))) ii=1:nL else ii=names(obj)
 		for (i in 1:nL) {
 			iobj=obj[[i]]
-			if (is.data.frame(iobj) || is.matrix(iobj))
-				v.lis=c(v.lis,list(showTab(iobj,n,last,random,...)))
-			else if (is.list(iobj))
-				v.lis=c(v.lis,list(showLis(iobj,n,last,random,...)))
-			else if (is.vector(iobj) || is.integer(obj) || is.numeric(obj) || is.character(obj))
-				v.lis=c(v.lis,list(showVec(iobj,n,last,random,...)))
-			else  v.lis=c(v.lis,list(showAll(iobj))) 
+			v.lis = c(v.lis,list(view(iobj,n,last,random,print.console=FALSE,...)))
 		}
 		names(v.lis)=ii; return(v.lis) }
 	showAll=function(obj){
 		return(obj) }
+	# End Subfunction------------------------------
 	if (n==0) return("nada")
 	n=abs(n) # coerce to positive
-	if (is.data.frame(obj) || is.matrix(obj)) 
+	if (is.data.frame(obj) || is.matrix(obj) || is.array(obj)) 
 		viewed=showTab(obj,n,last,random,...)
 	else if (is.list(obj)) 
-		viewed=showLis(obj,n,last,random,...)
+		viewed=showLis(obj,n,last,random,print.console,...)
 	else if (is.vector(obj) || is.integer(obj) || is.numeric(obj) || is.character(obj)) 
 		viewed=showVec(obj,n,last,random,...)
 	else viewed=showAll(obj)
-	print(viewed); invisible(viewed)
+	if (print.console) print(viewed)
+	invisible(viewed)
 }
 #---------------------------------------------view
 
@@ -1371,7 +1395,7 @@ writePBSoptions=function(fname="PBSoptions.txt") {
 	closeWin();
 	setwd(.dwd)
 	if (is.null(act) || act=="demo") {
-		remove(list = setdiff(ls(pos=1, all=TRUE), .dls), pos = 1);
+		remove(list = setdiff(ls(pos=1, all.names=TRUE), .dls), pos = 1);
 		remove(list = c(".dwd", ".dls"), pos = 1); }; # final good-bye
 	return(); };
 #------------------------------------------.dClose
