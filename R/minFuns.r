@@ -1,18 +1,27 @@
 #------------------------
 # Minimization Functions
 #------------------------
+
+#calcMin--------------------------------2012-12-20
 calcMin <- function(pvec, func, method="nlm", trace=0, maxit=1000, reltol=1e-8, steptol=1e-6, temp=10, repN=0, ...) {
 	Sfun <- function(S,pvec,func,repN) { # function of surrogate parameters
-		eval(parse(text="PBSmin$N <<- PBSmin$N + 1"))
+		#eval(parse(text="PBSmin$N <<- PBSmin$N + 1"))
+		tget(PBSmin); PBSmin$N <- PBSmin$N + 1
 		P <- restorePar(S,pvec);
 		Uval <- func(P);
-		if (PBSmin$N==1) { eval(parse(text="PBSmin$fmin0 <<- Uval")); if (repN>0) cat("\nParameter reporting:\n"); }
+		if (PBSmin$N==1) {
+			#eval(parse(text="PBSmin$fmin0 <<- Uval"))
+			PBSmin$fmin0 <- Uval
+			if (repN>0) cat("\nParameter reporting:\n")
+		}
 		if (repN>0 && is.element(PBSmin$N,seq(repN,maxit,repN)))
 			print(paste("N=",PBSmin$N," P=c(",paste(show0(round(P,5),5),collapse=","),") F=",show0(round(Uval,5),5),sep="" ));
+		tput(PBSmin)
 		return(Uval); };
 
 	Sval <- scalePar(pvec); nS <- length(Sval); junk <- gc(FALSE); 
-	eval(parse(text="PBSmin <<- list(); PBSmin$N <<- 0"))
+	#eval(parse(text="PBSmin <<- list(); PBSmin$N <<- 0"))
+	PBSmin <- list(); PBSmin$N <- 0; tput(PBSmin) # initialize PBSmin list
 	Ftime <- proc.time()[1:3];
 	if (method=="nlm") { # Non-Linear Minimization
 		Fout <- nlm(f=Sfun,p=Sval,typsize=rep(1,nS), iterlim=maxit, gradtol=reltol, steptol=steptol,
@@ -46,28 +55,42 @@ calcMin <- function(pvec, func, method="nlm", trace=0, maxit=1000, reltol=1e-8, 
 
 	Pfin <- restorePar(Pest,pvec); Pmat <- cbind(Pfin,pvec[,2:4]); 
 	P0 <- pvec[,1]; names(P0) <- dimnames(pvec)[[1]]; AIC <- 2*fmin + 2*nS;
-	eval(parse(text="PBSmin <<- c(PBSmin,list(start=P0, end=Pfin, surrogates=Pest, check=scalePar(Pmat), gradient=grad,
-		code=code, message=mess, iterations=iter, evaluations=eval, time=Ftime, fmin=fmin, AIC=AIC ))"))
+	#eval(parse(text="PBSmin <<- c(PBSmin,list(start=P0, end=Pfin, surrogates=Pest, check=scalePar(Pmat), gradient=grad,
+		#code=code, message=mess, iterations=iter, evaluations=eval, time=Ftime, fmin=fmin, AIC=AIC ))"))
+	tget(PBSmin)
+	PBSmin <- c(PBSmin,list(start=P0, end=Pfin, surrogates=Pest, check=scalePar(Pmat), gradient=grad,
+		code=code, message=mess, iterations=iter, evaluations=eval, time=Ftime, fmin=fmin, AIC=AIC ))
+	tput(PBSmin)
 	Obag <- list(Fout=Fout, iters=iter[1], evals=PBSmin$N, cpuTime=Ftime[1], elapTime=Ftime[3], 
 		fminS=PBSmin$fmin0, fminE=fmin, Pstart=P0, Pend=Pfin, AIC=AIC, message=mess);
 	return(Obag) 
 };
+#------------------------------------------calcMin
 
+
+#scalePar-------------------------------2012-12-20
 scalePar <- function(pvec) { # Convert true parameters to surrogates
 	Pval <- pvec[,1]; Pmin <- pvec[,2]; Pmax <- pvec[,3]; idx <- pvec[,4];
 	Sval <- (Pval[idx]-Pmin[idx]) / (Pmax[idx]-Pmin[idx]);
 	Sval <- pmax(Sval,0); Sval <- pmin(Sval,1);  # enforces the range
 	S    <- (2/pi) * asin(sqrt(Sval)); names(S) <- dimnames(pvec)[[1]][idx];
-	return(S); }
+	return(S);
+}
+#-----------------------------------------scalePar
 
+
+#restorePar-----------------------------2012-12-20
 restorePar <- function(S,pvec) { # Convert surrogates to true parameters
 	Pval <- pvec[,1]; Pmin <- pvec[,2]; Pmax <- pvec[,3]; idx <- pvec[,4];
 	if (sum(idx) != length(S)) stop("Warning: S & P not consistent/n");
 	Pcon <- Pmin[idx] + (Pmax[idx]-Pmin[idx])*sin(pi*S/2)^2;
 	P <- Pval; P[idx] <- Pcon; names(P) <- dimnames(pvec)[[1]];
-	return(P); };
+	return(P); 
+};
+#---------------------------------------restorePar
 
 
+#GT0------------------------------------2012-12-20
 GT0 <- function (x, eps = 1e-04) {
     eps2 <- eps/2
     ifix <- ((x > 0) & (x < eps))
@@ -75,4 +98,10 @@ GT0 <- function (x, eps = 1e-04) {
     y = x
     y[i0] <- eps2
     y[ifix] <- eps2 * (1 + (x[ifix]/eps)^2)
-    return(y) }
+    return(y) 
+}
+#----------------------------------------------GT0
+
+
+#===== THE END ===================================
+

@@ -8,6 +8,7 @@
 #  Anisa Egeli <>                                |
 #================================================|
 
+
 #calcFib--------------------------------2006-08-28
 # Calculate a vector containing fibonacci numbers
 # Arguments:
@@ -63,6 +64,7 @@ calcFib <- function(n, len=1, method="C") {
 }
 #------------------------------------------calcFib
 
+
 #calcGM---------------------------------2006-08-28
 # Calculates the geometric mean of a vector of numbers
 # Return the geometric mean of a vector of numbers
@@ -82,22 +84,24 @@ calcGM <- function (x, offset = 0, exzero = TRUE) {
 	g <- exp(mean(log(x)))
 	return(g)
 }
+#-------------------------------------------calcGM
 
-#clearAll-------------------------------2008-08-28
+
+#clearAll-------------------------------2012-12-06
 # Remove all data in the global environment
 # Arguments:
 #  hidden  - if T remove all variables including dot variables
 #  verbose - list all removed variables
 #  PBSsave - if TRUE, do not remove .PBSmod
-#-------------------------------------------ACB/AE
-clearAll <- function(hidden=TRUE, verbose=TRUE, PBSsave=TRUE) {
-	objs <- ls(all.names = TRUE, pos = ".GlobalEnv")
+#----------------------------------------ACB/AE/RH
+clearAll <- function(hidden=TRUE, verbose=TRUE, PBSsave=TRUE, pos=.PBSmodEnv) {
+	objs <- ls(all.names = TRUE, pos = pos) #.GlobalEnv")
 	if (verbose && length(objs))
 		print(objs)
-	rmlist <- ls(all.names = hidden, pos = ".GlobalEnv")
+	rmlist <- ls(all.names = hidden, pos = pos) #.GlobalEnv")
 	if(PBSsave)
 		rmlist=rmlist[rmlist!=".PBSmod"]
-	rm(list = rmlist, pos = ".GlobalEnv")
+	rm(list = rmlist, pos = pos) #.GlobalEnv")
 	if (verbose) {
 		cat("Removed:\n")
 		if (length(rmlist))
@@ -106,32 +110,39 @@ clearAll <- function(hidden=TRUE, verbose=TRUE, PBSsave=TRUE) {
 			cat("\n")
 
 		cat("Remaining:\n")
-		if (length(ls(all.names = TRUE, pos = ".GlobalEnv")))
-			print(ls(all.names = TRUE, pos = ".GlobalEnv"))
+		if (length(ls(all.names = TRUE, pos = pos))) #.GlobalEnv")))
+			print(ls(all.names = TRUE, pos = pos))    #.GlobalEnv"))
 		else
 			cat("\n")
 	}
 	invisible() }
 #-----------------------------------------clearAll
 
-#clearPBSext----------------------------2008-07-21
+
+#clearPBSext----------------------------2012-12-04
 # Disassociate any number of file extensions from commands
 #  previously save with setPBSext.
 # Argument:
 #  ext - optional character vector of file extensions to
 #        clear; if unspecified, all associations are removed
-#-----------------------------------------------AE
+#--------------------------------------------AE/RH
 clearPBSext=function(ext){
   .initPBSoptions()
+  tget(.PBSmod)
   if(missing(ext))
     packList("openfile",".PBSmod$.options",list()) #.PBSmod$.options$openfile<<-list()
   else{
     oldLen=length(.PBSmod$.options$openfile)
-    eval(parse(text=".PBSmod$.options$openfile <<- .removeFromList(.PBSmod$.options$openfile, ext)"))
+    #eval(parse(text=".PBSmod$.options$openfile <<- .removeFromList(.PBSmod$.options$openfile, ext)"))
+    .PBSmod$.options$openfile <- .removeFromList(.PBSmod$.options$openfile, ext)
     if(oldLen!=length(.PBSmod$.options$openfile))
-      packList(".optionsChanged",".PBSmod$.options",TRUE) #.PBSmod$.options$.optionsChanged<<-TRUE
+      #packList(".optionsChanged",".PBSmod$.options",TRUE) #.PBSmod$.options$.optionsChanged<<-TRUE
+      .PBSmod$.options$.optionsChanged <- TRUE
+    tput(.PBSmod)
   }
 }
+#--------------------------------------clearPBSext
+
 
 #clearRcon------------------------------2009-05-14
 # Clear the R console display.
@@ -149,6 +160,8 @@ clearRcon <- function(os=.Platform$OS.type) {
 	cat('Set pShell = Nothing\n', file=fname, append=TRUE)
 	system(paste("cscript //NoLogo", fname), minimized=TRUE)
 	invisible(fname) }
+#----------------------------------------clearRcon
+
 
 #clipVector-----------------------------2007-06-09
 # Clip a vector at one or both ends of a 
@@ -171,6 +184,8 @@ clipVector <- function (vec,clip,end=0) {
 		vec  = rev(vrev) }
 	return(vec)
 }
+#---------------------------------------clipVector
+
 
 #compileDescription---------------------2006-08-28
 #  Convert a GUI description file into a complete GUI desc List
@@ -194,8 +209,10 @@ compileDescription <- function(descFile, outFile="") {
 	if (outFile!="")
 		sink()
 }
+#-------------------------------compileDescription
 
-#convSlashes---------------------------2009-02-16
+
+#convSlashes----------------------------2009-02-16
 # Convert unix "/" to R's "\\" if OS is windows.
 #-----------------------------------------------RH
 convSlashes=function(expr, os=.Platform$OS.type, addQuotes=FALSE){
@@ -205,31 +222,30 @@ convSlashes=function(expr, os=.Platform$OS.type, addQuotes=FALSE){
 		expr=gsub("\\\\","/",expr)
 	if (addQuotes) expr=paste("\"",expr,"\"",sep="")
 	return(expr) }
+#--------------------------------------convSlashes
 
-#createVector---------------------------2006-09-16
+
+#createVector---------------------------2012-12-11
 # Create a GUI with a vector widget and button
 # Arguments:
 #  vec:          a vector of widget variable names
 #                if vec is named, then the names are used as widget variable 
 #                names and the values are used as the default value
-#
 #  vectorLabels: if supplied, this vector of labels are printed above each entry box
 #                There should be one label for every variable defined in vec
 #                i.e. length(vectorLabels)==length(vec)
-#
 #  func:         function name as a string
 #                If given, this function will be called whenever data is entered
 #                i.e. Enter pressed, or submit button clicked. This user function
 #                would then most likely use getWinVal()
-#
-#  windowname:  windowname to use for this GUI
-#
+#  windowname:   windowname to use for this GUI
 # Output: If no user defined function is given (see func paramater), then global variables 
 #         matching the variable name is set with the value of the widget
 #         whenever text focus is in a widget and enter is pressed, or when submit is pushed.
 #         Otherwise, func will be called and it is the user's responsibility to  make use of getWinVal
-#----------------------------------------------ACB
-createVector <- function (vec, vectorLabels=NULL, func="", windowname="vectorwindow") {
+#-------------------------------------------ACB/RH
+createVector <- function (vec, vectorLabels=NULL, func="", windowname="vectorwindow", env=NULL) {
+	if(is.null(env)) env = parent.frame()
 	if (is.null(names(vec))) {
 		namesVal <- vec
 		valuesVal <- ""
@@ -245,7 +261,7 @@ createVector <- function (vec, vectorLabels=NULL, func="", windowname="vectorwin
 		vecLabels <- names(vec)
 	else {
 		if (length(vectorLabels) != length(vec)) 
-			stop("length of paramaters vec and vectorLabels should be the same length")
+			stop("length of parameters vec and vectorLabels should be the same length")
 		vectorLabels <- as.character(vectorLabels)
 		vecLabels <- vectorLabels
 	}
@@ -256,9 +272,11 @@ createVector <- function (vec, vectorLabels=NULL, func="", windowname="vectorwin
 		action = "", mode = "numeric", width = 6, sticky = "", 
 		padx = 0, pady = 0), list(type = "button", "function" = func, 
 		text = "Go", padx = 0, pady = 0)), .menus = list()))
-	createWin(winList)
+	createWin(winList,env=env)
+	invisible(winList)
 }
 #-------------------------------------createVector
+
 
 #evalCall-------------------------------2009-03-03
 # Evaluates a function call, resolving conflicting arguments.
@@ -292,6 +310,7 @@ evalCall=function(fn,argu,...,envir=parent.frame(),checkdef=FALSE,checkpar=FALSE
 	invisible(expr) }
 #-----------------------------------------evalCall
 
+
 #findPat--------------------------------2006-08-28
 # Searches all patterns in pat from vec, and returns the
 # matched elements in vec.
@@ -309,10 +328,14 @@ findPat <- function (pat, vec) {
 	found <- vec[z]
 	return(found)
 }
+#------------------------------------------findPat
 
-#findProgram----------------------------200?-??-??
-# Given string name of a program - return the complete path to program.
-# This was made without knowing Sys.which() existed - we may want to deprecate this at some point.
+
+#findProgram----------------------------2006-08-28
+# Given string name of a program - return the 
+# complete path to program.  This was made without
+# knowing Sys.which() existed - we may want to 
+# deprecate this at some point.
 #----------------------------------------------ACB
 findProgram <- function( name, includename = FALSE )
 {
@@ -321,6 +344,8 @@ findProgram <- function( name, includename = FALSE )
 		tmp <- dirname( tmp )
 	return( tmp )
 }
+#--------------------------------------findProgram
+
 
 #focusRgui------------------------------2011-09-09
 # Set focus to the RGui window.
@@ -338,6 +363,8 @@ focusRgui = function (os = .Platform$OS.type) {
 	system(paste("cscript //NoLogo", fname), minimized = TRUE)
 	invisible(fname) 
 }
+#----------------------------------------focusRgui
+
 
 #genMatrix------------------------------2006-08-28
 #  Generate a test matrix for use in plotBubbles
@@ -350,30 +377,38 @@ focusRgui = function (os = .Platform$OS.type) {
 genMatrix <- function (m,n,mu=0,sigma=1) {
 	matrix(rnorm(m*n,mean=mu,sd=sigma), m, n)
 }
+#----------------------------------------genMatrix
 
-#getPBSext------------------------------2006-09-16
+
+#getPBSext------------------------------2012-12-04
 # Retrieve previously saved command.  Argument:
 #  ext - file extension
-#----------------------------------------------ACB
+#-------------------------------------------ACB/RH
 getPBSext <- function(ext) {
-	if (!exists(".PBSmod"))
+	if (!exists(".PBSmod",envir=.PBSmodEnv))
 		stop(".PBSmod was not found")
+	tget(.PBSmod)
 	if (missing(ext))
 		return(.PBSmod$.options$openfile)
 	if ( is.null( .PBSmod$.options$openfile[[ ext ]] ) )
 		return(NULL)
 	return(.PBSmod$.options$openfile[[ext]])
 }
+#----------------------------------------getPBSext
 
-#getPBSoptions--------------------------2006-09-16
+
+#getPBSoptions--------------------------2012-12-04
 # Retrieve a user option.  Argument:
 #   option - name of option to retrieve
-#----------------------------------------------ACB
+#-------------------------------------------ACB/RH
 getPBSoptions <- function(option) {
+	tget(.PBSmod)
 	if (missing(option))
 		return(.PBSmod$.options)
 	return(.PBSmod$.options[[option]])
 }
+#------------------------------------getPBSoptions
+
 
 #isWhat---------------------------------2008-09-08
 # Prints the class, mode, type, and attributes
@@ -387,52 +422,64 @@ isWhat <- function(x) {
   cat(paste("attributes:",ifelse(is.null(att)," NULL\n","\n"),sep=""))
   if (!is.null(att)) print(att)
   invisible() }
+#-------------------------------------------isWhat
 
-#openFile-------------------------------2008-09-22
+
+#openFile-------------------------------2013-04-05
 # Opens a file for viewing based on System file
 # extension association or .PBSmod$.options$openfile
-#----------------------------------------------ACB
+#----------------------------------------ACB/RH/NB
 openFile <- function(fname="", package=NULL)
 {
+	if (!exists(".PBSmod",envir=.PBSmodEnv)) .initPBSoptions()
+
 	.openFile=function(fname, package)
 	{
-		if (!exists(".PBSmod"))  .initPBSoptions()
-		if (fname=="")  fname=getWinAct()[1]
-		if( is.null( package ) == FALSE ) {
-			pkg_file <- system.file( fname, package=package)
+		if (fname=="")  fname=getWinAct()[1] # does this work?
+		if(!is.null(package)) {
+			# relative within package
+			pkg_file <- system.file(fname, package=package)
 			if( pkg_file == "" )
-				stop(paste("File \"", fname, "\" does not exist in package \"", package, "\"", sep=""))
+				stop(paste("File \"", fname,"\" does not exist in package \"", package, "\"", sep=""))
 			fname <- pkg_file
-		} else if (any(grep("^~", fname)))
-			fname <- path.expand(fname)
-		else if (!any(grep("^([a-z]:(\\\\|/)|\\\\\\\\|/)", fname, ignore.case = TRUE)))
-			fname <- paste(getwd(), "/", fname, sep="")
-		if (!file.exists(fname))
-			stop(paste("File \"", fname, "\" does not exist", sep=""))
-
+		} else {
+			# relative/absolute within file system
+			fname <- normalizePath (fname);
+		}
+		# system.file and normalizePath both fail if the file
+		# doesn't exist; if we've gotten this far, we
+		# should be okay to open it
+		# remove everything that precedes extension
 		ext <- sub("^.*\\.", "", fname)
+		tget(.PBSmod)
 		if ( is.null( .PBSmod$.options$openfile[[ ext ]] ) ) {
+			# nothing previously set with setPBSext
 			if ( exists("shell.exec", mode="function" ) )  {
+				# Windows
 				shell.exec(fname)
 				return(fname)
-			}
-			if( file.exists( "/usr/bin/open" ) ) {
+			} else if( file.exists( "/usr/bin/open" ) ) {
+				# Mac OS X
 				system( paste( "open", fname ) )
 				return(fname)
-			}
-			if( file.exists( "/usr/bin/xdg-open" ) ) {
+			} else if( file.exists( "/usr/bin/xdg-open" ) ) {
+				# Linux (xdg-open is a desktop-independent tool)
 				system( paste( "xdg-open", fname ) )
 				return(fname)
-			}
-			if( file.exists( "/usr/bin/gnome-open" ) ) {
+			} else if( file.exists( "/usr/bin/gnome-open" ) ) {
+				# Linux (Gnome desktop)
 				system( paste( "gnome-open", fname ) )
 				return(fname)
 			}
-			stop(paste("There is no program associated with the extension '", ext, "'\n",
-			           "Please set an association with the setPBSext command\n"))
+			stop(paste("There is no program associated with the ",
+				"extension '", ext, "'\n",
+				"Please set an association with the ",
+				"setPBSext command\n"))
 		} else {
+			# matches extension previously set with setPBSext
 			cmd <- getPBSext(ext)
-			cmd <- gsub("%f", fname, cmd)
+			# RH: gsub needs to expand WinOS "\\" delimiters introduced by `normalizePath` above.
+			cmd <- gsub("%f", gsub("\\\\","\\\\\\\\",fname), cmd)
 			if (.Platform$OS.type=="windows")
 				shell(cmd,wait=FALSE)
 			else
@@ -442,7 +489,8 @@ openFile <- function(fname="", package=NULL)
 	}
 	ops=sapply(fname,.openFile, package=package)
 	invisible(ops) }
-#-----------------------------------------openFile
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-openFile
+
 
 #openUG---------------------------------2009-12-04
 # Open package User Guide 'pkg-UG.pdf' if it exists.
@@ -452,6 +500,8 @@ openUG = function(pkg="PBSmodelling"){
 	pkgnam = as.character(substitute(pkg))
 	openFile(paste("/doc/",pkgnam,"-UG.pdf",sep=""),pkgnam)
 }
+#-------------------------------------------openUG
+
 
 #pad0-----------------------------------2011-12-12
 # Takes numbers (or text coerced to numeric), 
@@ -502,6 +552,7 @@ pad0 <- function (x, n, f = 0) {
 	return(padout) }
 #---------------------------------------------pad0
 
+
 #pause----------------------------------2006-08-28
 # Pause, typically between graphics displays
 # Arguments:
@@ -512,48 +563,10 @@ pause <- function (s = "Press <Enter> to continue") {
 	readline()
 	invisible()
 }
+#--------------------------------------------pause
 
-#promptOpenFile-------------------------2006-09-16
-# Opens a prompt and asks a user to select a file.
-# Arguments:
-#  initialfile - filename to pre-select
-#  filetype - list of vectors specifying allowed filetypes
-# Returns:
-#  selected filename
-# Example:
-#  promptOpenFile("intial_file.txt", filetype=list(c(".txt", "text files"), 
-#                 c(".r", "R files"), c("*", "All Files")))
-#----------------------------------------------ACB
-promptOpenFile <- function(initialfile="", filetype=list(c("*", "All Files")), open=TRUE) {
-	warning( "promptOpenFile is deprecated - use selectFile instead" )
-	filetypes <- ""
-	for(i in 1:length(filetype)) {
-		filetype[[i]]
-		if (is.na(filetype[[i]][2]))
-			filetype[[i]][2] <- filetype[[i]][1]
-		if (filetype[[i]][1] != "*" && substr(filetype[[i]][1],1,1)!=".")
-			filetype[[i]][1] <- paste(".", filetype[[i]][1], sep="")
-		filetypes <- paste(filetypes, " {{", filetype[[i]][2], "} {", filetype[[i]][1], "}}", sep="")
-	}
-	filetypes <- .trimWhiteSpace(filetypes)
-	
-	if (open)
-		return(tclvalue(tkgetOpenFile(initialfile=initialfile, filetypes=filetypes)))
-	else
-		return(tclvalue(tkgetSaveFile(initialfile=initialfile, filetypes=filetypes)))
-}
 
-#promptSaveFile-------------------------2006-09-16
-# Exactly the same as promptOpenFile except displays a 
-# save button instead of an open button
-#----------------------------------------------ACB
-promptSaveFile <- function(initialfile="", filetype=list(c("*", "All Files")), save=TRUE)
-{
-	warning( "promptSaveFile is deprecated - use selectFile instead" )
-	return(promptOpenFile(initialfile, filetype, !save))
-}
-
-#readPBSoptions-------------------------2006-09-16
+#readPBSoptions-------------------------2012-12-04
 # Load PBS options from a text file. The loaded options will
 # overwrite existing ones in memory; however, an existing
 # option in memory will not be cleared if this option does
@@ -563,26 +576,33 @@ promptSaveFile <- function(initialfile="", filetype=list(c("*", "All Files")), s
 # Output:
 #  returns FALSE if file did not exist or if read failed
 #  otherwise returns TRUE
-#----------------------------------------------ACB
+#-------------------------------------------ACB/RH
 readPBSoptions=function(fname="PBSoptions.txt"){
-  .initPBSoptions()
-     
-  optList=try(readList(fname), silent=TRUE)
-  if(class(optList)=="try-error")
-    return(FALSE)
-    
-  eval(parse(text=".PBSmod$.options <<- .mergeLists(.PBSmod$.options, optList)"))
-  if(fname!="PBSoptions.txt")
-    packList(".optionsFile",".PBSmod$.options",fname) #.PBSmod$.options$.optionsFile<<-fname
-  packList(".optionsChanged",".PBSmod$.options",NULL) #.PBSmod$.options$.optionsChanged<<-NULL
+	.initPBSoptions()
+	optList=try(readList(fname), silent=TRUE)
+	if(class(optList)=="try-error")
+		return(FALSE)
+	tget(.PBSmod)
+	#eval(parse(text=".PBSmod$.options <<- .mergeLists(.PBSmod$.options, optList)"))
+	.PBSmod$.options <- .mergeLists(.PBSmod$.options, optList)
+	if(fname!="PBSoptions.txt")
+		#packList(".optionsFile",".PBSmod$.options",fname) #.PBSmod$.options$.optionsFile<<-fname
+		.PBSmod$.options$.optionsFile <- fname
+	#packList(".optionsChanged",".PBSmod$.options",NULL) #.PBSmod$.options$.optionsChanged<<-NULL
+	.PBSmod$.options$.optionsChanged <- NULL
+	tput(.PBSmod)
 }
+#-----------------------------------readPBSoptions
+
 
 #runDemos-------------------------------2009-03-04
 # Display a GUI to display something equivalent to R's demo()
 #-------------------------------------------ACB/RH
 runDemos <- function (package) {
-	if (!exists(".dwd",where=1)) assign(".dwd",getwd(),envir=.GlobalEnv)
-	if (!exists(".dls",where=1)) assign(".dls",c(".dls",ls(pos = 1, all.names=TRUE)),envir=.GlobalEnv)
+	#if (!exists(".dwd",where=1)) assign(".dwd",getwd(),envir=.GlobalEnv)
+	#if (!exists(".dls",where=1)) assign(".dls",c(".dls",ls(pos = 1, all.names=TRUE)),envir=.GlobalEnv)
+	if (!exists(".dwd",envir=.PBSmodEnv)) assign(".dwd",getwd(),envir=.PBSmodEnv) #.GlobalEnv)
+	if (!exists(".dls",envir=.PBSmodEnv)) assign(".dls",c(".dls",ls(pos = .PBSmodEnv, all.names=TRUE)),envir=.PBSmodEnv) #.GlobalEnv)
 	try(closeWin(),silent=TRUE)
 	x <- demo(package = .packages(all.available = TRUE))
 	if (missing(package)) {
@@ -617,7 +637,7 @@ runDemos <- function (package) {
 		showAlert(mess); stop(mess) }
 	x <- x$results[x$results[,"Package"]==package,]
 
-	#It is critical that the label widget named package *only* contain the package name + whitespace -> it is used by getWinVal() later
+	# It is critical that the label widget named package *only* contain the package name + whitespace -> it is used by getWinVal() later
 	wintext <- c( paste( "window title=\"R Demos:", package, "\" name=pbsdemo onclose=.dClose", sep="" ),
 		paste( "label name=package text=", .addslashes( package ), " font=\"bold underline\" fg=red3 padx=10 sticky=w", sep="" ),
 		"label text=\"Select a demo to view:\" sticky=W padx=12 font=\"bold 10\"" )
@@ -653,26 +673,86 @@ runDemos <- function (package) {
 }
 #-----------------------------------------runDemos
 
-#runExample-----------------------------2010-04-14
+
+#.dClose--------------------------------2012-12-17
+# Function to execute on closing runDemos().
+#----------------------------------------------ACB
+.dClose <- function() {
+	act <- getWinAct()[1];
+	closeWin();
+	setwd(tget(.dwd))
+	if (is.null(act) || act=="demo") {
+		remove(list = setdiff(ls(pos=.PBSmodEnv, all.names=TRUE), tget(.dls)), pos = .PBSmodEnv);
+		remove(list = c(".dwd", ".dls"), pos = .PBSmodEnv); }; # final good-bye
+	return(); };
+#------------------------------------------.dClose
+
+
+#.dUpdateDesc-------------------------------------
+.dUpdateDesc <- function() {
+	vals <- getWinVal()
+	demo.id <- vals$demo.id
+	package <- .trimWhiteSpace( vals$package )
+	x <- demo(package = .packages(all.available = TRUE))
+	x <- x$results[x$results[,"Package"]==package,]
+	if (is.null(dim(x))) {
+		tmp<-names(x)
+		dim(x)<-c(1,4)
+		colnames(x)<-tmp
+	}
+	setWinVal( list( demo_desc=x[demo.id,"Title"] ) )
+}
+#-------------------------------------.dUpdateDesc
+
+
+#.viewPkgDemo---------------------------2009-03-04
+# Display a GUI to display something equivalent to R's demo()
+#-------------------------------------------ACB/RH
+.viewPkgDemo <- function() {
+	act <- getWinAct()[1]
+	if (act=="pkg") {
+		package=getWinVal("pkg")$pkg
+		eval(parse(text=paste("OK=require(",package,",quietly=TRUE)",sep="")))
+		if (!OK) {
+			mess=paste(package,"package is not available")
+			showAlert(mess); stop(mess) }
+		return(runDemos(package)) }
+	if (act=="demo") {
+		demo <- getWinVal("demo")$demo
+		source(demo, echo=TRUE, max.deparse.length=100)
+		return(invisible(NULL))
+	}
+	if (act=="source") {
+		demo <- getWinVal("demo")$demo
+		openFile(demo)
+		return(invisible(NULL))
+	}
+}
+#-------------------------------------.viewPkgDemo
+
+
+#runExample-----------------------------2012-12-10
 # Display a single GUI example.
 #-----------------------------------------------RH
 runExample <- function (ex, pkg="PBSmodelling") {
 
 	.runExHelperQuit <- function() {
 		#closeWin(name=allWin)
-		setwd(.cwd)
-		remove(list = setdiff(ls(pos = 1), .cls), pos = 1)
+		setwd(tget(.cwd))
+		remove(list = setdiff(ls(pos = .PBSmodEnv), tget(.cls)), pos = .PBSmodEnv)
+		junk=file.remove(tget(.cfl)) # assign only to suppress printing T/F
 		return() }
-	assign(".cls",ls(pos = 1, all.names=TRUE),envir=.GlobalEnv)
-	assign(".cwd",getwd(),envir=.GlobalEnv)
-	assign(".runExHelperQuit",.runExHelperQuit,envir=.GlobalEnv)
+	assign(".cls",ls(pos=.PBSmodEnv, all.names=TRUE),envir=.PBSmodEnv)    # current list in .PBSmodEnv
+	assign(".cwd",getwd(),envir=.PBSmodEnv)                               # current working system directory
+	assign(".cfl",list.files(tempdir(),full.names=TRUE),envir=.PBSmodEnv) # current file list in temporary system directory
+	assign(".runExHelperQuit",.runExHelperQuit,envir=.PBSmodEnv) #.GlobalEnv)
 
 	pdir <- system.file(package = pkg)                # package directory
 	edir <- paste(pdir, "/", "examples", sep = "")    # examples directory
 	fnam <- paste(edir, list.files(edir), sep = "/")  # file names in examples directory
 	bnam <- basename(fnam)                            # basenames
 
-	if (missing(ex) || !is.element(paste(ex,"Win.txt",sep=""),setdiff(bnam,"runExamplesWin.txt"))) {
+	if (missing(ex) || !any(is.element(paste(ex,"Win.txt",sep=""),setdiff(bnam,"runExamplesWin.txt")))) {
 		mess = paste("Your example does not exist.\nChoose from:\n     ",
 			paste(setdiff(findPrefix("Win.txt",edir),"runExamples"),collapse="\n     "),sep="")
 		showAlert(mess)
@@ -680,16 +760,17 @@ runExample <- function (ex, pkg="PBSmodelling") {
 	rtmp <- tempdir()                                 # R's temporary directory
 	file.copy(fnam, rtmp, overwrite = TRUE)
 	setwd(rtmp)
-	wnam <- paste(ex,"Win.txt",sep="")                # window description file
+	wnam <- paste(ex,"Win.txt",sep="")  # window description file or XML talk file
 	wtxt <- readLines(wnam)
-	wtxt[1] = paste(wtxt[1], "onClose=.runExHelperQuit")
+	wtxt[1] = paste(wtxt[1], "onClose=.win.runExHelperQuit")
 	writeLines(wtxt,wnam)
 	rnam <- paste(ex,".r",sep="")                     # R code file
-	if (is.element(rnam,bnam)) source(rnam)
+	if (is.element(rnam,bnam)) source(rnam,local=.PBSmodEnv) # seems to see the function in .PBSmodEnv
 	invisible() }
 #---------------------------------------runExample
 
-#runExamples----------------------------2010-04-14
+
+#runExamples----------------------------2012-12-17
 # Display a master GUI to display examples
 #-------------------------------------------RH/ACB
 runExamples <- function () {
@@ -699,7 +780,7 @@ runExamples <- function () {
 		act <- getWinAct()[1]
 		if (!exists("act") || !exists("eN")) return()
 		if (act == "quit") { 
-			.runExHelperQuit()
+			tget(.runExHelperQuit)()
 		} else if (act=="clear") {
 			wtxt <- "No examples chosen"
 			closeWin(name=setdiff(allWin,"runE"))
@@ -718,7 +799,7 @@ runExamples <- function () {
 			f <- paste(act, ".r", sep = "" )
 			#assert that files match case
 			stopifnot( any( dir() == f ) == TRUE )
-			source( f )
+			source( f ,local=.PBSmodEnv )
 			wnam <- paste(act, "Win.txt", sep = "") # window description file
 			wtxt <- paste(readLines(wnam), collapse = "\n")
 		}
@@ -726,14 +807,16 @@ runExamples <- function () {
 	}
 	.runExHelperQuit <- function() {
 		closeWin(name=allWin)
-		setwd(.cwd)
-		remove(list = setdiff(ls(pos = 1), .cls), pos = 1)
+		setwd(tget(.cwd))
+		remove(list = setdiff(ls(pos = .PBSmodEnv), tget(.cls)), pos = .PBSmodEnv)
+		junk=file.remove(tget(.cfl)) # assign only to suppress printing T/F
 		return()
 	}
-	assign(".runExHelper",.runExHelper,envir=.GlobalEnv)
-	assign(".runExHelperQuit",.runExHelperQuit,envir=.GlobalEnv)
-	assign(".cls",ls(pos = 1, all.names=TRUE),envir=.GlobalEnv)
-	assign(".cwd",getwd(),envir=.GlobalEnv)
+	assign(".runExHelper",.runExHelper,envir=.PBSmodEnv) #.GlobalEnv)
+	assign(".runExHelperQuit",.runExHelperQuit,envir=.PBSmodEnv) #.GlobalEnv)
+	assign(".cls",ls(pos=.PBSmodEnv, all.names=TRUE),envir=.PBSmodEnv)    # current list in .PBSmodEnv
+	assign(".cwd",getwd(),envir=.PBSmodEnv)                               # current working system directory
+	assign(".cfl",list.files(tempdir(),full.names=TRUE),envir=.PBSmodEnv) # current file list in temporary system directory
 	pckg <- "PBSmodelling"
 	pdir <- system.file(package = pckg)               # package directory
 	edir <- paste(pdir, "/", "examples", sep = "")    # examples directory
@@ -747,7 +830,8 @@ runExamples <- function () {
 	invisible() }
 #--------------------------------------runExamples
 
-#selectDir------------------------------200?-??-??
+
+#selectDir------------------------------2006-06-06
 # Prompts user to select a directory - and returns it.
 #----------------------------------------------ACB
 selectDir <- function( initialdir = getwd(), mustexist = TRUE, title = "", usewidget = NULL )
@@ -767,8 +851,10 @@ selectDir <- function( initialdir = getwd(), mustexist = TRUE, title = "", usewi
 		
 	return( d )
 }
+#----------------------------------------selectDir
 
-#selectFile-----------------------------200?-??-??
+
+#selectFile-----------------------------2006-06-06
 # Prompts a user to open/save a file(s).
 #----------------------------------------------ACB
 selectFile <- function(
@@ -841,32 +927,36 @@ selectFile <- function(
 }
 #---------------------------------------selectFile
 
-#setPBSext------------------------------2008-07-31
+
+#setPBSext------------------------------2012-12-04
 # Associate a new command with file types;
 #  use "%f" in cmd to designate where the filename will be placed.
 # AE: Added the setting of 'optionsChanged'
 # Arguments:
 #  ext - file extension
 #  cmd - cmd to open these types of files
-#-------------------------------------------ACB/AE
+#----------------------------------------ACB/AE/RH
 setPBSext <- function(ext, cmd) {
-	if (!exists(".PBSmod")) 
+	if (!exists(".PBSmod",envir=.PBSmodEnv)) 
 		stop(".PBSmod was not found")
+	tget(.PBSmod)
 	if (!any(grep("%f", cmd)))
 		stop(paste("No %f was found in supplied command \"", cmd, 
 		           "\".\n%f must be used to indicate where the filename will ",
 		           "be inserted by openfile().\n",
 		           "Did you mean \"", cmd, " %f\"?", sep=""))
 		           
-	if(is.null(.PBSmod$.options$openfile[[ext]]) ||
-			.PBSmod$.options$openfile[[ext]]!=cmd)
-		packList(".optionsChanged",".PBSmod$.options",TRUE) #.PBSmod$.options.optionsChanged<<-TRUE
-		
-	eval(parse(text=".PBSmod$.options$openfile[[ext]] <<- cmd"))
+	if(is.null(.PBSmod$.options$openfile[[ext]]) || .PBSmod$.options$openfile[[ext]]!=cmd)
+		#packList(".optionsChanged",".PBSmod$.options",TRUE) #.PBSmod$.options.optionsChanged<<-TRUE
+		.PBSmod$.options.optionsChanged <- TRUE
+	#eval(parse(text=".PBSmod$.options$openfile[[ext]] <<- cmd"))
+	.PBSmod$.options$openfile[[ext]] <- cmd
+	tput(.PBSmod)
 }
 #----------------------------------------setPBSext
 
-#setPBSoptions--------------------------2008-10-02
+
+#setPBSoptions--------------------------2012-12-04
 # Change user options. Arguments:
 #   option - name of option to change
 #   value  - new value of option
@@ -880,23 +970,31 @@ setPBSext <- function(ext, cmd) {
 setPBSoptions <- function(option, value, sublist=FALSE) {
 	.initPBSoptions()
 	if(!is.null(value) && length(value)==1 && value=="") value=NULL
- 	if(substr(option, 1, 1)!="." && !identical(.PBSmod$.options[[option]], value))
-		packList(".optionsChanged",".PBSmod$.options",TRUE) #.PBSmod$.options$.optionsChanged<<-TRUE
+	tget(.PBSmod)
+	if(substr(option, 1, 1)!="." && !identical(.PBSmod$.options[[option]], value))
+		#packList(".optionsChanged",".PBSmod$.options",TRUE) #.PBSmod$.options$.optionsChanged<<-TRUE
+		.PBSmod$.options$.optionsChanged <- TRUE
 	if(is.null(value) && !sublist)
-		eval(parse(text=".PBSmod$.options <<- .removeFromList(.PBSmod$.options, option)"))
+		#eval(parse(text=".PBSmod$.options <<- .removeFromList(.PBSmod$.options, option)"))
+		.PBSmod$.options <- .removeFromList(.PBSmod$.options, option)
 	else{
 		if(is.list(value) && sublist){
 			for (i in 1:length(value)){
 				ii=names(value[i]); if (ii=="") next
 				ival=value[[i]]
-				txt=paste(".PBSmod$.options$",option,ifelse(ii=="","","$"),ii," <<- ival",sep="")
+				#txt=paste(".PBSmod$.options$",option,ifelse(ii=="","","$"),ii," <<- ival",sep="")
+				txt=paste(".PBSmod$.options$",option,ifelse(ii=="","","$"),ii," <- ival",sep="")
 				eval(parse(text=txt))
 			}
 		}
-		else eval(parse(text=".PBSmod$.options[[option]] <<- value"))
+		else
+			#eval(parse(text=".PBSmod$.options[[option]] <<- value"))
+			.PBSmod$.options[[option]] <- value
 	}
+	tput(.PBSmod)
 }
 #------------------------------------setPBSoptions
+
 
 #show0----------------------------------2011-09-08
 # Shows decimal places including zeroes (string)
@@ -928,6 +1026,7 @@ show0 <- function (x, n, add2int=FALSE, round2n=FALSE) {
 		newx[z] <- oldx[z]
 	return(newx) }
 #--------------------------------------------show0
+
 
 #showArgs-------------------------------2009-02-23
 #  show arguments of a widget definition
@@ -979,6 +1078,7 @@ showArgs <- function(widget, width=70, showargs=FALSE) {
 	invisible(out) }
 #-----------------------------------------showArgs
 
+
 #showHelp-------------------------------2009-11-16
 # Show HTML help files for package contents.
 #-----------------------------------------------RH
@@ -1010,6 +1110,7 @@ showHelp <- function(pattern="methods", ...) {
 }
 #-----------------------------------------showHelp
 
+
 #showPacks------------------------------2009-02-17
 # Show packages that need to be installed.
 #-----------------------------------------------RH
@@ -1030,6 +1131,7 @@ showPacks = function(packs=c("PBSmodelling","PBSmapping","PBSddesolve",
 	invisible(list(Apacks=Apacks,Ipacks=Ipacks,Mpacks=Mpacks)) }
 #----------------------------------------showPacks
 
+
 #showRes--------------------------------2008-04-29
 # Show results of the calculation in string x
 #----------------------------------------------JTS
@@ -1043,108 +1145,58 @@ showRes <- function(x, cr=TRUE, pau=TRUE) {
   invisible(xres); };
 #------------------------------------------showRes
 
-#showVignettes--------------------------2008-07-10
+
+#showVignettes--------------------------2012-12-21
 # Display a GUI to display something equivalent to R's vignette()
-# Arguments: package = string specifying a package name.
-#-----------------------------------------------AE
-showVignettes <- function (package) {
-	if (!exists(".dwd",where=1)) assign(".dwd",getwd(),envir=.GlobalEnv)
-	if (!exists(".dls",where=1)) assign(".dls",c(".dls",ls(pos = 1, all.names=TRUE)),envir=.GlobalEnv)
+# Arguments: package = string specifying a package name.-
+#--------------------------------------------AE/RH
+showVignettes = function(package){
+	if (!exists(".dwd",envir=.PBSmodEnv)) assign(".dwd",getwd(),envir=.PBSmodEnv)
+	if (!exists(".dls",envir=.PBSmodEnv)) assign(".dls",c(".dls",ls(pos = .PBSmodEnv, all.names=TRUE)),envir=.PBSmodEnv)
 	closeWin();
 	x <- vignette()
+	xres = as.data.frame(x[["results"]])
 	if (missing(package)) {
-		#display a list of packages to choose from
-		pkgVignette <- unique(x$results[,"Package"])
-		radios <- list(list(list(type="label", text="Select a package to view available vignettes.", sticky="w", padx=12)))
-		i <- 2
-		for(pkg in pkgVignette) {
-			len <- length(x$results[,"Package"][x$results[,"Package"]==pkg])
-			if (len==1)
-				items <- "(1 vignette)"
-			else
-				items <- paste("(",len," vignettes)", sep="")
-			radios[[i]] <- list(list(type="radio",
-			                    name="pkg",
-			                    value=pkg,
-			                    text=paste(pkg, items),
-			                    mode="character",
-			                    sticky="w",
-			                    padx=12))
-			i <- i+1
-		}
-		win <- list(title = "R Vignettes", windowname = "pbs.vignette", onclose=".dClose",
-			.widgets = list(list(type="grid", .widgets=c(
-
-			list(list(
-			list(type="label", text=paste("R Vignettes", paste(rep(" ", times=100), collapse="")), font="bold underline", fg="red3", padx=10, sticky="w")
-			)),
-			radios,
-			list(list(
-			list(type="button", "function"=".viewPkgVignette", action="pkg", text="View Vignettes", sticky="w", padx=12)
-			))
-			))))
-		assign("xxy",win,envir=.GlobalEnv)
-		createWin(list(win))
+		nvig = sapply(split(xres$Item,xres$Package),length)
+		tvig = paste(names(nvig)," (",nvig," vignette",ifelse(nvig>1,"s",""),")",sep="") # radio button labels
+		rvig = paste("radio name=pkg value=",names(nvig),
+			" text=\"",tvig,"\" mode=character sticky=W padx=12",sep="")
+		win = c("window title=\"R Vignettes\" name=pbsvignette onclose=\".dClose\"",
+			"grid 3 1",
+			"label text=\"Select a package to view\\navailable vignettes:\" sticky=W padx=12 font=\"bold 11\"",
+			paste("grid ",length(rvig)," 1",sep=""),
+			rvig,
+			"button function=.viewPkgVignette action=pkg text=\"View Vignettes\" sticky=E padx=12 bg=greenyellow")
+		assign("xxy",win,envir=.PBSmodEnv)
+		createWin(win,astext=TRUE)
 		return(invisible(NULL))
 	}
 	#display vignettes from a certain package
-	x <- x$results[x$results[,"Package"]==package,]
-	radios <- list(list(list(type="label", text="Select a Vignette to view.", sticky="w", padx=12)))
-	i <- 2
-	if (is.null(dim(x))) {
-		tmp<-names(x)
-		dim(x)<-c(1,4)
-		colnames(x)<-tmp
-	}
-	for(j in 1:length(x[,1])) {
-		vignetteDir <- file.path(x[j,"LibPath"], package, "doc")
-		path <- tools::list_files_with_type(vignetteDir, "vignette")
-		path <- path[x[j,"Item"]==tools::file_path_sans_ext(basename(path))]
-
-		if (length(path)==0)
-			stop("error - could not find the path for vignette - this is most likely a bug!")
-		radios[[i]] <- list(list(type="radio",
-		                    name="vignette",
-		                    value=path,
-		                    text=x[j,"Item"],
-		                    mode="character",
-		                    font="underline",
-		                    sticky="w",
-		                    padx=12))
-		i <- i+1
-		radios[[i]] <- list(list(type="label",
-		                    text=x[j,"Title"],
-		                    sticky="w",
-		                    wraplength=500,
-		                    padx=20
-		                    ))
-		i <- i+1
-	}
-	win <- list(title = paste("R Vignettes:", package), windowname = "pbs.vignette", onclose=".dClose",
-		.widgets = list(list(type="grid", .widgets=c(
-			list(list(
-				list(type="label", text=paste(package, paste(rep(" ", times=100), collapse="")), font="bold underline", fg="red3", sticky="w")
-			)),
-			radios,
-			list(list(list(type="null", pady=4))),
-				list(list(
-					list(type="grid", sticky="w", pady=3, .widgets=
-						list(
-							list(
-								list(type="button", "function"=".viewPkgVignette", action="vignette", text="View Vignette", sticky="w", padx=12),
-								list(type="button", "function"=".viewPkgVignette", action="source", text="View Source", sticky="w", padx=12),
-								list(type="button", "function"="showVignettes", action="", text="All Packages", sticky="w", padx=12)
-							)
-						)
-					)
-				))
-			)
-		)))
-	assign("xx",win,envir=.GlobalEnv)
-	createWin(list(win))
+	xpac <- xres[is.element(xres$Package,package),]
+	if (nrow(xpac)==0) stop("No such package on your system")
+	if (is.null(dim(xpac))) {
+		tmp <- names(xres); dim(xpac) <- c(1,dim(xres)[2]); colnames(xpac) <- tmp }
+	vdir <- file.path(xpac[1,"LibPath"], package, "doc") # always the same for a single package
+	path <- tools::list_files_with_type(vdir, "vignette")
+	path <- path[xpac[,"Item"]==tools::file_path_sans_ext(basename(path))]
+	nvig = sapply(split(xpac$Item,xpac$Package),length)
+	rvig = paste("radio name=vignette value=\"",path,"\" text=\"",xpac[,"Item"],"\" mode=character font=\"underline 10\" sticky=W padx=12",sep="")
+	lvig = paste("label text=\"",xpac[,"Title"],"\" sticky=W  wraplength=500 padx=20",sep="")
+	win = c("window title=\"R Vignettes\" name=pbsvignette onclose=\".dClose\"",
+		"grid 3 1",
+		"label text=\"Select a vignette:\" sticky=W padx=12 font=\"bold 11\"",
+		paste("grid ",length(rvig)," 2 byrow=FALSE",sep=""),
+		rvig,lvig,
+		"grid 1 3",
+		"button function=.viewPkgVignette action=vignette text=\"View Vignette\" sticky=W padx=12 bg=lightsteelblue1",
+		"button function=.viewPkgVignette action=source text=\"View Source\" sticky=W padx=12 bg=lightsteelblue1",
+		"button function=showVignettes action=\"\" text=\"All Packages\" sticky=W padx=12 bg=greenyellow")
+	assign("xx",win,envir=.PBSmodEnv)
+	createWin(win,astext=TRUE)
 	return(invisible(NULL))
 }
 #-------------------------------------showVignettes
+
 
 #testWidgets----------------------------2006-08-28
 # Display a "master" GUI that displays other sample GUIs
@@ -1184,13 +1236,82 @@ testWidgets <- function () {
 		}
 		setWinVal(list(wtxt=wtxt), winName="testW");
 	}
-	assign(".testWidHelper",.testWidHelper,envir=.GlobalEnv)
+	assign(".testWidHelper",.testWidHelper,envir=.PBSmodEnv) #.GlobalEnv)
 	pckg <- "PBSmodelling"; dnam <- "testWidgets";
 	wtmp <- paste(dnam,"/","testWidgetWin.txt",sep="");
 	wnam <- system.file(wtmp,package=pckg)
 	createWin(wnam);
 }
 #--------------------------------------testWidgets
+
+
+#tget/tcall/trpint/tput-----------------2012-12-06
+# Functions to get, put, and print objects into the .PBSmodEnv.
+# CRAN packages can no longer modify user's working environment.
+#-----------------------------------------------RH
+tget = function (x, penv=NULL, tenv=.PBSmodEnv) {
+	if (is.null(penv)) penv = parent.frame() # need to call this inside the function NOT as an argument
+	xnam = as.character(substitute(x))
+	if (exists(xnam,envir=tenv)) {
+		eval(parse(text=paste("tgot=get(\"",xnam,"\",envir=tenv)",sep="")))
+		eval(parse(text=paste("assign(\"",xnam,"\",tgot,envir=penv)",sep="")))
+		return(invisible(tgot)) # useful for calling remote functions
+	}
+	invisible()
+}
+tcall = function (x, penv=NULL, tenv=.PBSmodEnv) {
+	if (is.null(penv)) penv = parent.frame() # need to call this inside the function NOT as an argument
+	xnam = as.character(substitute(x))
+	if (exists(xnam,envir=tenv)) {
+		eval(parse(text=paste("tgot=get(\"",xnam,"\",envir=tenv)",sep="")))
+		#if (class(tgot)=="function")
+		return(invisible(tgot)) # useful for calling remote functions
+	}
+	invisible()
+}
+tprint = function (x, penv=NULL, tenv=.PBSmodEnv) {
+	if (is.null(penv)) penv = parent.frame() # need to call this inside the function NOT as an argument
+	xnam = as.character(substitute(x))
+	if (exists(xnam,envir=tenv)) {
+		eval(parse(text=paste("tgot=get(\"",xnam,"\",envir=tenv)",sep="")))
+		print(tgot) # useful for jsust seeing objects in .PBSmodEnv
+	}
+	invisible()
+}
+tput = function (x, penv=NULL, tenv=.PBSmodEnv) {
+	if (is.null(penv)) penv = parent.frame() # need to call this inside the function NOT as an argument
+	xnam = as.character(substitute(x))
+	if (exists(xnam,envir=penv))
+		eval(parse(text=paste("assign(\"",xnam,"\",get(\"",xnam,"\",envir=penv),envir=tenv)",sep="")))
+	invisible()
+}
+# versions of tget/tprint for window calls
+.win.tget = function(){
+	act = getWinAct()[1]
+	eval(parse(text=paste("tget(",act,")()",sep="")))
+}
+.win.tcall = function(){
+	act = getWinAct()[1]
+	eval(parse(text=paste("tcall(",act,")()",sep="")))
+}
+.win.tprint = function(){
+	act = getWinAct()[1]
+	eval(parse(text=paste("tprint(",act,")()",sep="")))
+}
+# functions called from window description files
+.win.runExHelperQuit = function(){ tcall(.runExHelperQuit)() }
+.win.closeALL        = function(){ tcall(closeALL)() }
+.win.closeSDE        = function(){ tcall(closeSDE)() }
+.win.closeChoice     = function(){ tcall(.closeChoice)() }
+.win.makeChoice      = function(){ tcall(.makeChoice)() }
+.win.chFile          = function(){ tcall(chFile)() }
+.win.chTest          = function(){ tcall(chTest)() }
+.win.restoreCWD      = function(){
+	if(exists("cwd",envir=.PBSmodEnv) && tcall(cwd)!=getwd())
+		setwd(tcall(cwd))
+}
+#---------------------------tget/tcall/trpint/tput
+
 
 #view-----------------------------------2011-10-31
 # View first/last/random n element/rows of an object.
@@ -1235,6 +1356,7 @@ view <- function (obj, n=5, last=FALSE, random=FALSE, print.console=TRUE, ...) {
 	invisible(viewed)
 }
 #---------------------------------------------view
+
 
 #viewCode-------------------------------2010-10-19
 # View package R code on the fly.
@@ -1310,22 +1432,28 @@ viewCode=function(pkg="PBSmodelling", funs, output=4, ...){
 	invisible(code) }
 #----------------------------------------viewCode
 
-#writePBSoptions------------------------2006-09-16
+
+#writePBSoptions------------------------2012-12-04
 # Save PBS options to a text file
 #  fname - name of options file (or path to this file)
-#----------------------------------------------ACB
+#-------------------------------------------ACB/RH
 writePBSoptions=function(fname="PBSoptions.txt") {
-  .initPBSoptions()
-  if(fname!="PBSoptions.txt")
-    packList(".optionsFile",".PBSmod$.options",fname) #.PBSmod$.options$.optionsFile<<-fname
-    
-	packList(".optionsChanged",".PBSmod$.options",NULL) #.PBSmod$.options$.optionsChanged<<-NULL
-	
+	.initPBSoptions()
+	tget(.PBSmod)
+	if(fname!="PBSoptions.txt")
+		#packList(".optionsFile",".PBSmod$.options",fname) #.PBSmod$.options$.optionsFile<<-fname
+		.PBSmod$.options$.optionsFile <- fname
+	#packList(".optionsChanged",".PBSmod$.options",NULL) #.PBSmod$.options$.optionsChanged<<-NULL
+	.PBSmod$.options$.optionsChanged <- NULL
+	tput(.PBSmod)
 	saveOpt=.PBSmod$.options[-grep("^[.]", names(.PBSmod$.options))]
-  writeList(saveOpt, fname)
+	writeList(saveOpt, fname)
 }
+#----------------------------------writePBSoptions
+
 
 #============HIDDEN FUNCTIONS=====================
+
 
 #.addslashes----------------------------2006-08-28
 # Escapes special characters from a string, which can then be used in the "P" format
@@ -1355,6 +1483,7 @@ writePBSoptions=function(fname="PBSoptions.txt") {
 	}
 	return(paste("\"", x, "\"", sep="")) }
 #--------------------------------------.addslashes
+
 
 #.convertVecToArray---------------------2006-09-16
 # Converts a vector to an Array
@@ -1387,40 +1516,13 @@ writePBSoptions=function(fname="PBSoptions.txt") {
 }
 #-------------------------------.convertVecToArray
 
-#.dClose--------------------------------2006-08-28
-# Function to execute on closing runDemos().
-#----------------------------------------------ACB
-.dClose <- function() {
-	act <- getWinAct()[1];
-	closeWin();
-	setwd(.dwd)
-	if (is.null(act) || act=="demo") {
-		remove(list = setdiff(ls(pos=1, all.names=TRUE), .dls), pos = 1);
-		remove(list = c(".dwd", ".dls"), pos = 1); }; # final good-bye
-	return(); };
-#------------------------------------------.dClose
 
-#.dUpdateDesc-------------------------------------
-.dUpdateDesc <- function() {
-	vals <- getWinVal()
-	demo.id <- vals$demo.id
-	package <- .trimWhiteSpace( vals$package )
-	x <- demo(package = .packages(all.available = TRUE))
-	x <- x$results[x$results[,"Package"]==package,]
-	if (is.null(dim(x))) {
-		tmp<-names(x)
-		dim(x)<-c(1,4)
-		colnames(x)<-tmp
-	}
-
-	setWinVal( list( demo_desc=x[demo.id,"Title"] ) )
-}
-#-------------------------------------.dUpdateDesc
-
-#.findSquare--------------------------------------
+#.findSquare----------------------------2009-02-11
 .findSquare=function(nc) {
 	sqn=sqrt(nc); m=ceiling(sqn); n=ceiling(nc/m)
 	return(c(m,n)) }
+#--------------------------------------.findSquare
+
 
 #.forceMode-----------------------------2009-02-11
 # Forces a variable into a mode without showing any warnings
@@ -1439,6 +1541,7 @@ writePBSoptions=function(fname="PBSoptions.txt") {
 	options(warn=warn)
 	return(xcon) }
 #---------------------------------------.forceMode
+
 
 #.getArrayPts---------------------------2009-02-10
 #  Returns all possible indices of an array
@@ -1464,18 +1567,29 @@ writePBSoptions=function(fname="PBSoptions.txt") {
 	return(y) }
 #-------------------------------------.getArrayPts
 
-#.initPBSoptions------------------------2009-07-20
+
+#.initPBSoptions------------------------2012-12-04
 # Called from zzz.R's .First.lib() intialization function
-#-----------------------------------------------AE
+# Attach will place only a copy of the environment on the search path;
+# so not useful for manipulating .PBSmod
+#--------------------------------------------AE/RH
 .initPBSoptions <- function() {
-	if (!exists(".PBSmod"))
-		assign(".PBSmod",list(),envir=.GlobalEnv)      #.PBSmod <<- list()
+	if (exists(".PBSmod",envir=.GlobalEnv)){
+		assign(".PBSmod",.PBSmod,envir=.PBSmodEnv)
+		rm(.PBSmod,envir=.GlobalEnv) }                 # Can no longer modify user's global environment
+	if (!exists(".PBSmod",envir=.PBSmodEnv))
+		assign(".PBSmod",list(),envir=.PBSmodEnv)      #.GlobalEnv) #.PBSmod <<- list()
+	tget(.PBSmod)
 	if (is.null(.PBSmod$.options))
-		packList(".options",".PBSmod",list())          #.PBSmod$.options <<- list()
+		#packList(".options",".PBSmod",list())          #.PBSmod$.options <<- list()
+		.PBSmod$.options <- list()
 	if (is.null(.PBSmod$.options$openfile))
-		packList("openfile",".PBSmod$.options",list()) #.PBSmod$.options$openfile <<- list()
+		#packList("openfile",".PBSmod$.options",list()) #.PBSmod$.options$openfile <<- list()
+		.PBSmod$.options$openfile <- list()
+	tput(.PBSmod)
 }
 #----------------------------------.initPBSoptions
+
 
 #.mapArrayToVec-------------------------2006-09-16
 # Determines which index to use for a vector, when given an 
@@ -1510,6 +1624,7 @@ writePBSoptions=function(fname="PBSoptions.txt") {
 }
 #-----------------------------------.mapArrayToVec
 
+
 #.removeFromList------------------------2008-10-06
 # Remove items from a list.
 #--------------------------------------------AE/RH
@@ -1517,8 +1632,10 @@ writePBSoptions=function(fname="PBSoptions.txt") {
 	if (!length(l) || !length(items))  return(l)
 	keep = l[!is.element(names(l),items)]
 	return(keep) }
+#----------------------------------.removeFromList
 
-#.tclArrayToVector--------------------------------
+
+#.tclArrayToVector----------------------2008-10-06
 .tclArrayToVector <- function( str )
 {
 	#strings (when multiple) are encoded as "{c:/program files/somefile.txt} c:/nospaces/isok.txt"
@@ -1560,30 +1677,6 @@ writePBSoptions=function(fname="PBSoptions.txt") {
 }
 #--------------------------------.tclArrayToVector
 
-#.viewPkgDemo---------------------------2009-03-04
-# Display a GUI to display something equivalent to R's demo()
-#-------------------------------------------ACB/RH
-.viewPkgDemo <- function() {
-	act <- getWinAct()[1]
-	if (act=="pkg") {
-		package=getWinVal("pkg")$pkg
-		eval(parse(text=paste("OK=require(",package,",quietly=TRUE)",sep="")))
-		if (!OK) {
-			mess=paste(package,"package is not available")
-			showAlert(mess); stop(mess) }
-		return(runDemos(package)) }
-	if (act=="demo") {
-		demo <- getWinVal("demo")$demo
-		source(demo, echo=TRUE, max.deparse.length=100)
-		return(invisible(NULL))
-	}
-	if (act=="source") {
-		demo <- getWinVal("demo")$demo
-		openFile(demo)
-		return(invisible(NULL))
-	}
-}
-#-------------------------------------.viewPkgDemo
 
 #.viewPkgVignettes----------------------2008-07-10
 # Display a GUI to display something equivalent to R's vignette()
@@ -1599,4 +1692,7 @@ writePBSoptions=function(fname="PBSoptions.txt") {
 	return(invisible(NULL))
 }
 #--------------------------------.viewPkgVignettes
+
+
+#===== THE END ===================================
 

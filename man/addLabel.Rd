@@ -3,7 +3,7 @@
 \title{Add a Label to a Plot Using Relative (0:1) Coordinates}
 
 \description{
-	Place a label in a plot using relative (0:1) coordinates
+  Place a label in a plot using relative (0:1) coordinates
 }
 
 \usage{
@@ -17,14 +17,18 @@ addLabel(x, y, txt, ...)
   \item{...}{additional arguments passed to the function \code{text}.}
 }
 \author{
-  Jon Schnute, Pacific Biological Station, Nanaimo BC
+  Jon T. Schnute, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
 }
 \seealso{
   \code{\link{addArrows}}, \code{\link{addLegend}}
 }
 \examples{
-resetGraph()
-addLabel(0.75,seq(from=0.9,to=0.1,by=-0.10),c('a','b','c'), col="#0033AA")
+local(envir=.PBSmodEnv,expr={
+  oldpar = par(no.readonly=TRUE)
+  resetGraph()
+  addLabel(0.75,seq(from=0.9,to=0.1,by=-0.10),c('a','b','c'), col="#0033AA")
+  par(oldpar)
+})
 }
 
 \keyword{iplot}

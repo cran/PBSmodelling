@@ -5,14 +5,12 @@
   Pack a list with existing objects using names only.
 }
 \usage{
-packList(stuff, target="PBSlist", value, 
-         lenv=parent.frame(), tenv=.GlobalEnv)
+packList(stuff, target="PBSlist", value, tenv=.PBSmodEnv)
 }
 \arguments{
   \item{stuff}{ string vector of object names }
   \item{target}{ target list object }
   \item{value}{ an optional explicit value to assign to \code{stuff} }
-  \item{lenv}{ local environment where objects are located }
   \item{tenv}{ target environment where target list is or will be located }
 }
 \details{
@@ -25,23 +23,29 @@ packList(stuff, target="PBSlist", value,
   instead of looking for local objects. Essentially, \code{stuff=value}
   which is then packed into \code{target}.
 }
+\note{
+  The function determines the parent environment from within. 
+  This environment contains the objects from which the function copies to the target environment.
+}
 \value{
   No value is returned
 }
 \author{
-  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+  Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
 }
 \seealso{
   \code{\link{unpackList}}, \code{\link{readList}}, \code{\link{writeList}}
 }
 \examples{
-fn = function() {
-	alpha=rnorm(10)
-	beta=letters
-	gamma=mean
-	delta=longley
-	packList(c("alpha","beta","gamma","delta")) }
-fn(); print(PBSlist)
+local(envir=.PBSmodEnv,expr={
+  fn = function() {
+    alpha=rnorm(10)
+    beta=letters
+    gamma=mean
+    delta=longley
+    packList(c("alpha","beta","gamma","delta")) }
+  fn(); tprint(PBSlist)
+})
 }
 \keyword{list}
 \keyword{file}

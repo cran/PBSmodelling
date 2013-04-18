@@ -40,28 +40,32 @@ getChoice(choice=c("Yes","No"), question="Make a choice: ",
   
 }
 \author{
-  Rowan Haigh, Pacific Biological Station, Nanaimo BC
+  Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
 }
 \note{ 
-	Microsoft Windows users may experience difficulties switching focus between the 
-	R console and GUI windows. The latter frequently disappear from the screen and 
-	need to be reselected (either clicking on the task bar or pressing <Alt><Tab>. 
-	This issue can be resolved by switching from MDI to SDI mode. From the R console 
-	menu bar, select <Edit> and <GUI preferences>, then change the value of 
-	\dQuote{single or multiple windows} to SDI.
+  Microsoft Windows users may experience difficulties switching focus between the 
+  R console and GUI windows. The latter frequently disappear from the screen and 
+  need to be reselected (either clicking on the task bar or pressing <Alt><Tab>. 
+  This issue can be resolved by switching from MDI to SDI mode. From the R console 
+  menu bar, select <Edit> and <GUI preferences>, then change the value of 
+  \dQuote{single or multiple windows} to SDI.
 }
 \seealso{ 
-	\code{\link{chooseWinVal}}, \code{\link{getWinVal}}, \code{\link{setWinVal}}
+  \code{\link{chooseWinVal}}, \code{\link{getWinVal}}, \code{\link{setWinVal}}
 }
 \examples{
 \dontrun{
 #-- Example 1
-getChoice(c("Fame","Fortune","Health","Beauty","Lunch"),
-   "What do you want?",qcolor="red",gui=F)
+local(envir=.PBSmodEnv,expr={
+  getChoice(c("Fame","Fortune","Health","Beauty","Lunch"),
+    "What do you want?",qcolor="red",gui=FALSE)
+})
 
 #-- Example 2
-getChoice(c("Homer Simpson","Wilberforce Humphries","Miss Marple"),
-   "Who`s your idol?",horiz=F,radio=T,gui=F)
+local(envir=.PBSmodEnv,expr={
+  getChoice(c("Homer Simpson","Wilberforce Humphries","Miss Marple","Gary Numan"),
+    "Who`s your idol?",horiz=FALSE,radio=TRUE,gui=FALSE)
+})
 }
 }
 \keyword{ device }

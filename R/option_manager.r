@@ -1,4 +1,8 @@
-#taken from R Curl - merge x and y, if elements match in both x and y, then elements from y are stored (overwriting x's elements)
+#.mergeLists----------------------------2012-12-20
+#  Taken from R Curl - merge x and y, if elements
+#  match in both x and y, then elements from y are
+#  stored (overwriting x's elements).
+#----------------------------------------------ACB
 .mergeLists <- function( x, y ) 
 {
     if (length(x) == 0) 
@@ -11,7 +15,10 @@
         x[names(y)[which(i)]] = y[which(i)]
     x
 }
+#--------------------------------------.mergeLists
 
+
+#PBSoptions-class-----------------------2012-12-20
 setClass ("PBSoptions", representation( instance = "list" ) )
 
 setMethod( f="initialize", signature="PBSoptions",
@@ -96,6 +103,11 @@ definition=function(.Object, filename, initial.options = list(), gui.prefix = "o
 	set <- function( ... )
 	{
 		v <- list( ... )
+                if( length( v ) == 1 && is.list( v[[1]] ) && length( names( v ) ) == 0
+                   && length( names( v[[1]] ) ) > 0)
+                        # assume that a single, unnamed list that contains a named list of
+                        # length greater than 0 is actually a list of options
+                        v <- v[[1]]
 		if( length( v ) == 0 ) return()
 		if( is.null( names( v ) ) || any( names( v ) == "" ) )
 			stop( "values must be named" )
@@ -159,7 +171,10 @@ definition=function(.Object, filename, initial.options = list(), gui.prefix = "o
 	return( .Object )
 }
 )
+#---------------------------------PBSoptions-class
 
+
+#.showOptions---------------------------2012-12-20
 .showOptions <- function( object )
 {
 	cat( "filename:", object@instance$getFileName(), "\n" )
@@ -172,70 +187,114 @@ definition=function(.Object, filename, initial.options = list(), gui.prefix = "o
 		str( opts, no.list=T)
 	}
 }
+#-------------------------------------.showOptions
 
+
+#PBSotions-methods----------------------2012-12-20
 setMethod( "print", signature="PBSoptions",
 definition=function( x, ... )
 {
 	.showOptions( x )
 }
 )
-
 setMethod( "show", signature="PBSoptions",
 definition=function( object )
 {
 	.showOptions( object )
 }
 )
+#--------------------------------PBSotions-methods
 
 
+#getOptions-----------------------------2012-12-20
 getOptions <-function( option.object, key )
 {
 	if( is( option.object, "PBSoptions" ) == FALSE ) stop( "option.object must be a pbsmodelling option class" )
 	option.object@instance$get( key )
 }
+#---------------------------------------getOptions
+
+
+#getOptionsFileName---------------------2012-12-20
 getOptionsFileName <-function( option.object )
 {
 	if( is( option.object, "PBSoptions" ) == FALSE ) stop( "option.object must be a pbsmodelling option class" )
 	option.object@instance$getFileName()
 }
+#-------------------------------getOptionsFileName
+
+
+#getOptionsPrefix-----------------------2012-12-20
 getOptionsPrefix <-function( option.object )
 {
 	if( is( option.object, "PBSoptions" ) == FALSE ) stop( "option.object must be a pbsmodelling option class" )
 	option.object@instance$getPrefix()
 }
+#---------------------------------getOptionsPrefix
+
+
+#loadOptions----------------------------2012-12-20
 loadOptions <-function( option.object, fname, prompt = FALSE )
 {
 	if( is( option.object, "PBSoptions" ) == FALSE ) stop( "option.object must be a pbsmodelling option class" )
 	option.object@instance$load( fname, prompt )
 }
+#--------------------------------------loadOptions
+
+
+#loadOptionsGUI-------------------------2012-12-20
 loadOptionsGUI <-function( option.object )
 {
 	if( is( option.object, "PBSoptions" ) == FALSE ) stop( "option.object must be a pbsmodelling option class" )
 	option.object@instance$loadGUI()
 }
+#-----------------------------------loadOptionsGUI
+
+
+#saveOptions----------------------------2012-12-20
 saveOptions <-function( option.object, fname, prompt = FALSE )
 {
 	if( is( option.object, "PBSoptions" ) == FALSE ) stop( "option.object must be a pbsmodelling option class" )
 	option.object@instance$save( fname, prompt )
 }
+#--------------------------------------saveOptions
+
+
+#saveOptionsGUI-------------------------2012-12-20
 saveOptionsGUI <-function( option.object )
 {
 	if( is( option.object, "PBSoptions" ) == FALSE ) stop( "option.object must be a pbsmodelling option class" )
 	option.object@instance$saveGUI()
 }
+#-----------------------------------saveOptionsGUI
+
+
+#setOptions-----------------------------2012-12-20
 setOptions <-function( option.object, ... )
 {
 	if( is( option.object, "PBSoptions" ) == FALSE ) stop( "option.object must be a pbsmodelling option class" )
 	option.object@instance$set( ... )
 }
+#---------------------------------------setOptions
+
+
+#setOptionsFileName---------------------2012-12-20
 setOptionsFileName <-function( option.object, name )
 {
 	if( is( option.object, "PBSoptions" ) == FALSE ) stop( "option.object must be a pbsmodelling option class" )
 	option.object@instance$setFileName( name )
 }
+#-------------------------------setOptionsFileName
+
+
+#setOptionsPrefix-----------------------2012-12-20
 setOptionsPrefix <-function( option.object, prefix )
 {
 	if( is( option.object, "PBSoptions" ) == FALSE ) stop( "option.object must be a pbsmodelling option class" )
 	option.object@instance$setPrefix( prefix )
 }
+#---------------------------------setOptionsPrefix
+
+
+#===== THE END ===================================
 

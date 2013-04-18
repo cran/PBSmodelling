@@ -11,7 +11,7 @@
 setPathOption(option)
 }
 \arguments{
-	\item{option}{name PBS option to change}
+  \item{option}{name PBS option to change}
 }
 \author{
   Anisa Egeli, Vancouver Island University, Nanaimo BC
@@ -25,6 +25,9 @@ setPathOption(option)
 }
 \examples{
 \dontrun{
-setPathOption("myPath")
+local(envir=.PBSmodEnv,expr={
+  setPathOption("myPath")
+})
 }
 }
+

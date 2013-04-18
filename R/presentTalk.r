@@ -1,4 +1,6 @@
-#set classes used by presenttalk
+#=================================================
+# Set classes used by presenttalk
+# -------------------------------
 setClass( "text", representation( text = "character", "break" = "logical" ) )
 setClass( "file", representation( name = "character", filename = "character", "break" = "logical", button = "logical", col = "integer" ) )
 setClass( "code", representation( show = "logical", print = "logical", code = "character", "break" = "character", eval = "logical" ) )
@@ -16,9 +18,12 @@ setValidity ("code", function( object )
 	return( TRUE )
 }
 )
+#=================================================
 
 
-#returns a talk s4 class - given a filename to an xml talk
+#.parseTalkFile-------------------------2012-12-20
+#  Returns a talk s4 class - given a filename to an xml talk
+#----------------------------------------------ACB
 .parseTalkFile <- function( talk_fname )
 {
 	.processSection <- function( node )
@@ -142,9 +147,12 @@ setValidity ("code", function( object )
 
 	return( talk )
 }
+#-----------------------------------.parseTalkFile
 
 
+#.getSectionNames-----------------------2012-12-20
 #given a talk, return a vector of all section names
+#----------------------------------------------ACB
 .getSectionNames <- function( talk )
 {
 	stopifnot( any( class( talk ) == "talk" ) )
@@ -156,10 +164,13 @@ setValidity ("code", function( object )
 	}
 	return( section_names )
 }
-	
+#---------------------------------.getSectionNames
 
+
+#.getTalkIndexes------------------------2012-12-20
 #retuns a list of 2 element vectors (i,j) where i is the section index, and j is the items index
 #each element of the list corresponds to a break point
+#----------------------------------------------ACB
 .getTalkIndexes <- function( talk )
 {
 	stopifnot( !missing( talk ) )
@@ -180,9 +191,13 @@ setValidity ("code", function( object )
 	}
 	return( breaks )
 }
+#----------------------------------.getTalkIndexes
 
 
-#get the slide index which corresponds to the first slide in a given section
+#.getIndexForSection--------------------2012-12-20
+#  Get the slide index which corresponds to the 
+#  first slide in a given section.
+#----------------------------------------------ACB
 .getIndexForSection <- function( talk, section_id )
 {
 	indices <- .getTalkIndexes( talk )
@@ -194,9 +209,12 @@ setValidity ("code", function( object )
 	}
 	return( i )
 }
+#------------------------------.getIndexForSection
 
 
-#returns win description for a button for a file or section
+#.getButton-----------------------------2012-12-20
+#  Returns win description for a button for a file or section.
+#----------------------------------------------ACB
 .getButton <- function( talk_name, obj )
 {
 	if( inherits( obj, "section" ) ) {
@@ -208,9 +226,12 @@ setValidity ("code", function( object )
 		return( b )
 	}
 }
+#---------------------------------------.getButton
 
 
-#gets widget descriptions for file and section buttons
+#.getButtons----------------------------2012-12-20
+#  Gets widget descriptions for file and section buttons.
+#----------------------------------------------ACB
 .getButtons <- function( talk )
 {
 	#create a list of buttons
@@ -285,9 +306,12 @@ setValidity ("code", function( object )
 	}
 	return( w )
 }
+#--------------------------------------.getButtons
 
 
-#get widget description for menus
+#.getMenus------------------------------2012-12-20
+#  Get widget description for menus.
+#----------------------------------------------ACB
 .getMenus <- function( talk )
 {
 	stopifnot( inherits( talk, "talk" ) )
@@ -321,9 +345,12 @@ setValidity ("code", function( object )
 
 	return( w )
 }
+#----------------------------------------.getMenus
 
 
-#open files from the win act, and supports multiple files
+#.presentTalkOpenFile-------------------2012-12-20
+#  Open files from the win act, and supports multiple files.
+#----------------------------------------------ACB
 .presentTalkOpenFile <- function()
 {
 	f <- getWinAct()[ 1 ]
@@ -331,10 +358,13 @@ setValidity ("code", function( object )
 	print( f )
 	sapply( f, openFile )
 }
+#-----------------------------.presentTalkOpenFile
 
 
+#.updateSlide---------------------------2012-12-20
 .updateSlide <- function( talk )
 {
+	tget(.PBSmod)
 	index <- .PBSmod[[ ".presentTalk" ]][[ talk@name ]]$index 
 	indicies <- .getTalkIndexes( talk )
 	section_id <- indicies[[ index ]][ 1 ]
@@ -410,71 +440,101 @@ setValidity ("code", function( object )
 	else
 		cat( "--------------------------------------------< End of talk >---------\n" )
 }
+#-------------------------------------.updateSlide
 
 
+#.startSlide----------------------------2012-12-20
 .startSlide <- function( talk ) {
-	eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ talk@name ]]$index <<- 1"))
+	tget(.PBSmod)
+	#eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ talk@name ]]$index <<- 1"))
+	.PBSmod[[ ".presentTalk" ]][[ talk@name ]]$index <- 1
+	tput(.PBSmod)
 	talk <- .PBSmod[[ ".presentTalk" ]][[ talk@name ]]$talk
 	.updateSlide( talk )
 }
+#--------------------------------------.startSlide
+
+
+#.prevSlide-----------------------------2012-12-20
 .prevSlide <- function() {
 	talk_name <- getWinAct()[1]
+	tget(.PBSmod)
 	index <- .PBSmod[[ ".presentTalk" ]][[ talk_name ]]$index
 	talk <- .PBSmod[[ ".presentTalk" ]][[ talk_name ]]$talk
-	eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ talk_name ]]$index <<- index - 1"))
+	#eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ talk_name ]]$index <<- index - 1"))
+	.PBSmod[[ ".presentTalk" ]][[ talk_name ]]$index <- index - 1
+	tput(.PBSmod)
 	.updateSlide( talk )
 }
+#---------------------------------------.prevSlide
+
+
+#.nextSlide-----------------------------2012-12-20
 .nextSlide <- function() {
 	talk_name <- getWinAct()[1]
+	tget(.PBSmod)
 	index <- .PBSmod[[ ".presentTalk" ]][[ talk_name ]]$index
 	talk <- .PBSmod[[ ".presentTalk" ]][[ talk_name ]]$talk
-	eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ talk_name ]]$index <<- index + 1"))
+	#eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ talk_name ]]$index <<- index + 1"))
+	.PBSmod[[ ".presentTalk" ]][[ talk_name ]]$index <- index + 1
+	tput(.PBSmod)
 	.updateSlide( talk )
 }
+#---------------------------------------.nextSlide
+
+
+#.slidedrop-----------------------------2012-12-20
 .slidedrop <- function() {
 	#get talk
 	talk_name <- getWinAct()[1]
+	tget(.PBSmod)
 	talk <- .PBSmod[[ ".presentTalk" ]][[ talk_name ]]$talk
 	index <- .PBSmod[[ ".presentTalk" ]][[ talk_name ]]$index
-
 	section_id <- .getTalkIndexes( talk )[[ index ]][ 1 ]
 	new_index <- getWinVal()$slides.id
-
 	#do nothing if current section is re-selected
 	if( index == new_index )
 		return()
-
-	eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ talk_name ]]$index <<- new_index"))
+	#eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ talk_name ]]$index <<- new_index"))
+	.PBSmod[[ ".presentTalk" ]][[ talk_name ]]$index <- new_index
+	tput(.PBSmod)
 	.updateSlide( talk )
 }
+#---------------------------------------.slidedrop
+
+
+#.sectiondrop---------------------------2012-12-20
 .sectiondrop <- function() {
 	#get talk
 	talk_name <- getWinAct()[1]
+	tget(.PBSmod)
 	talk <- .PBSmod[[ ".presentTalk" ]][[ talk_name ]]$talk
 	index <- .PBSmod[[ ".presentTalk" ]][[ talk_name ]]$index
-
 	section_id <- .getTalkIndexes( talk )[[ index ]][ 1 ]
 	new_sect_id <- getWinVal()$section.id
-
 	#do nothing if current section is re-selected
 	if( section_id == new_sect_id )
 		return()
-
-	eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ talk_name ]]$index <<- .getIndexForSection( talk, new_sect_id )"))
+	#eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ talk_name ]]$index <<- .getIndexForSection( talk, new_sect_id )"))
+	.PBSmod[[ ".presentTalk" ]][[ talk_name ]]$index <- .getIndexForSection( talk, new_sect_id )
+	tput(.PBSmod)
 	.updateSlide( talk )
 }
+#-------------------------------------.sectiondrop
 
+
+#.setsection----------------------------2012-12-20
 .setsection <- function()
 {
 	act = getWinAct()[ 1 ]
 	act = unlist( strsplit( act, ":" ) )
 	talk_name <- act[ 1 ]
 	act <- act[ 2 ]
+	tget(.PBSmod)
 	talk <- .PBSmod[[ ".presentTalk" ]][[ talk_name ]]$talk
 	index <- .PBSmod[[ ".presentTalk" ]][[ talk_name ]]$index
 	indicies <- .getTalkIndexes( talk )
 	section_id <- indicies[[ index ]][ 1 ]
-
 	if( act == "+1" )
 		index <- .getIndexForSection( talk, section_id + 1 )
 	else if( act == "-1" )
@@ -483,32 +543,45 @@ setValidity ("code", function( object )
 		index <- .getIndexForSection( talk, section_id )
 	else
 		index <- .getIndexForSection( talk, as.integer( act ) )
-
-	eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ talk_name ]]$index <<- index"))
+	#eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ talk_name ]]$index <<- index"))
+	.PBSmod[[ ".presentTalk" ]][[ talk_name ]]$index <- index
+	tput(.PBSmod)
 	.updateSlide( talk )
 }
+#--------------------------------------.setsection
 
 
+#presentTalk----------------------------2012-12-12
+# Present an interactive talk within R.
+#-------------------------------------------ACB/RH
 presentTalk <- function( talk )
 {
 	if( require( "XML" ) == FALSE ) {
 		stop( "the XML R package is required to use presentTalk - please install it first. Linux users might have to install libxml-dev (via apt) before installing the R XML package." )
 	}
-	PBSmodelling:::.initPBSoptions()
+	#PBSmodelling:::.initPBSoptions()
+	.initPBSoptions()
+	tget(.PBSmod)
 	#setup .PBSmod$.talk (should be seperate package)
-	if( !is.null( .PBSmod[[ ".presentTalk" ]] ) )
-		eval(parse(text=".PBSmod[[ \".presentTalk\" ]] <<- list()"))
-	
+	if( !is.null( .PBSmod[[ ".presentTalk" ]] ) ) {
+		#eval(parse(text=".PBSmod[[ \".presentTalk\" ]] <<- list()"))
+		.PBSmod[[ ".presentTalk" ]] <- list()
+		tput(.PBSmod) }
 	#parse XML into a DOM
 	talk <- .parseTalkFile( talk )
+	indicies <- .getTalkIndexes( talk )
+	vals <- 1:(length( indicies ) )
+	nvals = length(vals)
 
 	#save parsed talk
 	name <- talk@name
-	eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ name ]] <<- list( index = 0, talk = talk )"))
+	#eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ name ]] <<- list( index = 0, talk = talk )"))
+	.PBSmod[[ ".presentTalk" ]][[ name ]] <- list( index = 0, talk = talk )
+	tput(.PBSmod)
 
 	#create a GUI for it
 	win_desc <- c(
-	paste( "window name=presentwin title=\"", .addslashes( name ), "\"", sep="" ),
+	paste( "window name=presentwin onclose=.win.restoreCWD title=\"", .addslashes( name ), "\"", sep="" ),
 	.getMenus( talk ),
 	"grid 1 2 pady=\"0 5\"",
 		"grid 1 1 relief=groove",
@@ -525,8 +598,8 @@ presentTalk <- function( talk )
 		"grid 2 1 padx=3 pady=3",
 		"grid 1 3 sticky=E",
 		"label \"slide:\" font=\"8\" sticky=W",
-	 	paste( "droplist name=slides values=\"\" function=.slidedrop bg=greenyellow width=9 action=\"",name,"\"", sep="" ),
-		"label \"/ n\" name=slidecount font=\"8\" sticky=W",
+		paste( "droplist name=slides values=\"\" function=.slidedrop bg=greenyellow width=9 action=\"",name,"\"", sep="" ),
+		paste("label \"/ ",nvals,"\" name=slidecount font=\"8\" sticky=W",sep=""),
 		"grid 1 2",
 		paste( "button name=back text=\"< Back\" bg=greenyellow sticky=S function=.prevSlide action=\"",name,"\" width=10", sep="" ),
 		paste( "button name=go text=\"Go >\" bg=greenyellow sticky=S function=.nextSlide action=\"",name,"\" width=10", sep="" ),
@@ -546,8 +619,13 @@ presentTalk <- function( talk )
 	vals <- 1:(length( indicies ) )
 	setWinVal( list( slides.values = vals ) )
 	setWinVal( list( slides = vals[1] ) )
-	setWinVal( list( slidecount = paste( "/", length( indicies ) ) ) )
+	#setWinVal( list( slidecount = paste( "/", length( indicies ) ) ) )  # cannot uptdate a label widget
 
 	#move to first slide
 	.startSlide( talk )
 }
+#--------------------------------------presentTalk
+
+
+#===== THE END ===================================
+

@@ -12,6 +12,8 @@ SET PBS_NO_PAUSE=1
 call RPathCheck.bat
 
 if not defined PBSERROR (
-  Rcmd check %1 )
+  rem echo %TMPDIR%
+  rem Rcmd check %1 )
+  R CMD check --as-cran %1 )
 
 :end
