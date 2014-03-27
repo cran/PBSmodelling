@@ -119,7 +119,7 @@ clearAll <- function(hidden=TRUE, verbose=TRUE, PBSsave=TRUE, pos=.PBSmodEnv) {
 #-----------------------------------------clearAll
 
 
-#clearPBSext----------------------------2012-12-04
+#clearPBSext----------------------------2013-07-16
 # Disassociate any number of file extensions from commands
 #  previously save with setPBSext.
 # Argument:
@@ -130,7 +130,7 @@ clearPBSext=function(ext){
   .initPBSoptions()
   tget(.PBSmod)
   if(missing(ext))
-    packList("openfile",".PBSmod$.options",list()) #.PBSmod$.options$openfile<<-list()
+    .PBSmod$.options$openfile <- list() #packList("openfile",".PBSmod$.options",list()) #.PBSmod$.options$openfile<<-list()
   else{
     oldLen=length(.PBSmod$.options$openfile)
     #eval(parse(text=".PBSmod$.options$openfile <<- .removeFromList(.PBSmod$.options$openfile, ext)"))
@@ -138,8 +138,9 @@ clearPBSext=function(ext){
     if(oldLen!=length(.PBSmod$.options$openfile))
       #packList(".optionsChanged",".PBSmod$.options",TRUE) #.PBSmod$.options$.optionsChanged<<-TRUE
       .PBSmod$.options$.optionsChanged <- TRUE
-    tput(.PBSmod)
   }
+  tput(.PBSmod)
+  invisible()
 }
 #--------------------------------------clearPBSext
 
@@ -278,12 +279,13 @@ createVector <- function (vec, vectorLabels=NULL, func="", windowname="vectorwin
 #-------------------------------------createVector
 
 
-#evalCall-------------------------------2009-03-03
+#evalCall-------------------------------2014-03-04
 # Evaluates a function call, resolving conflicting arguments.
 #-----------------------------------------------RH
-evalCall=function(fn,argu,...,envir=parent.frame(),checkdef=FALSE,checkpar=FALSE){
+evalCall=function(fn, argu=list(), ..., envir=parent.frame(), checkdef=FALSE, checkpar=FALSE){
 	fnam=as.character(substitute(fn))
 	fnam.def=paste(fnam,"default",sep=".")
+
 	base=formals(fnam)
 	if (checkdef && exists(fnam.def)) {
 		defs=formals(fnam.def)
@@ -294,21 +296,24 @@ evalCall=function(fn,argu,...,envir=parent.frame(),checkdef=FALSE,checkpar=FALSE
 		pars=par(); pars=pars[setdiff(names(pars),names(base))] # use only pars not in base
 		forms=c(base,pars) } # all possible formal arguments
 	else forms=base
-#if (fnam=="axis") {browser();return()}
-	#forms=NULL
-	#for (i in names(base)) forms[[i]]=get(i,envir=envir)
+
 	dots=list(...)
+	# check to see if user has manipulated dots before passing to `evalCall`
+	if (length(dots)==1 && !is.null(names(dots)) && names(dots)=="dots")
+		dots = dots[["dots"]]
+
 	argus=argu[setdiff(names(argu),names(dots))]
 	given=c(argus,dots)
 	allow=given[intersect(names(given),names(forms))]
 	strargs=sapply(allow,deparse,width.cutoff=500,simplify=FALSE)
 	strargs=sapply(strargs,paste,collapse="",simplify=FALSE) # collapse multiple strings
 	argspec=character(0)
+
 	for (i in names(strargs)) argspec=c(argspec,paste(i,"=",strargs[[i]]))
 	expr=paste(fnam,"(",paste(argspec,collapse=","),")",sep="")
 	eval(parse(text=expr)) 
 	invisible(expr) }
-#-----------------------------------------evalCall
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~evalCall
 
 
 #findPat--------------------------------2006-08-28
@@ -595,7 +600,7 @@ readPBSoptions=function(fname="PBSoptions.txt"){
 #-----------------------------------readPBSoptions
 
 
-#runDemos-------------------------------2009-03-04
+#runDemos-------------------------------2013-06-27
 # Display a GUI to display something equivalent to R's demo()
 #-------------------------------------------ACB/RH
 runDemos <- function (package) {
@@ -651,9 +656,17 @@ runDemos <- function (package) {
 	droplist_data <- c()
 	for(j in 1:length(x[,1])) {
 		demoDir <- file.path(x[j,"LibPath"], package, "demo")
-		path <- tools::list_files_with_type(demoDir, "demo")
-		path <- path[x[j,"Item"]==tools::file_path_sans_ext(basename(path))]
-		droplist_data[ j ] <- path
+		#====== DEPRECATED functions in `tools` =======
+		#path <- tools::list_files_with_type(demoDir, "demo")
+		#path <- path[x[j,"Item"]==tools::file_path_sans_ext(basename(path))]
+		#==============================================
+		dext = paste(c("R", "r"),"$",sep="")
+		dfile = findPat(dext,list.files(path=demoDir)) #list.files(path=demoDir,pattern=dext)
+		dpref = sub("([^.]+)\\.[[:alnum:]]+$", "\\1", dfile)
+		disin = is.element(x[,"Item"],dpref)
+		path  = paste(demoDir,dfile[disin],sep="/")
+#browser();return()
+		droplist_data[ j ] <- path [j]
 	}
 	titles <- x[,"Title"]
 	title_cut_off <- 50 #cut off titles longer than this
@@ -668,42 +681,9 @@ runDemos <- function (package) {
 	wintext[ length( wintext ) + 1 ] <- "button function=runDemos action=\"\" text=\"All Packages\" sticky=w padx=12"
 
 	createWin( wintext, astext=TRUE, env=parent.env( environment() ) )
-
 	return(invisible(NULL))
 }
-#-----------------------------------------runDemos
-
-
-#.dClose--------------------------------2012-12-17
-# Function to execute on closing runDemos().
-#----------------------------------------------ACB
-.dClose <- function() {
-	act <- getWinAct()[1];
-	closeWin();
-	setwd(tget(.dwd))
-	if (is.null(act) || act=="demo") {
-		remove(list = setdiff(ls(pos=.PBSmodEnv, all.names=TRUE), tget(.dls)), pos = .PBSmodEnv);
-		remove(list = c(".dwd", ".dls"), pos = .PBSmodEnv); }; # final good-bye
-	return(); };
-#------------------------------------------.dClose
-
-
-#.dUpdateDesc-------------------------------------
-.dUpdateDesc <- function() {
-	vals <- getWinVal()
-	demo.id <- vals$demo.id
-	package <- .trimWhiteSpace( vals$package )
-	x <- demo(package = .packages(all.available = TRUE))
-	x <- x$results[x$results[,"Package"]==package,]
-	if (is.null(dim(x))) {
-		tmp<-names(x)
-		dim(x)<-c(1,4)
-		colnames(x)<-tmp
-	}
-	setWinVal( list( demo_desc=x[demo.id,"Title"] ) )
-}
-#-------------------------------------.dUpdateDesc
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~runDemos
 
 #.viewPkgDemo---------------------------2009-03-04
 # Display a GUI to display something equivalent to R's demo()
@@ -728,7 +708,36 @@ runDemos <- function (package) {
 		return(invisible(NULL))
 	}
 }
-#-------------------------------------.viewPkgDemo
+#.dClose--------------------------------2013-07-02
+# Function to execute on closing runDemos().
+#----------------------------------------------ACB
+.dClose <- function() {
+	act <- getWinAct()[1];
+	closeWin();
+	setwd(tcall(.dwd))
+	#if (is.null(act) || act=="demo") {
+		remove(list = setdiff(ls(pos=.PBSmodEnv, all.names=TRUE), tcall(.dls)), pos=.PBSmodEnv)
+		#remove(list = c(".dwd", ".dls"), pos=.PBSmodEnv)  # final good-bye
+	#}
+	return()
+}
+#.dUpdateDesc---------------------------2009-03-04
+# Updates demo window with demo descriptions.
+#----------------------------------------------ACB
+.dUpdateDesc <- function() {
+	vals <- getWinVal()
+	demo.id <- vals$demo.id
+	package <- .trimWhiteSpace( vals$package )
+	x <- demo(package = .packages(all.available = TRUE))
+	x <- x$results[x$results[,"Package"]==package,]
+	if (is.null(dim(x))) {
+		tmp<-names(x)
+		dim(x)<-c(1,4)
+		colnames(x)<-tmp
+	}
+	setWinVal( list( demo_desc=x[demo.id,"Title"] ) )
+}
+#=====================================END runDemos
 
 
 #runExample-----------------------------2012-12-10
@@ -1079,11 +1088,12 @@ showArgs <- function(widget, width=70, showargs=FALSE) {
 #-----------------------------------------showArgs
 
 
-#showHelp-------------------------------2009-11-16
+#showHelp-------------------------------2014-03-20
 # Show HTML help files for package contents.
 #-----------------------------------------------RH
 showHelp <- function(pattern="methods", ...) {
-	warn <- options()$warn
+	oldopts = options(); on.exit(options(oldopts))
+	options(stringsAsFactors=FALSE)
 	options(warn = -1)
 	Apacks = .packages(all.available = TRUE) # all packages
 	Spacks = findPat(pattern,Apacks)         # show packages that match the pattern
@@ -1091,12 +1101,13 @@ showHelp <- function(pattern="methods", ...) {
 	if (npacks==0) { print("No such package"); return() }
 	unpackList(list(...))
 	# 'home' code from 'help.start'
-	home <- if (!is.element("remote",ls(envir=sys.frame(sys.nframe()))) || is.null(remote)) {
-		if (tools:::httpdPort == 0L) tools::startDynamicHelp()
-		if (tools:::httpdPort > 0L) {
+	home <- 
+	if (!is.element("remote",ls(envir=sys.frame(sys.nframe()))) || is.null(remote)) {
+		if (eval(parse(text="tools:::httpdPort")) == 0L) tools::startDynamicHelp()
+		if (eval(parse(text="tools:::httpdPort")) > 0L) {
 			if ("update" %in% ls(envir=sys.frame(sys.nframe())) && update)
 				make.packages.html(temp = TRUE)
-			paste("http://127.0.0.1:", tools:::httpdPort, sep = "") }
+			paste("http://127.0.0.1:", eval(parse(text="tools:::httpdPort")), sep = "") }
 		else stop("showHelp() requires the HTTP server to be running", call. = FALSE)
 	}
 	else remote
@@ -1105,10 +1116,9 @@ showHelp <- function(pattern="methods", ...) {
 		browseURL(url)
 		return(url) }
 	URLs=sapply(Spacks,getURL)
-	options(warn = warn)
 	invisible(list(Apacks=Apacks,Spacks=Spacks,URLs=URLs))
 }
-#-----------------------------------------showHelp
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~showHelp
 
 
 #showPacks------------------------------2009-02-17
@@ -1146,9 +1156,9 @@ showRes <- function(x, cr=TRUE, pau=TRUE) {
 #------------------------------------------showRes
 
 
-#showVignettes--------------------------2012-12-21
+#showVignettes--------------------------2013-06-27
 # Display a GUI to display something equivalent to R's vignette()
-# Arguments: package = string specifying a package name.-
+# Arguments: package = string specifying a package name.
 #--------------------------------------------AE/RH
 showVignettes = function(package){
 	if (!exists(".dwd",envir=.PBSmodEnv)) assign(".dwd",getwd(),envir=.PBSmodEnv)
@@ -1177,8 +1187,16 @@ showVignettes = function(package){
 	if (is.null(dim(xpac))) {
 		tmp <- names(xres); dim(xpac) <- c(1,dim(xres)[2]); colnames(xpac) <- tmp }
 	vdir <- file.path(xpac[1,"LibPath"], package, "doc") # always the same for a single package
-	path <- tools::list_files_with_type(vdir, "vignette")
-	path <- path[xpac[,"Item"]==tools::file_path_sans_ext(basename(path))]
+	#====== DEPRECATED functions in `tools` =======
+	#path <- tools::list_files_with_type(vdir, "vignette")
+	#path <- path[xpac[,"Item"]==tools::file_path_sans_ext(basename(path))]
+	#==============================================
+	vext = paste(c(outer(c("R", "r", "S", "s"), c("nw", "tex"), paste, sep = ""), "Rmd"),"$",sep="")
+	vfile = findPat(vext,list.files(path=vdir)) #list.files(path=vdir,pattern=vext)
+	vpref = sub("([^.]+)\\.[[:alnum:]]+$", "\\1", vfile)
+	visin = is.element(xpac[,"Item"],vpref)
+	path  = paste(vdir,vfile[visin],sep="/")
+#browser();return()
 	nvig = sapply(split(xpac$Item,xpac$Package),length)
 	rvig = paste("radio name=vignette value=\"",path,"\" text=\"",xpac[,"Item"],"\" mode=character font=\"underline 10\" sticky=W padx=12",sep="")
 	lvig = paste("label text=\"",xpac[,"Title"],"\" sticky=W  wraplength=500 padx=20",sep="")
@@ -1195,7 +1213,23 @@ showVignettes = function(package){
 	createWin(win,astext=TRUE)
 	return(invisible(NULL))
 }
-#-------------------------------------showVignettes
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~showVignettes
+
+#.viewPkgVignettes----------------------2013-07-02
+# Display a GUI to display something equivalent to R's vignette()
+#--------------------------------------------AE/RH
+.viewPkgVignette <- function() {
+	act <- getWinAct()[1]
+	if (act=="pkg")
+		return(showVignettes(getWinVal("pkg")$pkg))
+	vignette <- getWinVal("vignette")$vignette
+	if (act=="vignette")
+		vignette <- paste(sub("([^.]+)\\.[[:alnum:]]+$", "\\1", vignette), ".pdf", sep="")
+		#vignette <- paste(tools::file_path_sans_ext(vignette), ".pdf", sep="")  ### DEPRECATED
+	openFile(vignette)
+	return(invisible(NULL))
+}
+#================================END showVignettes
 
 
 #testWidgets----------------------------2006-08-28
@@ -1358,7 +1392,7 @@ view <- function (obj, n=5, last=FALSE, random=FALSE, print.console=TRUE, ...) {
 #---------------------------------------------view
 
 
-#viewCode-------------------------------2010-10-19
+#viewCode-------------------------------2014-03-20
 # View package R code on the fly.
 #-----------------------------------------------RH
 viewCode=function(pkg="PBSmodelling", funs, output=4, ...){
@@ -1388,7 +1422,6 @@ viewCode=function(pkg="PBSmodelling", funs, output=4, ...){
 		showAlert("Your choice for 'funs' is badly specified")
 		return(invisible("Error: 'funs' badly specified")) }
 	seeFuns=pkgFuns[is.element(pkgFuns,funs)]
-#browser();return()
 	if (length(seeFuns)==0) {
 		showAlert("Your choices yield no functions")
 		return(invisible("Error: choices for 'funs' yield no functions")) }
@@ -1396,11 +1429,11 @@ viewCode=function(pkg="PBSmodelling", funs, output=4, ...){
 		unpackList(list(...))
 		# 'home' code from 'help.start'
 		home <- if (!is.element("remote",ls(envir=sys.frame(sys.nframe()))) || is.null(remote)) {
-			if (tools:::httpdPort == 0L) tools::startDynamicHelp()
-			if (tools:::httpdPort > 0L) {
+			if (eval(parse(text="tools:::httpdPort")) == 0L) tools::startDynamicHelp()
+			if (eval(parse(text="tools:::httpdPort")) > 0L) {
 				if ("update" %in% ls(envir=sys.frame(sys.nframe())) && update)
 					make.packages.html(temp = TRUE)
-				paste("http://127.0.0.1:", tools:::httpdPort, sep = "") }
+				paste("http://127.0.0.1:", eval(parse(text="tools:::httpdPort")), sep = "") }
 			else stop("showHelp() requires the HTTP server to be running", call. = FALSE)
 		}
 		else remote
@@ -1677,22 +1710,4 @@ writePBSoptions=function(fname="PBSoptions.txt") {
 }
 #--------------------------------.tclArrayToVector
 
-
-#.viewPkgVignettes----------------------2008-07-10
-# Display a GUI to display something equivalent to R's vignette()
-#-----------------------------------------------AE
-.viewPkgVignette <- function() {
-	act <- getWinAct()[1]
-	if (act=="pkg")
-		return(showVignettes(getWinVal("pkg")$pkg))
-	vignette <- getWinVal("vignette")$vignette
-	if (act=="vignette")
-		 vignette <- paste(tools::file_path_sans_ext(vignette), ".pdf", sep="")
-	openFile(vignette)
-	return(invisible(NULL))
-}
-#--------------------------------.viewPkgVignettes
-
-
 #===== THE END ===================================
-
