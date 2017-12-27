@@ -48,15 +48,17 @@ tput(x, penv=NULL, tenv=.PBSmodEnv)
 }
 \references{
   CRAN Repository Policy: 
-  \url{http://cran.r-project.org/web/packages/policies.html}
+  \url{https://cran.r-project.org/web/packages/policies.html}
 }
 \author{
   Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
 }
 \examples{
+\dontrun{
 local(envir=.PBSmodEnv,expr={
   str(tcall(.PBSmod),2)
 })
+}
 }
 
 %\seealso{}

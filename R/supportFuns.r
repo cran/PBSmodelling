@@ -740,7 +740,7 @@ runDemos <- function (package) {
 #=====================================END runDemos
 
 
-#runExample-----------------------------2012-12-10
+#runExample-----------------------------2017-07-12
 # Display a single GUI example.
 #-----------------------------------------------RH
 runExample <- function (ex, pkg="PBSmodelling") {
@@ -753,7 +753,9 @@ runExample <- function (ex, pkg="PBSmodelling") {
 		return() }
 	assign(".cls",ls(pos=.PBSmodEnv, all.names=TRUE),envir=.PBSmodEnv)    # current list in .PBSmodEnv
 	assign(".cwd",getwd(),envir=.PBSmodEnv)                               # current working system directory
-	assign(".cfl",list.files(tempdir(),full.names=TRUE),envir=.PBSmodEnv) # current file list in temporary system directory
+	## (RH 170712: There's a bug in R's list.files: it includes dirs like 'trash'
+	#assign(".cfl",list.files(tempdir(),full.names=TRUE),envir=.PBSmodEnv) # current file list in temporary system directory
+	assign(".cfl", setdiff(list.files(tempdir(),full.names=TRUE),list.dirs(tempdir(),full.names=TRUE)),envir=.PBSmodEnv) # current file list in temporary system directory
 	assign(".runExHelperQuit",.runExHelperQuit,envir=.PBSmodEnv) #.GlobalEnv)
 
 	pdir <- system.file(package = pkg)                # package directory
@@ -779,7 +781,7 @@ runExample <- function (ex, pkg="PBSmodelling") {
 #---------------------------------------runExample
 
 
-#runExamples----------------------------2012-12-17
+#runExamples----------------------------2017-07-12
 # Display a master GUI to display examples
 #-------------------------------------------RH/ACB
 runExamples <- function () {
@@ -825,7 +827,9 @@ runExamples <- function () {
 	assign(".runExHelperQuit",.runExHelperQuit,envir=.PBSmodEnv) #.GlobalEnv)
 	assign(".cls",ls(pos=.PBSmodEnv, all.names=TRUE),envir=.PBSmodEnv)    # current list in .PBSmodEnv
 	assign(".cwd",getwd(),envir=.PBSmodEnv)                               # current working system directory
-	assign(".cfl",list.files(tempdir(),full.names=TRUE),envir=.PBSmodEnv) # current file list in temporary system directory
+	## (RH 170712: There's a bug in R's list.files: it includes dirs like 'trash'
+	#assign(".cfl",list.files(tempdir(),full.names=TRUE),envir=.PBSmodEnv) # current file list in temporary system directory
+	assign(".cfl", setdiff(list.files(tempdir(),full.names=TRUE),list.dirs(tempdir(),full.names=TRUE)),envir=.PBSmodEnv) # current file list in temporary system directory
 	pckg <- "PBSmodelling"
 	pdir <- system.file(package = pckg)               # package directory
 	edir <- paste(pdir, "/", "examples", sep = "")    # examples directory
@@ -1088,7 +1092,7 @@ showArgs <- function(widget, width=70, showargs=FALSE) {
 #-----------------------------------------showArgs
 
 
-#showHelp-------------------------------2015-01-20
+#showHelp-------------------------------2015-04-16
 # Show HTML help files for package contents.
 #-----------------------------------------------RH
 showHelp <- function(pattern="methods", ...) {
@@ -1103,11 +1107,11 @@ showHelp <- function(pattern="methods", ...) {
 	# `home' code from `help.start'
 	home <- 
 	if (!is.element("remote",ls(envir=sys.frame(sys.nframe()))) || is.null(remote)) {
-		if (as.numeric(R.version$svn) >= 67548)
+		if (paste0(R.version[c("major","minor")],collapse=".")>="3.3.0")
 			httpdPort = tools::startDynamicHelp(NA)
 		else {
-			showAlert("This function only available for R (>= 3.2.0)")
-			stop("This function only available for R (>= 3.2.0)", call. = FALSE)
+			showAlert("This function only available for R (>= 3.3.0)")
+			stop("This function only available for R (>= 3.3.0)", call. = FALSE)
 		}
 		if (httpdPort > 0L) {
 			if ("update" %in% ls(envir=sys.frame(sys.nframe())) && update)
@@ -1352,8 +1356,7 @@ tput = function (x, penv=NULL, tenv=.PBSmodEnv) {
 }
 #---------------------------tget/tcall/trpint/tput
 
-
-#view-----------------------------------2011-10-31
+#view-----------------------------------2015-06-10
 # View first/last/random n element/rows of an object.
 #-----------------------------------------------RH
 view <- function (obj, n=5, last=FALSE, random=FALSE, print.console=TRUE, ...) {
@@ -1385,23 +1388,27 @@ view <- function (obj, n=5, last=FALSE, random=FALSE, print.console=TRUE, ...) {
 	# End Subfunction------------------------------
 	if (n==0) return("nada")
 	n=abs(n) # coerce to positive
-	if (is.data.frame(obj) || is.matrix(obj) || is.array(obj)) 
-		viewed=showTab(obj,n,last,random,...)
-	else if (is.list(obj)) 
-		viewed=showLis(obj,n,last,random,print.console,...)
-	else if (is.vector(obj) || is.integer(obj) || is.numeric(obj) || is.character(obj)) 
-		viewed=showVec(obj,n,last,random,...)
-	else viewed=showAll(obj)
+	if (is.list(obj) && !is.data.frame(obj)) {
+		### iterate through list objects
+		viewed = showLis(obj,n,last,random,print.console,...)
+	} else {
+		if (is.data.frame(obj) || is.matrix(obj) || is.array(obj)) 
+			viewed = showTab(obj,n,last,random,...)
+		else if (is.vector(obj) || is.integer(obj) || is.numeric(obj) || is.character(obj)) 
+			viewed = showVec(obj,n,last,random,...)
+		else viewed = showAll(obj)
+	}
 	if (print.console) print(viewed)
 	invisible(viewed)
 }
 #---------------------------------------------view
 
 
-#viewCode-------------------------------2015-01-20
+#viewCode-------------------------------2017-06-26
 # View package R code on the fly.
 #-----------------------------------------------RH
-viewCode=function(pkg="PBSmodelling", funs, output=4, ...){
+viewCode=function(pkg="PBSmodelling", funs, output=4, ...)
+{
 	eval(parse(text=paste("if(!require(",pkg,",quietly=TRUE)) stop(\"",pkg," package is required\")",sep="")))
 	tdir <- tempdir(); tdir <- gsub("\\\\","/",tdir)                    # temporary directory for R
 	if (is.element(pkg,loadedNamespaces())){
@@ -1436,24 +1443,28 @@ viewCode=function(pkg="PBSmodelling", funs, output=4, ...){
 		# `home' code from `help.start'
 		home <- 
 		if (!is.element("remote",ls(envir=sys.frame(sys.nframe()))) || is.null(remote)) {
-			if (as.numeric(R.version$svn) >= 67548)
-				httpdPort = tools::startDynamicHelp(NA)
-			else {
-				showAlert("Output 2 only available for R (>= 3.2.0)")
-				stop("Output 2 only available for R (>= 3.2.0)", call. = FALSE)
-			}
-			httpdPort = tools::startDynamicHelp(NA)
-			if (httpdPort > 0L) {
-				if ("update" %in% ls(envir=sys.frame(sys.nframe())) && update)
-					make.packages.html(temp = TRUE)
-				paste0("http://127.0.0.1:", httpdPort) 
-			}
-			else stop("`viewCode' requires the HTTP server to be running", call. = FALSE)
-		}
+			paste0(system.file(package=pkg),"/html/00Index.html")
+			#if (paste0(R.version[c("major","minor")],collapse=".")>="3.3.0")
+			#	httpdPort = tools::startDynamicHelp(NA)
+			#else {
+			#	showAlert("Output 2 only available for R (>= 3.3.0)")
+			#	stop("Output 2 only available for R (>= 3.3.0)", call. = FALSE)
+			#}
+			#httpdPort = tools::startDynamicHelp(NA)
+			#if (httpdPort > 0L) {
+			#	if ("update" %in% ls(envir=sys.frame(sys.nframe())) && update)
+			#		make.packages.html(temp = TRUE)
+			#	paste0("http://127.0.0.1:", httpdPort) 
+			#}
+			#else stop("`viewCode' requires the HTTP server to be running", call. = FALSE)
+		}  #
 		else remote
-		expr=paste("iloc=paste(\"",home,"/library/",pkg,"/html/00Index.html\"); ",sep="")
-		expr=paste(expr,"index=readLines(iloc);",sep="")
-		eval(parse(text=expr))
+		#expr=paste("iloc=paste(\"",home,"/library/",pkg,"/html/00Index.html\"); ",sep="")
+		#expr=paste(expr,"index=readLines(iloc);",sep="")
+		#eval(parse(text=expr))
+		iloc  = home
+		index = readLines(iloc)
+#browser();return()
 	}
 	for (i in c(seeFuns)) {
 		if (output %in% c(1,2)) {
