@@ -1,4 +1,4 @@
-c3284b492d31ed520b8271ab65d32669 *DESCRIPTION
+848e57b7e6695c64b91ffbe931946f36 *DESCRIPTION
 b07ea6a7399eca7bb27d0ae4aeb65afd *NAMESPACE
 eaa09d0180cac314cbdc874033b77dec *R/cSupport.r
 288cae5154cad75cfb5c6b7413133fa3 *R/guiFuns.r
@@ -6,7 +6,7 @@ eaa09d0180cac314cbdc874033b77dec *R/cSupport.r
 f31b73cc06354d2b0cd40f97dadd4a1c *R/listFuns.r
 bebeb042acdaecc582f23a27009010c4 *R/minFuns.r
 6f387ef5237713af5b2b553b0c0ae03e *R/option_manager.r
-6dd50d33e9dc8e2da7e57b3a574c66f7 *R/plotFuns.r
+60464b9ddac590fd7d9d00b709a7f87d *R/plotFuns.r
 98fb1e9831aaa9fd0c2b317717f32ad4 *R/presentTalk.r
 18dcf94bea4a4cef1e0847e943b7e4ce *R/projectFuns.r
 df656398844cee8d20602e8d1c2a1885 *R/sortWidget.r
@@ -38,7 +38,7 @@ e92005e65168356d1c2e8671d9674e89 *inst/PBStools/Runpack.bat
 5c7cb6fcc5cb99bfaf0b853477e079eb *inst/PBStools/packPBS.bat
 fabeeb6e0c5b0a8eee6eadfbae102c55 *inst/PBStools/unpackPBS.bat
 f8f2b67ff0ace0ddea987d553285a4cf *inst/doc/00ReadMe.txt
-6f2b3daa800f5ebbea5b1baab879b3ba *inst/doc/ChangeLog.txt
+6cf7430ae9b61299050a2975000409ea *inst/doc/ChangeLog.txt
 1496a42c7ecf982a092c68b6c6d92dbe *inst/doc/DeveloperGuide.pdf
 78de1b188069af400a0cbe452273ec82 *inst/doc/Links.html
 f8a8ee19154f4cb12c5bcf05ad9a4762 *inst/doc/PBSmodelling-UG.pdf
@@ -295,7 +295,7 @@ b509bef2ea737db365d636433d7c284e *man/lucent.Rd
 4f89c02133a0772ea75d6d1bcdb7f59b *man/openExamples.Rd
 9720a9a7a9f943f7314837776b33df60 *man/openFile.Rd
 09e524cda949f38ec53a3db820a80b74 *man/openUG.Rd
-70751a3bae1335f569b626981c6834f3 *man/packList.Rd
+6452bbd45b35f07ee6e814f2d31f1cbc *man/packList.Rd
 d1164f9eb74c9886a1fede806bb15d28 *man/pad0.Rd
 e4a46c3383d4882ddf2cfcc290b02f1a *man/parseWinFile.Rd
 0c913dfdd8669ba52929afbe9aec3005 *man/pause.Rd
@@ -349,15 +349,15 @@ d7195be4faea176cd45e3892bd388b55 *man/unpackList.Rd
 be0358c191808fe0f884d0fd73ced939 *man/updateGUI.Rd
 a4989ff2698c9a7a84f623c16204d842 *man/vbdata.Rd
 6615af04f8bfd067a807941d9d4b1a19 *man/vbpars.Rd
-b7c984f9d095aafd4df38b348dac0007 *man/view.Rd
+f7f4a6e259c210207262ebf8e4d5d720 *man/view.Rd
 197adc803b575b3827ee6f028bf64849 *man/viewCode.Rd
 bff319ac6af0731cf196582a998c2e10 *man/writeList.Rd
 e2685764f10711b701302455859e602e *man/writePBSoptions.Rd
 f1cb2846209d65f470c582a5aed10fb9 *src/fib.c
-59e4ff5a2e72c72b6d7ab951da5e600d *src/fib.h
-27843a1d09663ce79e601be2cd0307cc *src/fib2.c
-bdf4fa1ef932ce459c46dfdf901352e9 *src/fib2.h
-baf67b7fea18384ac618cdf01594f99a *src/init.c
-c6cb4e6b006aa5d78e2d45813a6ad41b *src/parser.c
-23fdd7d0b9ded4bc4ca7245661d54ba6 *src/parser.h
+c28a541f6ac41642db8085361af4978e *src/fib.h
+1575b6e67bf07cf7265a9270260c21dc *src/fib2.c
+3d3155f394b65a173f2d8eaf46a04c7e *src/fib2.h
+fa0fa4806ae2de880abd75160af224b4 *src/init.c
+273027530b6b7fcbaced6eb0b42fbada *src/parser.c
+2bc182ee55829763a712a7e179210e95 *src/parser.h
 7d3e212855eac292ad154c2d346dcaff *vignettes/PBSmodellingIntro.Rnw
