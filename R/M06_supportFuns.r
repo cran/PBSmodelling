@@ -192,7 +192,7 @@ clearAll <- function(hidden=TRUE, verbose=TRUE, PBSsave=TRUE, pos=.PBSmodEnv)
 ##   ext - optional character vector of file extensions to
 ##         clear; if unspecified, all associations are removed
 ## ------------------------------------------AE/RH
-clearPBSext=function(ext)
+clearPBSext <- function(ext)
 {
   .initPBSoptions()
   tget(.PBSmod)
@@ -287,7 +287,7 @@ compileDescription <- function(descFile, outFile="")
 ## convSlashes--------------------------2009-02-16
 ##  Convert unix "/" to R's "\\" if OS is windows.
 ## ---------------------------------------------RH
-convSlashes=function(expr, os=.Platform$OS.type, addQuotes=FALSE)
+convSlashes <- function(expr, os=.Platform$OS.type, addQuotes=FALSE)
 {
 	if (os=="windows") 
 		expr=gsub("/","\\\\",expr)
@@ -356,7 +356,7 @@ createVector <- function (vec, vectorLabels=NULL, func="", windowname="vectorwin
 ## evalCall-----------------------------2014-03-04
 ##  Evaluate a function call, resolving conflicting arguments.
 ## ---------------------------------------------RH
-evalCall=function(fn, argu=list(), ..., envir=parent.frame(), checkdef=FALSE, checkpar=FALSE)
+evalCall <- function(fn, argu=list(), ..., envir=parent.frame(), checkdef=FALSE, checkpar=FALSE)
 {
 	fnam=as.character(substitute(fn))
 	fnam.def=paste(fnam,"default",sep=".")
@@ -432,7 +432,7 @@ findProgram <- function( name, includename = FALSE )
 ## focusRgui----------------------------2011-09-09
 ##  Set focus to the RGui window.
 ## ------------------------------------------NO/RH
-focusRgui = function (os = .Platform$OS.type)
+focusRgui <- function (os=.Platform$OS.type)
 {
 	if (os != "windows") {
 		err = "'focusRgui' needs Windows OS to use Windows Scripting"
@@ -614,16 +614,17 @@ openUG = function(pkg="PBSmodelling")
 
 
 ## pad0---------------------------------2011-12-12
-##  Convert numbers (or text coerced to numeric), 
-##   to integers then text, and pad them with leading zeroes.
-##  Arguments:
+## Takes numbers (or text coerced to numeric), 
+##  converts them to integers then text, and 
+##  pads them with leading zeroes.
+## Arguments:
 ##    x - Vector of numbers
 ##    n - Length of padded integer
 ##    f - Factor of 10 to expand x by
-##  Note: For meaningful results, n should be at least as
-##        large as the order of factored x (x * 10^f).
+## Note: For meaningful results, n should be at least as
+##       large as the order of factored x (x * 10^f).
 ## ---------------------------------------------RH
-pad0 <- function (x, n, f = 0)
+pad0 <- function (x, n, f = 0) 
 {
 	xin <- x
 	fin <- f
@@ -636,11 +637,13 @@ pad0 <- function (x, n, f = 0)
 			x <- xnum[znum]
 			xord <- max(ceiling(log10(abs(x * 10^f))), na.rm = TRUE);
 			if (any(max(abs(x * 10^f)) == 10^(-10:10))) xord <- xord + 1;
-			if (n < xord) n <- xord  ## No padding occurs if n<=xord
+			if (n < xord) n <- xord  # No padding occurs if n<=xord
 			x <- round(x, f) * 10^f
 			xneg <- x < 0;
+#browser();return()
 			x <- abs(x);  x <- format(x, scientific=FALSE)
-			xout[znum] = x }
+			xout[znum] = x
+		}
 		if (any(zstr)) 
 			xout[zstr] <- paste(xout[zstr],paste(rep(0,f),collapse=""),sep="")
 		xout <- gsub(" ", "", xout); nx <- length(xout);
@@ -657,9 +660,10 @@ pad0 <- function (x, n, f = 0)
 		padout = flist[[as.character(fin)]]
 	else if (length(xin)==1) {
 		padout = sapply(flist,function(x){x[1]})
-		attr(padout, "input") <- xin }
+		attr(padout, "input") <- xin 
+	}
 	else padout <- flist
-	return(padout)
+	return(padout) 
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~pad0
 
@@ -818,6 +822,7 @@ runDemos <- function (package)
 		return(invisible(NULL))
 	}
 }
+
 ## .dClose------------------------------2013-07-02
 ##  Function to execute on closing runDemos().
 ## --------------------------------------------ACB
@@ -832,6 +837,7 @@ runDemos <- function (package)
 	##}
 	return()
 }
+
 ## .dUpdateDesc-------------------------2009-03-04
 ##  Update demo window with demo descriptions.
 ## --------------------------------------------ACB
@@ -890,7 +896,8 @@ runExample <- function (ex, pkg="PBSmodelling")
 	writeLines(wtxt,wnam)
 	rnam <- paste(ex,".r",sep="")                     ## R code file
 	if (is.element(rnam,bnam)) source(rnam,local=.PBSmodEnv) ## seems to see the function in .PBSmodEnv
-	invisible() }
+	invisible() 
+}
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~runExample
 
 
@@ -959,25 +966,38 @@ runExamples <- function ()
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~runExamples
 
 
-## selectDir----------------------------2006-06-06
+## selectDir----------------------------2025-05-21
 ##  Prompt user to select a directory - and returns it.
+##  (RH 250521) added two new arguments:
+##   targetDir - another directory to start search from
+##   relative  - should result be relative to start
 ## --------------------------------------------ACB
-selectDir <- function( initialdir = getwd(), mustexist = TRUE, title = "", usewidget = NULL )
+selectDir <- function (initialdir=getwd(), mustexist=TRUE, title="", usewidget=NULL,
+   targetdir=NULL, relative=FALSE)  
 {
-	##get val from widget
-	if( is.null( usewidget ) == FALSE )
-		initialdir <- getWinVal()[[ usewidget ]]
-
-	d <- tclvalue( tkchooseDirectory( initialdir = initialdir, mustexist = mustexist, title = title ) )
-
-	##set val to widget
-	if( is.null( usewidget ) == FALSE && d != "" ) {
-		val <- list()
-		val[[ usewidget ]] <- d
-		setWinVal( val )
+	if (!is.null(usewidget)) 
+		initialdir <- getWinVal()[[usewidget]]
+	if (!is.null(targetdir)) {
+		startdir   <- initialdir ## keep in case
+		initialdir <- targetdir
 	}
-		
-	return( d )
+	d <- tcltk::tclvalue(tcltk::tkchooseDirectory(initialdir=initialdir, mustexist=mustexist, title=title))  ## activates a choice window
+#browser();return()
+	if (relative) {  ## (RH 250520) Attempt to show d relative to initialdir
+		dee = d
+		d = sub(initialdir, ".", dee)
+		if (substring(d,1,1) != "." || !grepl(basename(dee),d))
+			d = dee  ## revert back to original if it's not the parent of the selected
+	}
+	#if (!is.null(usewidget) && d != "") {
+	if (!is.null(usewidget) && (d != "" || !is.na(d) || !is.null(d))) {
+		val <- list()
+		val[[usewidget]] <- d
+		setWinVal(val)
+	}
+	if (relative)
+		names(d) = dee
+	return(d)
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~selectDir
 
@@ -1256,7 +1276,7 @@ showHelp <- function(pattern="methods", ...)
 ## showPacks----------------------------2009-02-17
 ##  Show packages that need to be installed.
 ## ---------------------------------------------RH
-showPacks = function(packs=c("PBSmodelling","PBSmapping","PBSddesolve",
+showPacks <- function(packs=c("PBSmodelling","PBSmapping","PBSddesolve",
    "rgl","deSolve","akima","deldir","sp","maptools","KernSmooth"))
 {
 	warn <- options()$warn
@@ -1296,7 +1316,7 @@ showRes <- function(x, cr=TRUE, pau=TRUE)
 ##  Display a GUI to display something equivalent to R's vignette()
 ##  Arguments: package = string specifying a package name.
 ## ------------------------------------------AE/RH
-showVignettes = function(package)
+showVignettes <- function(package)
 {
 	if (!exists(".dwd",envir=.PBSmodEnv)) assign(".dwd",getwd(),envir=.PBSmodEnv)
 	if (!exists(".dls",envir=.PBSmodEnv)) assign(".dls",c(".dls",ls(pos = .PBSmodEnv, all.names=TRUE)),envir=.PBSmodEnv)
@@ -1422,7 +1442,7 @@ testWidgets <- function ()
 ##  Functions to get, put, and print objects into the .PBSmodEnv.
 ##  CRAN packages can no longer modify user's working environment.
 ## ---------------------------------------------RH
-tget = function (x, penv=NULL, tenv=.PBSmodEnv)
+tget <- function (x, penv=NULL, tenv=.PBSmodEnv)
 {
 	if (is.null(penv)) penv = parent.frame() ## need to call this inside the function NOT as an argument
 	xnam = as.character(substitute(x))
@@ -1433,7 +1453,7 @@ tget = function (x, penv=NULL, tenv=.PBSmodEnv)
 	}
 	invisible()
 }
-tcall = function (x, penv=NULL, tenv=.PBSmodEnv)
+tcall <- function (x, penv=NULL, tenv=.PBSmodEnv)
 {
 	if (is.null(penv)) penv = parent.frame() ## need to call this inside the function NOT as an argument
 	xnam = as.character(substitute(x))
@@ -1444,7 +1464,7 @@ tcall = function (x, penv=NULL, tenv=.PBSmodEnv)
 	}
 	invisible()
 }
-tprint = function (x, penv=NULL, tenv=.PBSmodEnv)
+tprint <- function (x, penv=NULL, tenv=.PBSmodEnv)
 {
 	if (is.null(penv)) penv = parent.frame() ## need to call this inside the function NOT as an argument
 	xnam = as.character(substitute(x))
@@ -1454,7 +1474,7 @@ tprint = function (x, penv=NULL, tenv=.PBSmodEnv)
 	}
 	invisible()
 }
-tput = function (x, penv=NULL, tenv=.PBSmodEnv)
+tput <- function (x, penv=NULL, tenv=.PBSmodEnv)
 {
 	if (is.null(penv)) penv = parent.frame() ## need to call this inside the function NOT as an argument
 	xnam = as.character(substitute(x))
@@ -1463,30 +1483,30 @@ tput = function (x, penv=NULL, tenv=.PBSmodEnv)
 	invisible()
 }
 ## versions of tget/tprint for window calls
-.win.tget = function()
+.win.tget <- function()
 {
 	act = getWinAct()[1]
 	eval(parse(text=paste("tget(",act,")()",sep="")))
 }
-.win.tcall = function()
+.win.tcall <- function()
 {
 	act = getWinAct()[1]
 	eval(parse(text=paste("tcall(",act,")()",sep="")))
 }
-.win.tprint = function()
+.win.tprint <- function()
 {
 	act = getWinAct()[1]
 	eval(parse(text=paste("tprint(",act,")()",sep="")))
 }
 ## functions called from window description files
-.win.runExHelperQuit = function(){ tcall(.runExHelperQuit)() }
-.win.closeALL        = function(){ tcall(closeALL)() }
-.win.closeSDE        = function(){ tcall(closeSDE)() }
-.win.closeChoice     = function(){ tcall(.closeChoice)() }
-.win.makeChoice      = function(){ tcall(.makeChoice)() }
-.win.chFile          = function(){ tcall(chFile)() }
-.win.chTest          = function(){ tcall(chTest)() }
-.win.restoreCWD      = function()
+.win.runExHelperQuit <- function(){ tcall(.runExHelperQuit)() }
+.win.closeALL        <- function(){ tcall(closeALL)() }
+.win.closeSDE        <- function(){ tcall(closeSDE)() }
+.win.closeChoice     <- function(){ tcall(.closeChoice)() }
+.win.makeChoice      <- function(){ tcall(.makeChoice)() }
+.win.chFile          <- function(){ tcall(chFile)() }
+.win.chTest          <- function(){ tcall(chTest)() }
+.win.restoreCWD      <- function()
 {
 	if(exists("cwd",envir=.PBSmodEnv) && tcall(cwd)!=getwd())
 		setwd(tcall(cwd))
@@ -1546,7 +1566,7 @@ view <- function (obj, n=5, last=FALSE, random=FALSE, print.console=TRUE, ...)
 ## viewCode-----------------------------2023-10-25
 ##  View package R code on the fly.
 ## ---------------------------------------------RH
-viewCode=function(pkg="PBSmodelling", funs, output=4, ...)
+viewCode <- function(pkg="PBSmodelling", funs, output=4, ...)
 {
 	eval(parse(text=paste("if(!require(",pkg,",quietly=TRUE)) stop(\"",pkg," package is required\")",sep="")))
 	tdir <- tempdir(); tdir <- gsub("\\\\","/",tdir)                    ## temporary directory for R
@@ -1645,7 +1665,7 @@ viewCode=function(pkg="PBSmodelling", funs, output=4, ...)
 ##  Save PBS options to a text file
 ##  fname - name of options file (or path to this file)
 ## -----------------------------------------ACB/RH
-writePBSoptions=function(fname="PBSoptions.txt")
+writePBSoptions <- function(fname="PBSoptions.txt")
 {
 	.initPBSoptions()
 	tget(.PBSmod)
@@ -1705,7 +1725,7 @@ writePBSoptions=function(fname="PBSoptions.txt")
 ##             if FALSE, varry by most left (R default)
 ##             e.g. 1,1 - 2,1 - 1,2 - 2,2 - 1,3 - 2,3
 ## --------------------------------------------ACB
-.convertVecToArray <- function(x,d, byright=FALSE, byrow=TRUE)
+.convertVecToArray <- function(x, d, byright=FALSE, byrow=TRUE)
 {
 	if (length(x)!=prod(d))
 		stop("given vector x length does not match product of dimensions")
@@ -1727,7 +1747,7 @@ writePBSoptions=function(fname="PBSoptions.txt")
 
 
 ## .findSquare--------------------------2009-02-11
-.findSquare=function(nc)
+.findSquare <- function(nc)
 {
 	sqn=sqrt(nc); m=ceiling(sqn); n=ceiling(nc/m)
 	return(c(m,n))
@@ -1816,7 +1836,7 @@ writePBSoptions=function(fname="PBSoptions.txt")
 ##   byright - if true, vary most right indices first, 
 ##             if false, vary by left (R default)
 ## --------------------------------------------ACB
-.mapArrayToVec <- function(x,d, byright=FALSE)
+.mapArrayToVec <- function(x, d, byright=FALSE)
 {
 	x <- x - 1 ##start counting at 0 instead of 1
 	m <- length(x)
@@ -1839,20 +1859,20 @@ writePBSoptions=function(fname="PBSoptions.txt")
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~.mapArrayToVec
 
 
-## .removeFromList----------------------2008-10-06
+## .removeFromList----------------------2008-10-06  ## looks like an older version (RH 241104)
 ##  Remove items from a list.
 ## ------------------------------------------AE/RH
-.removeFromList = function (l, items)
-{
-	if (!length(l) || !length(items))  return(l)
-	keep = l[!is.element(names(l),items)]
-	return(keep)
-}
+#.removeFromList <- function(l, items)
+#{
+#	if (!length(l) || !length(items))  return(l)
+#	keep = l[!is.element(names(l),items)]
+#	return(keep)
+#}
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~.removeFromList
 
 
 ## .tclArrayToVector--------------------2008-10-06
-.tclArrayToVector <- function( str )
+.tclArrayToVector <- function(str)
 {
 	## strings (when multiple) are encoded as "{c:/program files/somefile.txt} c:/nospaces/isok.txt"
 	file_vector <- c()

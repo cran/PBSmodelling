@@ -1,23 +1,3 @@
-#.mergeLists----------------------------2012-12-20
-#  Taken from R Curl - merge x and y, if elements
-#  match in both x and y, then elements from y are
-#  stored (overwriting x's elements).
-#----------------------------------------------ACB
-.mergeLists <- function( x, y ) 
-{
-    if (length(x) == 0) 
-        return(y)
-    if (length(y) == 0) 
-        return(x)
-    i = match(names(y), names(x))
-    i = is.na(i)
-    if (any(i)) 
-        x[names(y)[which(i)]] = y[which(i)]
-    x
-}
-#--------------------------------------.mergeLists
-
-
 #PBSoptions-class-----------------------2012-12-20
 setClass ("PBSoptions", representation( instance = "list" ) )
 
@@ -190,7 +170,7 @@ definition=function(.Object, filename, initial.options = list(), gui.prefix = "o
 #-------------------------------------.showOptions
 
 
-#PBSotions-methods----------------------2012-12-20
+#PBSoptions-methods---------------------2012-12-20
 setMethod( "print", signature="PBSoptions",
 definition=function( x, ... )
 {
@@ -203,7 +183,7 @@ definition=function( object )
 	.showOptions( object )
 }
 )
-#--------------------------------PBSotions-methods
+#-------------------------------PBSoptions-methods
 
 
 #getOptions-----------------------------2012-12-20

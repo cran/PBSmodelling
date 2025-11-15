@@ -15,7 +15,8 @@
 #cleanProj------------------------------2009-04-21
 # Anisa's cleanProj function modified for flexibility.
 #--------------------------------------------AE/RH
-cleanProj=function(prefix, suffix, files) {
+cleanProj <- function(prefix, suffix, files) 
+{
 	if (missing(suffix)) suffix = character(0)
 	if (missing(files))  files  = character(0)
 	rowLen = ceiling(sqrt(max(length(suffix), length(files))))
@@ -32,14 +33,16 @@ cleanProj=function(prefix, suffix, files) {
 		"button function=.selectCleanBoxes action=0 text=\"Deselect All\" padx=4 pady=4", 
 		"button function=doAction text=Clean bg=aliceblue padx=4 pady=4 action=\"PBSmodelling:::.doClean(); closeWin(`cleanWindow`)\"")
 	createWin(winDesc, astext = TRUE) 
-	invisible(TRUE) }
+	invisible(TRUE) 
+}
 #----------------------------------------cleanProj
 
 
 #cleanWD--------------------------------2009-02-24
 # Clean all potential garbage files.
 #-----------------------------------------------RH
-cleanWD=function(files){ # Clean all nuisance files
+cleanWD <- function(files)
+{ # Clean all nuisance files
 	rowLen = ceiling(sqrt(length(files)))
 	if (rowLen == 0) {
 		try(closeWin("cleanWD"),silent=TRUE); return(invisible(FALSE)) }
@@ -51,7 +54,8 @@ cleanWD=function(files){ # Clean all nuisance files
 		"button function=.selectCleanBoxes action=0 text=\"Deselect All\" padx=4 pady=4", 
 		"button function=doAction text=Clean bg=aliceblue padx=4 pady=4 action=\"PBSmodelling:::.doCleanWD(); closeWin(`cleanWD`)\"")
 	createWin(winDesc, astext = TRUE) 
-	invisible(TRUE) }
+	invisible(TRUE) 
+}
 #------------------------------------------cleanWD
 
 
@@ -61,7 +65,7 @@ cleanWD=function(files){ # Clean all nuisance files
 # Input:
 #  newOptions - a character vector of option names
 #--------------------------------------------AE/RH
-declareGUIoptions=function(newOptions){
+declareGUIoptions <- function(newOptions){
 	.initPBSoptions()
 	tget(.PBSmod)
 	#.PBSmod$.options$.optionsDeclared<<-.mergeVectors(.PBSmod$.optionsDeclared,newOptions)
@@ -78,7 +82,8 @@ declareGUIoptions=function(newOptions){
 #  suffix - character vector of suffixes to match to a file.
 # Output: character vector of files with matching extensions
 # -----------------------------------------------------------
-findPrefix=function(suffix, path = "." ) {
+findPrefix <- function(suffix, path = "." ) 
+{
 	if( length( suffix ) > 1 ) {
 		ret <- c()
 		for( s in suffix )
@@ -96,7 +101,7 @@ findPrefix=function(suffix, path = "." ) {
 
 
 #findSuffix-----------------------------2012-12-20
-findSuffix=function( prefix, path = "." ) {
+findSuffix <- function( prefix, path = "." ) {
 	if( length( prefix ) > 1 ) {
 		ret <- c()
 		for( p in prefix )
@@ -119,7 +124,8 @@ findSuffix=function( prefix, path = "." ) {
 #  from a saved options file
 #  It is assumed .PBSmod is initialized
 # -------------------------------------------AE/RH
-getGUIoptions=function(){
+getGUIoptions <- function()
+{
 	tget(.PBSmod)
 	for(i in .PBSmod$.options$.optionsDeclared){
 		option=list()
@@ -138,7 +144,8 @@ getGUIoptions=function(){
 #  icon - icon to use in message box
 # Output: TRUE if Yes was chosen or FALSE if No was chosen
 #-----------------------------------------------AE
-getYes=function(message, title="Choice", icon="question"){
+getYes <- function(message, title="Choice", icon="question")
+{
 	answer=as.character(tkmessageBox(message=message, title=title, icon=icon, type="yesno"))
 	if(answer=="yes") return(TRUE)
 	else return(FALSE)
@@ -157,7 +164,8 @@ getYes=function(message, title="Choice", icon="question"){
 #  prefix - prefix of example files
 #  suffix - suffixes of example files (character vector)
 #-----------------------------------------------AE
-openExamples=function(package, prefix, suffix){
+openExamples <- function(package, prefix, suffix)
+{
   if(missing(package) && missing(prefix) && missing(suffix)){
     fromGUI=TRUE
     action=strsplit(getWinAct()[1], ",")[[1]]
@@ -190,7 +198,8 @@ openExamples=function(package, prefix, suffix){
 # Input:
 #  fname: name of file in which the options will be saved
 # -------------------------------------------AE/RH
-promptWriteOptions=function(fname=""){
+promptWriteOptions <- function(fname="")
+{
 	.initPBSoptions()
 	if(.optionsNotUpdated() && getYes("Set declared options to widget values?"))
 		setGUIoptions("*")
@@ -222,7 +231,8 @@ promptWriteOptions=function(fname=""){
 #   Returns TRUE if the option was set, FALSE if the
 #   prompt was cancelled
 #-----------------------------------------------AE
-setFileOption=function(option){
+setFileOption <- function(option)
+{
   .setOption(option, "file")
 }
 #------------------------------------setFileOption
@@ -231,7 +241,8 @@ setFileOption=function(option){
 #setwdGUI-------------------------------2012-12-20
 #  change the working directory via a GUI
 #-----------------------------------------------AE
-setwdGUI=function(){
+setwdGUI <- function()
+{
   wd=as.character(tkchooseDirectory())
   if(!length(wd))
     return()
@@ -248,7 +259,8 @@ setwdGUI=function(){
 # Input:
 #  option - name of option to update or "*" to update all
 #--------------------------------------------AE/RH
-setGUIoptions=function(option){
+setGUIoptions <- function(option)
+{
   .initPBSoptions()
   tget(.PBSmod)
   if(missing(option))
@@ -275,7 +287,8 @@ setGUIoptions=function(option){
 #   Returns TRUE if the option was set, FALSE if the
 #   prompt was cancelled
 #-----------------------------------------------AE
-setPathOption=function(option){
+setPathOption <- function(option)
+{
   .setOption(option, "dir")
 }
 #------------------------------------setPathOption
@@ -288,7 +301,8 @@ setPathOption=function(option){
 #  title - the title of the alert box
 #  icon - icon to show in alert box
 #-----------------------------------------------AE
-showAlert=function(message, title="Alert", icon="warning"){
+showAlert <- function(message, title="Alert", icon="warning")
+{
   tkmessageBox(message=message, title=title, icon=icon)
 }
 #----------------------------------------showAlert
@@ -302,7 +316,8 @@ showAlert=function(message, title="Alert", icon="warning"){
 #.doClean-------------------------------2009-02-24
 # Used by cleanProj(); function called when Clean button is pressed.
 #--------------------------------------------AE/RH
-.doClean=function(){
+.doClean <- function()
+{
 	prefix=getWinVal("cleanPrefix",winName="cleanWindow")[[1]]
 	vecList=.removeFromList(getWinVal(winName="cleanWindow"), "cleanPrefix")
 	filenames=character(0)
@@ -329,7 +344,8 @@ showAlert=function(message, title="Alert", icon="warning"){
 #.doCleanWD-----------------------------2009-02-24
 # Anisa's .doClean function modified for file names only
 #-----------------------------------------------RH
-.doCleanWD=function () { 
+.doCleanWD <- function ()
+{ 
 	vec=getWinVal(winName="cleanWD",scope="L")
 	vecList=logical()
 	for (i in names(vec)) vecList=c(vecList,vec[[i]])
@@ -362,7 +378,8 @@ showAlert=function(message, title="Alert", icon="warning"){
 #  HOMEDRIVE or HOME environment variable for Windows or Unix
 #  respectively
 #-----------------------------------------------AE
-.getHome=function(){
+.getHome <- function()
+{
   if (.Platform$OS.type=="windows")
     return(Sys.getenv("HOMEDRIVE")[[1]])
    return(Sys.getenv("HOME")[[1]])
@@ -377,7 +394,8 @@ showAlert=function(message, title="Alert", icon="warning"){
 #  quiet - If TRUE, no errors/alerts will be displayed
 # Output: the prefix, or NULL if the entry box was empty.
 #-----------------------------------------------AE
-.getPrefix=function(quiet=FALSE){
+.getPrefix <- function(quiet=FALSE)
+{
   getWinVal("prefix", scope="L")
   if (prefix==""){
     if(!quiet)
@@ -389,17 +407,44 @@ showAlert=function(message, title="Alert", icon="warning"){
 #---------------------------------------.getPrefix
 
 
-#.mergeLists----------------------------2012-12-20
-#  Add a second list to a first list. If both lists share any
-#  keys, the values from the second list overwrite those in
-#  the first list. Order of components in list is preserved.
-# Input:
-#  list1 - first list
-#  list2 - second list
-# Output:
-#   the two lists merged as described above
-#-----------------------------------------------AE
-.mergeLists=function(list1, list2){
+#.makeCleanVec--------------------------2009-03-03
+# This is used by cleanProj() to create the strings describing checkbox vectors.
+#--------------------------------------------AE/RH
+.makeCleanVec <- function(vecName, items, rowLen)
+{
+	vecDesc=character(0)
+	nItems=length(items)
+	nVecs=ceiling(nItems/rowLen)
+	if(!nVecs)
+		return(vecDesc)
+	for(i in 1:nVecs){
+		vecI=paste("vector names=", vecName, i, " ", sep="")
+		currItems=items[((i-1)*rowLen+1):min(rowLen*i, nItems)]
+		itemStr=paste("\'",paste(currItems, collapse="\' \'"),"\'",sep="")
+		vecI=paste(vecI, 'vecnames="', itemStr, '" ', sep="")
+		vecI=paste(vecI, 'labels="', itemStr, '"', sep="")
+		vecI=paste(vecI, " length=", length(currItems), sep="")
+		vecI=paste(vecI," mode=logical vertical=FALSE value=TRUE padx=4 pady=4")
+		vecDesc=c(vecDesc, vecI)
+	}
+	return(vecDesc)
+}
+#------------------------------------.makeCleanVec
+
+
+## .mergeLists2 ------------------------2012-12-20
+##  Has same name as ACB's '.mergeLists' (RH 241104)
+##  Add a second list to a first list. If both lists share any
+##  keys, the values from the second list overwrite those in
+##  the first list. Order of components in list is preserved.
+## Input:
+##  list1 - first list
+##  list2 - second list
+## Output:
+##   the two lists merged as described above
+## ---------------------------------------------AE
+.mergeLists2 <- function(list1, list2)
+{
   if(!length(list1))
     return(list2)
   if(!length(list2))
@@ -416,7 +461,7 @@ showAlert=function(message, title="Alert", icon="warning"){
   }
   return(c(list1, newComponents))
 }
-#--------------------------------------.mergeLists
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~.mergeLists2
 
 
 #.mergeVectors--------------------------2012-12-20
@@ -429,7 +474,8 @@ showAlert=function(message, title="Alert", icon="warning"){
 # Output:
 #   the two vectors merged as described above
 #-----------------------------------------------AE
-.mergeVectors=function(v1, v2){
+.mergeVectors <- function(v1, v2)
+{
   if(!length(v2))
     return(v1)
 
@@ -451,7 +497,8 @@ showAlert=function(message, title="Alert", icon="warning"){
 #  Returns TRUE if any of the options are different in the
 #  GUI than in their stored values
 # -------------------------------------------AE|RH
-.optionsNotUpdated=function(){
+.optionsNotUpdated <- function()
+{
 	.initPBSoptions()
 	tget(.PBSmod)
 	if(is.null(.PBSmod$.options$.optionsDeclared))
@@ -479,7 +526,8 @@ showAlert=function(message, title="Alert", icon="warning"){
 # Output:
 #  a list with the chosen components removed
 #-----------------------------------------------AE
-.removeFromList=function(l, items){
+.removeFromList <- function(l, items)
+{
   if(!length(l) || !length(items))
     return(l)
 
@@ -503,7 +551,8 @@ showAlert=function(message, title="Alert", icon="warning"){
 # This is used by cleanProj. It is the function for selecting or deselecting
 # all of the checkboxes.
 #-----------------------------------------------AE
-.selectCleanBoxes=function(){
+.selectCleanBoxes <- function()
+{
 	action=getWinAct()[1]
 	vecList=.removeFromList(getWinVal(), "cleanPrefix")
 	for(i in 1:length(vecList)){
@@ -519,7 +568,8 @@ showAlert=function(message, title="Alert", icon="warning"){
 # See these functions for a description. 
 #The type is "dir" or "file" for each of those functions.
 #--------------------------------------------AE/RH
-.setOption=function(option, type){
+.setOption <- function(option, type)
+{
 	if(missing(option))
 		option=getWinAct()[1]
 	.initPBSoptions()
@@ -555,7 +605,8 @@ showAlert=function(message, title="Alert", icon="warning"){
 #  width - width of log window
 #  height - height of log window
 #-----------------------------------------------AE
-.showLog=function(logText, fname, noWindow=FALSE, width=80, height=30){
+.showLog <- function(logText, fname, noWindow=FALSE, width=80, height=30)
+{
   if(!noWindow){
     winDesc=c(
         "window name=PBSlog title=LOG",
@@ -577,7 +628,8 @@ showAlert=function(message, title="Alert", icon="warning"){
 #  x - character vector of filenames, ie. "foo.c"
 # Output: the filename without the extension, ie. "foo"
 #-----------------------------------------------AE
-.stripExt=function(x){
+.stripExt <- function(x)
+{
 	return(sub("[.].{1,3}$", "", x))
 }
 #----------------------------------------.stripExt
@@ -594,7 +646,8 @@ showAlert=function(message, title="Alert", icon="warning"){
 #   returns TRUE if file exists and a program to open the
 #   file was specified somewhere, FALSE otherwise.
 # -------------------------------------------AE/RH
-.tryOpen=function(filename, quiet=FALSE){
+.tryOpen <- function(filename, quiet=FALSE)
+{
 	filename=filename[1]
 	if(!is.character(filename) || !file.exists(filename)){
 		if(!quiet)
@@ -619,30 +672,6 @@ showAlert=function(message, title="Alert", icon="warning"){
 	return(TRUE)
 }
 #-----------------------------------------.tryOpen
-
-
-#.makeCleanVec--------------------------2009-03-03
-# This is used by cleanProj() to create the strings describing checkbox vectors.
-#--------------------------------------------AE/RH
-.makeCleanVec=function(vecName, items, rowLen){
-	vecDesc=character(0)
-	nItems=length(items)
-	nVecs=ceiling(nItems/rowLen)
-	if(!nVecs)
-		return(vecDesc)
-	for(i in 1:nVecs){
-		vecI=paste("vector names=", vecName, i, " ", sep="")
-		currItems=items[((i-1)*rowLen+1):min(rowLen*i, nItems)]
-		itemStr=paste("\'",paste(currItems, collapse="\' \'"),"\'",sep="")
-		vecI=paste(vecI, 'vecnames="', itemStr, '" ', sep="")
-		vecI=paste(vecI, 'labels="', itemStr, '"', sep="")
-		vecI=paste(vecI, " length=", length(currItems), sep="")
-		vecI=paste(vecI," mode=logical vertical=FALSE value=TRUE padx=4 pady=4")
-		vecDesc=c(vecDesc, vecI)
-	}
-	return(vecDesc)
-}
-#------------------------------------.makeCleanVec
 
 
 #===== THE END ===================================

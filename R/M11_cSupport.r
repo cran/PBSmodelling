@@ -15,7 +15,8 @@
 #loadC----------------------------------2009-07-08
 #  Function for launching loadC GUI.
 #-----------------------------------------------AE
-loadC=function(){
+loadC <- function()
+{
 	createWin(system.file("win/loadC.txt", package="PBSmodelling"))
   
   declareGUIoptions("editor")
@@ -45,7 +46,8 @@ loadC=function(){
 #  logfile - if TRUE, a log file containing the compiler
 #            output will be created
 #-----------------------------------------------AE
-compileC=function(file, lib="", options="", logWindow=TRUE, logFile=TRUE){
+compileC <- function(file, lib="", options="", logWindow=TRUE, logFile=TRUE)
+{
   if(!file.exists(file)){
     showAlert(paste("File ", file, " does not exist in the working directory.",
 				sep=""))
@@ -87,7 +89,8 @@ compileC=function(file, lib="", options="", logWindow=TRUE, logFile=TRUE){
 #   what the corresponding filenames should be on the current
 #   platform
 #-----------------------------------------------AE
-.libName=function(lib=""){
+.libName <- function(lib="")
+{
   if (.Platform$OS.type=="windows")
     return(paste(lib, ".dll", sep=""))
   else
@@ -100,7 +103,8 @@ compileC=function(file, lib="", options="", logWindow=TRUE, logFile=TRUE){
 #  Sources the .r file in the working directory indicated by
 #  the prefix entry widget in the GUI
 #-----------------------------------------------AE
-.guiSource=function(){
+.guiSource <- function()
+{
 	prefix=.getPrefix()
 	filename=paste(prefix, ".r", sep="")
 	res=try(source(filename))
@@ -115,7 +119,8 @@ compileC=function(file, lib="", options="", logWindow=TRUE, logFile=TRUE){
 #  Gets the prefix and libPrefix arguments from the GUI and
 #  uses them to call .compileC
 #-----------------------------------------------AE
-.guiCompileC=function(){
+.guiCompileC <- function()
+{
   prefix=.getPrefix()
   if (is.null(prefix))
     return()
@@ -141,7 +146,8 @@ compileC=function(file, lib="", options="", logWindow=TRUE, logFile=TRUE){
 #  unload the library with the lib prefix specified in the
 #  GUI (or the project file prefix if this is left blank
 #-----------------------------------------------AE
-.guiDyn=function(){
+.guiDyn <- function()
+{
   getWinVal("libPrefix", scope="L")
   if(libPrefix=="")
     libPrefix=.getPrefix()
@@ -167,7 +173,8 @@ compileC=function(file, lib="", options="", logWindow=TRUE, logFile=TRUE){
 #.cleanLoadC----------------------------2009-07-08
 #  Clean function
 #-----------------------------------------------AE
-.cleanLoadC=function(){
+.cleanLoadC <- function()
+{
 	cleanPrefix=.getPrefix(quiet=TRUE)
 	if(is.null(cleanPrefix))
 		cleanPrefix="*"
@@ -182,7 +189,8 @@ compileC=function(file, lib="", options="", logWindow=TRUE, logFile=TRUE){
 #  specified in the GUI and writes into text boxes the
 #  elapsed time for each
 #-----------------------------------------------AE
-.loadCRunComparison=function(){
+.loadCRunComparison <- function()
+{
   prefix=.getPrefix()
   if(is.null(prefix))
     return()

@@ -6,7 +6,8 @@
 ##  format   - write list in "D" or "P" format
 ##  comments - include string as comment at the top of file
 ## -----------------------------------------ACB|RH
-writeList <- function(x, fname="", format="D", comments="") {
+writeList <- function(x, fname="", format="D", comments="")
+{
 	NoComments<-missing(comments)
 	comments <- sub("^", "#", comments)
 	if (format=="D") {
@@ -43,7 +44,8 @@ writeList <- function(x, fname="", format="D", comments="") {
 #.writeList.P---------------------------2023-01-06
 # Saves list x to disk using "P" format
 #-------------------------------------------ACB|RH
-.writeList.P <- function( x, fname="", comments, prefix="") {
+.writeList.P <- function( x, fname="", comments, prefix="")
+{
 	if (fname!="") {
 		sink(fname)
 		on.exit(expr=sink())
@@ -514,7 +516,7 @@ readList <- function(fname)
 ## Read ADMB-like input file and create a list.
 ## Adapted from `readAD' in PBSawatea.
 ## ---------------------------------------------RH
-.readList.C = function(fname)
+.readList.C <- function(fname)
 {
 	Otxt = readLines(fname) ## original text
 	otxt = .trimWhiteSpace(Otxt)
@@ -576,7 +578,8 @@ readList <- function(fname)
 #unpackList-----------------------------2012-12-06
 # Make local/global variables from the components of a named list.
 #-------------------------------------------ACB/RH
-unpackList <- function(x, scope="L") {
+unpackList <- function(x, scope="L")
+{
 	namx <- names(x); nx <- length(namx);
 	if (nx > 0) for (i in 1:nx) {
 		if (namx[i] != "") {
@@ -599,10 +602,10 @@ unpackList <- function(x, scope="L") {
 # NOTE:-------------
 # New 'packList' takes advantage of the accessor functions:
 #  'tget', 'tcall', and 'tput'.
-# Less complicated than former 'packList' (temporarily 
-#  available as '.packList.deprecated'), and should be way faster.
+# Less complicated than former 'packList' (no longer available),
+#  and should be way faster.
 #-----------------------------------------------RH
-packList=function(stuff, target="PBSlist", value, penv=NULL, tenv=.PBSmodEnv)
+packList <- function(stuff, target="PBSlist", value, penv=NULL, tenv=.PBSmodEnv)
 {
 	if (is.null(penv)) penv = parent.frame() # for a parent envir, need to call this inside the function NOT as an argument
 	if (!is.vector(stuff) || !is.character(stuff))
@@ -625,63 +628,33 @@ packList=function(stuff, target="PBSlist", value, penv=NULL, tenv=.PBSmodEnv)
 
 
 #lisp-----------------------------------2012-12-12
-lisp = function(name, pos=.PBSmodEnv, envir=as.environment(pos), all.names=TRUE, pattern){
+lisp <- function(name, pos=.PBSmodEnv, envir=as.environment(pos), all.names=TRUE, pattern)
+{
 	ls(name,pos,envir,all.names,pattern)
 }
 #---------------------------------------------lisp
 
 
-#.packList.deprecated-------------------2012-12-03
-# Pack a list with (i) existing objects using their
-# names or (ii) one explicit value.
-#-----------------------------------------------RH
-.packList.deprecated=function(stuff, target="PBSlist", value, tenv=.PBSmodEnv)
+## Transferred from M09_option_manager.r (RH 241031)
+## =================================================
+#.mergeLists----------------------------2012-12-20
+#  Taken from R Curl - merge x and y, if elements
+#  match in both x and y, then elements from y are
+#  stored (overwriting x's elements).
+#----------------------------------------------ACB
+.mergeLists <- function( x, y ) 
 {
-	penv = parent.frame() # need to call this inside the function NOT as an argument
-	# Deparse bad objects: those that break code (see function 'deparse')
-	deparseBO = function(x){
-		if (is.list(x) && !is.data.frame(x)) {
-			sapply(x,function(x){deparseBO(x)},simplify=FALSE) # recursion through lists within lists
-		} else {
-			xclass = class(x)
-			if (mode(x) %in% c("call","expression","(","function","NULL"))
-				x=paste(deparse(x),collapse="")
-			class(x) = xclass
-			return(x)
-		}
-	}
-	if (!is.vector(stuff) || !is.character(stuff))
-		showAlert("Provide a vector of names denoting objects")
-	target=deparse(substitute(target))
-	target=gsub("^\"","",gsub("\"$","",target)) # strip leading and ending escaped quotes
-	endpos=regexpr("[\\[$]",target)-1; if (endpos<=0) endpos=nchar(target)
-	base=substring(target,1,endpos)
-	if (!exists(base,envir=tenv)) 
-		assign(base,list(),envir=tenv)
-	if (!missing(value)) { # use explicit value instead of objects
-		objet=paste(deparse(value),collapse="\n")
-		eval(parse(text=paste(target,"[[\"",stuff,"\"]]=",objet,sep="")),envir=tenv) } #pack explicit value into the list
-	else {
-		for (s in stuff) {
-			if (!exists(s,envir=penv)) next
-			eval(parse(text=paste("objet=get(\"",s,"\",envir=penv)",sep=""))) #grab the local object
-			if (is.list(objet) && !is.data.frame(objet)) {
-				atts=attributes(objet)
-				objet=deparseBO(objet)
-				natts=setdiff(names(atts),names(attributes(objet)))
-				# retain additional attributes of the original list
-				if (length(natts)>0) { 
-					for (i in natts) attr(objet,i)=atts[[i]] }
-				# Reminder: applying original class can cause a display error if 
-				# underlying objects (e.g., functions, calls) have been converted to strings.
-				#lclass=sapply(objet,class,simplify=FALSE)
-				#for(i in 1:length(objet)) attr(objet[[i]],"class")=lclass[[i]]
-			}
-			objet=paste(deparse(objet),collapse="\n")
-			eval(parse(text=paste(target,"[[\"",s,"\"]]=",objet,sep="")),envir=tenv) } #pack into the list
-	}
-	invisible() }
-#-----------------------------.packList.deprecated
+    if (length(x) == 0) 
+        return(y)
+    if (length(y) == 0) 
+        return(x)
+    i = match(names(y), names(x))
+    i = is.na(i)
+    if (any(i)) 
+        x[names(y)[which(i)]] = y[which(i)]
+    x
+}
+#--------------------------------------.mergeLists
 
 #===== THE END ===================================
 

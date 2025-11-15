@@ -462,7 +462,8 @@ chooseWinVal <- function(choice,varname,winname="window") {
 #   getChoice("Who`s your daddy?",c("Stephen Harper","Homer Simpson","Jon Schnute"),horiz=F,radio=T,gui=F)
 #-----------------------------------------------RH
 getChoice <- function(choice=c("Yes","No"),question="Make a choice: ",winname="getChoice",
-                      horizontal=TRUE, radio=FALSE,qcolor="blue",gui=FALSE,quiet=FALSE) {
+   horizontal=TRUE, radio=FALSE,qcolor="blue",gui=FALSE,quiet=FALSE) 
+{
 
 	#Construct the hidden choice function
 	fn1 <- paste(".makeChoice <- function(){
@@ -738,7 +739,8 @@ parseWinFile <- function(fname, astext=FALSE)
 #updateGUI------------------------------2012-12-06
 # Update the active GUI with local values 
 #-------------------------------------------ARK/RH
-updateGUI <- function(scope="L") {
+updateGUI <- function(scope="L")
+{
 	# Translate the scope argument into a target environment
 	if (!is.environment(scope) && scope=="L")      tenv=parent.frame(n=1)
 	else if (!is.environment(scope) && scope=="P") tenv=.PBSmodEnv
@@ -773,7 +775,8 @@ updateGUI <- function(scope="L") {
 #doAction-------------------------------2011-11-08
 # Executes the action created by a widget.
 #-----------------------------------------------RH
-doAction=function(act){
+doAction=function(act)
+{
 	tget(.PBSmod)
 	if (missing(act)) {
 		if(is.null(.PBSmod$.activeWin)) return()
@@ -3403,7 +3406,8 @@ setWidgetState <- function( varname, state, radiovalue, winname, warn = TRUE )
 # Arguments:
 #   winName - name of map to initialize
 #----------------------------------------------ACB
-.map.init <- function(winName) {
+.map.init <- function(winName)
+{
 	tget(.PBSmod)
 	.PBSmod[[winName]] <- list()
 	#to hold tclvar pointers
@@ -4115,7 +4119,7 @@ setWidgetState <- function( varname, state, radiovalue, winname, warn = TRUE )
 #   paramOrder
 #----------------------------------------------ACB
 .getParamFromStr <- function(inputStr, fname="", line.start=0, line.end=0, 
-                             sourcefile=list(), paramOrder=.widgetDefs)
+   sourcefile=list(), paramOrder=.widgetDefs)
 {
 	#now passed in function - to enable overriding
 	# a "constant" defines how the parameters should look.
@@ -4404,7 +4408,8 @@ setWidgetState <- function( varname, state, radiovalue, winname, warn = TRUE )
 # obtains a similar colour (slightly brighter/darker) than the argument
 # args:  col - the colour to adjust
 #----------------------------------------------NMB
-.getSimilarColour <- function (col) {
+.getSimilarColour <- function (col)
+{
         # convert the current colour to an RGB vector
         col <- col2rgb(col)[, 1]
 
@@ -4552,7 +4557,8 @@ setWidgetState <- function( varname, state, radiovalue, winname, warn = TRUE )
 
 #.packWidgetsIntoGrid-------------------2012-12-20
 #  Pack all widgets into a grid with ncol=1 nrow=<number of widgets>
-.packWidgetsIntoGrid <- function( widgets, vertical = TRUE ) {
+.packWidgetsIntoGrid <- function( widgets, vertical = TRUE )
+{
 	gridWidget = list(
 	             type="grid", 
 	             font="",

@@ -1,5 +1,5 @@
 #=================================================
-# Set classes used by presenttalk
+# Set classes used by presentTalk
 # -------------------------------
 setClass( "text", representation( text = "character", "break" = "logical" ) )
 setClass( "file", representation( name = "character", filename = "character", "break" = "logical", button = "logical", col = "integer" ) )
@@ -444,7 +444,8 @@ setValidity ("code", function( object )
 
 
 #.startSlide----------------------------2012-12-20
-.startSlide <- function( talk ) {
+.startSlide <- function( talk )
+{
 	tget(.PBSmod)
 	#eval(parse(text=".PBSmod[[ \".presentTalk\" ]][[ talk@name ]]$index <<- 1"))
 	.PBSmod[[ ".presentTalk" ]][[ talk@name ]]$index <- 1
@@ -456,7 +457,8 @@ setValidity ("code", function( object )
 
 
 #.prevSlide-----------------------------2012-12-20
-.prevSlide <- function() {
+.prevSlide <- function()
+{
 	talk_name <- getWinAct()[1]
 	tget(.PBSmod)
 	index <- .PBSmod[[ ".presentTalk" ]][[ talk_name ]]$index
@@ -470,7 +472,8 @@ setValidity ("code", function( object )
 
 
 #.nextSlide-----------------------------2012-12-20
-.nextSlide <- function() {
+.nextSlide <- function()
+{
 	talk_name <- getWinAct()[1]
 	tget(.PBSmod)
 	index <- .PBSmod[[ ".presentTalk" ]][[ talk_name ]]$index
@@ -484,7 +487,8 @@ setValidity ("code", function( object )
 
 
 #.slidedrop-----------------------------2012-12-20
-.slidedrop <- function() {
+.slidedrop <- function()
+{
 	#get talk
 	talk_name <- getWinAct()[1]
 	tget(.PBSmod)
@@ -504,7 +508,8 @@ setValidity ("code", function( object )
 
 
 #.sectiondrop---------------------------2012-12-20
-.sectiondrop <- function() {
+.sectiondrop <- function()
+{
 	#get talk
 	talk_name <- getWinAct()[1]
 	tget(.PBSmod)
